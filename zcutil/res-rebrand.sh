@@ -28,14 +28,14 @@ function stats()
 echo "Before:"
 stats
 
-fgrep -lriZ --exclude-dir=.git --exclude-dir=contrib --exclude='*release-notes*' \
+fgrep -lriZ --exclude-dir=.git --exclude-dir=contrib --exclude='*release-notes*' --exclude=res-rebrand.sh \
 	--exclude=chainparams.cpp \
 	zcash -- $D | xargs -0 sed -i '
 /[Cc]opyright\|https\{0,1\}:\|github\|libzcash\|rustzcash\|zcash\/\|Zcash\.h\|zcashconsensus\|ZcashPoW\|memcpy\|zcashd_screen\|[ *]v[01]\.\| 1\.0\./! {
 s/Zcash/Resistance/g; s/zcash/resistance/g
 }'
 
-fgrep -lrwZ --exclude-dir=.git --exclude-dir=contrib --exclude='*release-notes*' \
+fgrep -lrwZ --exclude-dir=.git --exclude-dir=contrib --exclude='*release-notes*' --exclude=res-rebrand.sh \
 	ZEC -- $D | xargs -0 sed -i 's/ZEC/RES/g'
 
 echo "After:"

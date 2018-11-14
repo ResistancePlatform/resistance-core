@@ -41,5 +41,7 @@ fgrep -lrwZ --exclude-dir=.git --exclude-dir=contrib --exclude='*release-notes*'
 echo "After:"
 stats
 
-cd $D # So that rename(1) doesn't try to rename parts of the pathname
-rename zcash resistance doc/man/zcash*
+cd $D # So that we don't rename parts of the pathname
+for N in doc/man/zcash*.1; do
+	mv $N ${N/zcash/resistance}
+done

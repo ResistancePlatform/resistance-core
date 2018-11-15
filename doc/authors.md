@@ -1,4 +1,4 @@
-Zcash Contributors
+Resistance Contributors
 ==================
 
 Jack Grigg (843)

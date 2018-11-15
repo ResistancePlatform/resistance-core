@@ -35,7 +35,7 @@ TEST(TransactionBuilder, Invoke)
     auto pk = *ivk.address(d);
 
     // Create a shielding transaction from transparent to Sapling
-    // 0.0005 t-ZEC in, 0.0004 z-ZEC out, 0.0001 t-ZEC fee
+    // 0.0005 t-RES in, 0.0004 z-RES out, 0.0001 t-RES fee
     auto builder1 = TransactionBuilder(consensusParams, 1, &keystore);
     builder1.AddTransparentInput(COutPoint(), scriptPubKey, 50000);
     builder1.AddSaplingOutput(fvk_from.ovk, pk, 40000, {});
@@ -67,7 +67,7 @@ TEST(TransactionBuilder, Invoke)
     auto witness = tree.witness();
 
     // Create a Sapling-only transaction
-    // 0.0004 z-ZEC in, 0.00025 z-ZEC out, 0.0001 t-ZEC fee, 0.00005 z-ZEC change
+    // 0.0004 z-RES in, 0.00025 z-RES out, 0.0001 t-RES fee, 0.00005 z-RES change
     auto builder2 = TransactionBuilder(consensusParams, 2);
     ASSERT_TRUE(builder2.AddSaplingSpend(expsk, note, anchor, witness));
     // Check that trying to add a different anchor fails
@@ -151,19 +151,19 @@ TEST(TransactionBuilder, FailsWithNegativeChange)
     auto witness = tree.witness();
 
     // Fail if there is only a Sapling output
-    // 0.0005 z-ZEC out, 0.0001 t-ZEC fee
+    // 0.0005 z-RES out, 0.0001 t-RES fee
     auto builder = TransactionBuilder(consensusParams, 1);
     builder.AddSaplingOutput(fvk.ovk, pk, 50000, {});
     EXPECT_FALSE(static_cast<bool>(builder.Build()));
 
     // Fail if there is only a transparent output
-    // 0.0005 t-ZEC out, 0.0001 t-ZEC fee
+    // 0.0005 t-RES out, 0.0001 t-RES fee
     builder = TransactionBuilder(consensusParams, 1, &keystore);
     EXPECT_TRUE(builder.AddTransparentOutput(taddr, 50000));
     EXPECT_FALSE(static_cast<bool>(builder.Build()));
 
     // Fails if there is insufficient input
-    // 0.0005 t-ZEC out, 0.0001 t-ZEC fee, 0.00059999 z-ZEC in
+    // 0.0005 t-RES out, 0.0001 t-RES fee, 0.00059999 z-RES in
     EXPECT_TRUE(builder.AddSaplingSpend(expsk, note, anchor, witness));
     EXPECT_FALSE(static_cast<bool>(builder.Build()));
 

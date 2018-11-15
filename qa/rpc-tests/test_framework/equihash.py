@@ -277,7 +277,7 @@ def gbp_validate(digest, minimal, n, k):
 
     return True
 
-def zcash_person(n, k):
+def resistance_person(n, k):
     return b'ZcashPoW' + struct.pack('<II', n, k)
 
 def print_hash(h):

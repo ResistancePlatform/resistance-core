@@ -36,7 +36,7 @@ class ListReceivedTest (BitcoinTestFramework):
         self.nodes[0].sendtoaddress(taddr, 2.0)
         self.generate_and_sync(height+2)
 
-        # Send 1 ZEC to zaddr1
+        # Send 1 RES to zaddr1
         opid = self.nodes[1].z_sendmany(taddr,
             [{'address': zaddr1, 'amount': 1, 'memo': my_memo}])
         txid = wait_and_assert_operationid_status(self.nodes[1], opid)
@@ -52,7 +52,7 @@ class ListReceivedTest (BitcoinTestFramework):
         assert_false(r[0]['change'], "Note should not be change")
         assert_equal(my_memo, r[0]['memo'])
 
-        # Confirm transaction (1 ZEC from taddr to zaddr1)
+        # Confirm transaction (1 RES from taddr to zaddr1)
         self.generate_and_sync(height+3)
 
         # Require one confirmation, note should be present

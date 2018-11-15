@@ -1108,7 +1108,7 @@ TEST(WalletTests, SpentSaplingNoteIsFromMe) {
     auto nullifier2 = maybe_nf.get();
 
     // NOTE: Not updating the anchor results in a core dump.  Shouldn't builder just return error?
-    // *** Error in `./zcash-gtest': double free or corruption (out): 0x00007ffd8755d990 ***
+    // *** Error in `./resistance-gtest': double free or corruption (out): 0x00007ffd8755d990 ***
     anchor = saplingTree.root();
 
     // Create transaction to spend note B
@@ -1891,7 +1891,7 @@ TEST(WalletTests, MarkAffectedSaplingTransactionsDirty) {
     auto scriptPubKey = GetScriptForDestination(tsk.GetPubKey().GetID());
 
     // Generate shielding tx from transparent to Sapling
-    // 0.0005 t-ZEC in, 0.0004 z-ZEC out, 0.0001 t-ZEC fee
+    // 0.0005 t-RES in, 0.0004 z-RES out, 0.0001 t-RES fee
     auto builder = TransactionBuilder(consensusParams, 1, &keystore);
     builder.AddTransparentInput(COutPoint(), scriptPubKey, 50000);
     builder.AddSaplingOutput(fvk.ovk, pk, 40000, {});
@@ -1948,7 +1948,7 @@ TEST(WalletTests, MarkAffectedSaplingTransactionsDirty) {
     auto witness = saplingTree.witness();
 
     // Create a Sapling-only transaction
-    // 0.0004 z-ZEC in, 0.00025 z-ZEC out, 0.0001 t-ZEC fee, 0.00005 z-ZEC change
+    // 0.0004 z-RES in, 0.00025 z-RES out, 0.0001 t-RES fee, 0.00005 z-RES change
     auto builder2 = TransactionBuilder(consensusParams, 2);
     ASSERT_TRUE(builder2.AddSaplingSpend(expsk, note, anchor, witness));
     builder2.AddSaplingOutput(fvk.ovk, pk, 25000, {});

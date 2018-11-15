@@ -2,14 +2,14 @@
 *.deb
 *.exe
 src/bitcoin
-src/zcashd
-src/zcash-cli
-src/zcash-gtest
-src/zcash-tx
+src/resistanced
+src/resistance-cli
+src/resistance-gtest
+src/resistance-tx
 src/test/test_bitcoin
 
-*zcashTest.pk
-*zcashTest.vk
+*resistanceTest.pk
+*resistanceTest.vk
 
 # autoreconf
 Makefile.in
@@ -52,7 +52,7 @@ src/univalue/gen
 *.pyc
 *.o
 *.o-*
-.zcash
+.resistance
 *.a
 *.pb.cc
 *.pb.h
@@ -88,7 +88,7 @@ build
 *.gcda
 /*.info
 test_bitcoin.coverage/
-zcash-gtest.coverage/
+resistance-gtest.coverage/
 total.coverage/
 coverage_percent.txt
 

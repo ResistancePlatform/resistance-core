@@ -1,28 +1,28 @@
-# Zcash Payment API
+# Resistance Payment API
 
 ## Overview
 
-Zcash extends the Bitcoin Core API with new RPC calls to support private Zcash payments.
+Resistance extends the Bitcoin Core API with new RPC calls to support private Resistance payments.
 
-Zcash payments make use of two address formats:
+Resistance payments make use of two address formats:
 
 * taddr - an address for transparent funds (just like a Bitcoin address, value stored in UTXOs)
 * zaddr - an address for private funds (value stored in objects called notes)
 
-When transferring funds from one taddr to another taddr, you can use either the existing Bitcoin RPC calls or the new Zcash RPC calls.
+When transferring funds from one taddr to another taddr, you can use either the existing Bitcoin RPC calls or the new Resistance RPC calls.
 
-When a transfer involves zaddrs, you must use the new Zcash RPC calls.
+When a transfer involves zaddrs, you must use the new Resistance RPC calls.
 
 
 ## Compatibility with Bitcoin Core
 
-Zcash supports all commands in the Bitcoin Core API (as of version 0.11.2).   Where applicable, Zcash will extend commands in a backwards-compatible way to enable additional functionality.
+Resistance supports all commands in the Bitcoin Core API (as of version 0.11.2).   Where applicable, Resistance will extend commands in a backwards-compatible way to enable additional functionality.
 
 We do not recommend use of accounts which are now deprecated in Bitcoin Core.  Where the account parameter exists in the API, please use “” as its value, otherwise an error will be returned.
 
 To support multiple users in a single node’s wallet, consider using getnewaddress or z_getnewaddress to obtain a new address for each user.  Also consider mapping multiple addresses to each user.
 
-## List of Zcash API commands
+## List of Resistance API commands
 
 Optional parameters are denoted in [square brackets].
 
@@ -39,7 +39,7 @@ RPC parameter conventions:
 * taddr : Transparent address
 * zaddr : Private address
 * address : Accepts both private and transparent addresses.
-* amount : JSON format decimal number with at most 8 digits of precision, with 1 ZEC expressed as 1.00000000.
+* amount : JSON format decimal number with at most 8 digits of precision, with 1 RES expressed as 1.00000000.
 * memo : Metadata expressed in hexadecimal format.  Limited to 512 bytes, the current size of the memo field of a private transaction.  Zero padding is automatic.
 
 ### Accounting
@@ -61,10 +61,10 @@ z_validateaddress | zaddr | Return information about a given zaddr.<br><br>Outpu
 
 Command | Parameters | Description
 --- | --- | ---
-z_exportkey | zaddr | _Requires an unlocked wallet or an unencrypted wallet._<br><br>Return a zkey for a given zaddr belonging to the node’s wallet.<br><br>The key will be returned as a string formatted using Base58Check as described in the Zcash protocol spec.<br><br>Output:AKWUAkypwQjhZ6LLNaMuuuLcmZ6gt5UFyo8m3jGutvALmwZKLdR5
-z_importkey | zkey [rescan=true] | _Wallet must be unlocked._<br><br>Add a zkey as returned by z_exportkey to a node's wallet.<br><br>The key should be formatted using Base58Check as described in the Zcash protocol spec.<br><br>Set rescan to true (the default) to rescan the entire local block database for transactions affecting any address or pubkey script in the wallet (including transactions affecting the newly-added address for this spending key).
+z_exportkey | zaddr | _Requires an unlocked wallet or an unencrypted wallet._<br><br>Return a zkey for a given zaddr belonging to the node’s wallet.<br><br>The key will be returned as a string formatted using Base58Check as described in the Resistance protocol spec.<br><br>Output:AKWUAkypwQjhZ6LLNaMuuuLcmZ6gt5UFyo8m3jGutvALmwZKLdR5
+z_importkey | zkey [rescan=true] | _Wallet must be unlocked._<br><br>Add a zkey as returned by z_exportkey to a node's wallet.<br><br>The key should be formatted using Base58Check as described in the Resistance protocol spec.<br><br>Set rescan to true (the default) to rescan the entire local block database for transactions affecting any address or pubkey script in the wallet (including transactions affecting the newly-added address for this spending key).
 z_exportwallet | filename | _Requires an unlocked wallet or an unencrypted wallet._<br><br>Creates or overwrites a file with taddr private keys and zaddr private keys in a human-readable format.<br><br>Filename is the file in which the wallet dump will be placed. May be prefaced by an absolute file path. An existing file with that name will be overwritten.<br><br>No value is returned but a JSON-RPC error will be reported if a failure occurred.
-z_importwallet | filename | _Requires an unlocked wallet or an unencrypted wallet._<br><br>Imports private keys from a file in wallet export file format (see z_exportwallet). These keys will be added to the keys currently in the wallet. This call may need to rescan all or parts of the block chain for transactions affecting the newly-added keys, which may take several minutes.<br><br>Filename is the file to import. The path is relative to zcashd’s working directory.<br><br>No value is returned but a JSON-RPC error will be reported if a failure occurred.
+z_importwallet | filename | _Requires an unlocked wallet or an unencrypted wallet._<br><br>Imports private keys from a file in wallet export file format (see z_exportwallet). These keys will be added to the keys currently in the wallet. This call may need to rescan all or parts of the block chain for transactions affecting the newly-added keys, which may take several minutes.<br><br>Filename is the file to import. The path is relative to resistanced’s working directory.<br><br>No value is returned but a JSON-RPC error will be reported if a failure occurred.
 z_exportviewingkey | zaddr | Reveals the viewing key corresponding to 'zaddr'. Then the z_importviewingkey can be used with this output.
 z_importviewingkey | vkey [rescan=whenkeyisnew] [startHeight=0] | Adds a viewing key (as returned by z_exportviewingkey) to your wallet.
 
@@ -75,7 +75,7 @@ Command | Parameters | Description
 --- | --- | ---
 z_listreceivedbyaddress<br> | zaddr [minconf=1] | Return a list of amounts received by a zaddr belonging to the node’s wallet.<br><br>Optionally set the minimum number of confirmations which a received amount must have in order to be included in the result.  Use 0 to count unconfirmed transactions.<br><br>Output:<br>[{<br>“txid”: “4a0f…”,<br>“amount”: 0.54,<br>“memo”:”F0FF…”,}, {...}, {...}<br>]
 z_listunspent | [minconf=1] [maxconf=9999999] [includeWatchonly=false] [zaddrs] | Returns array of unspent shielded notes with between minconf and maxconf (inclusive) confirmations.<br><br>Optionally filter to only include notes sent to specified addresses.<br><br>When minconf is 0, unspent notes with zero confirmations are returned, even though they are not immediately spendable.<br><br>Results are an array of Objects, each of which has: {txid, jsindex, jsoutindex, confirmations, address, amount, memo}
-z_sendmany<br> | fromaddress amounts [minconf=1] [fee=0.0001] | _This is an Asynchronous RPC call_<br><br>Send funds from an address to multiple outputs.  The address can be either a taddr or a zaddr.<br><br>Amounts is a list containing key/value pairs corresponding to the addresses and amount to pay.  Each output address can be in taddr or zaddr format.<br><br>When sending to a zaddr, you also have the option of attaching a memo in hexadecimal format.<br><br>**NOTE:**When sending coinbase funds to a zaddr, the node's wallet does not allow any change. Put another way, spending a partial amount of a coinbase utxo is not allowed. This is not a consensus rule but a local wallet rule due to the current implementation of z_sendmany. In future, this rule may be removed.<br><br>Example of Outputs parameter:<br>[{“address”:”t123…”, “amount”:0.005},<br>,{“address”:”z010…”,”amount”:0.03, “memo”:”f508af…”}]<br><br>Optionally set the minimum number of confirmations which a private or transparent transaction must have in order to be used as an input.  When sending from a zaddr, minconf must be greater than zero.<br><br>Optionally set a transaction fee, which by default is 0.0001 ZEC.<br><br>Any transparent change will be sent to a new transparent address.  Any private change will be sent back to the zaddr being used as the source of funds.<br><br>Returns an operationid.  You use the operationid value with z_getoperationstatus and z_getoperationresult to obtain the result of sending funds, which if successful, will be a txid.
+z_sendmany<br> | fromaddress amounts [minconf=1] [fee=0.0001] | _This is an Asynchronous RPC call_<br><br>Send funds from an address to multiple outputs.  The address can be either a taddr or a zaddr.<br><br>Amounts is a list containing key/value pairs corresponding to the addresses and amount to pay.  Each output address can be in taddr or zaddr format.<br><br>When sending to a zaddr, you also have the option of attaching a memo in hexadecimal format.<br><br>**NOTE:**When sending coinbase funds to a zaddr, the node's wallet does not allow any change. Put another way, spending a partial amount of a coinbase utxo is not allowed. This is not a consensus rule but a local wallet rule due to the current implementation of z_sendmany. In future, this rule may be removed.<br><br>Example of Outputs parameter:<br>[{“address”:”t123…”, “amount”:0.005},<br>,{“address”:”z010…”,”amount”:0.03, “memo”:”f508af…”}]<br><br>Optionally set the minimum number of confirmations which a private or transparent transaction must have in order to be used as an input.  When sending from a zaddr, minconf must be greater than zero.<br><br>Optionally set a transaction fee, which by default is 0.0001 RES.<br><br>Any transparent change will be sent to a new transparent address.  Any private change will be sent back to the zaddr being used as the source of funds.<br><br>Returns an operationid.  You use the operationid value with z_getoperationstatus and z_getoperationresult to obtain the result of sending funds, which if successful, will be a txid.
 z_shieldcoinbase<br> | fromaddress toaddress [fee=0.0001] [limit=50] | _This is an Asynchronous RPC call_<br><br>Shield transparent coinbase funds by sending to a shielded z address.  Utxos selected for shielding will be locked.  If there is an error, they are unlocked.  The RPC call `listlockunspent` can be used to return a list of locked utxos.<br><br>The number of coinbase utxos selected for shielding can be set with the limit parameter, which has a default value of 50.  If the parameter is set to 0, the number of utxos selected is limited by the `-mempooltxinputlimit` option.  Any limit is constrained by a consensus rule defining a maximum transaction size of 100000 bytes.  <br><br>The from address is a taddr or "*" for all taddrs belonging to the wallet.  The to address is a zaddr. The default fee is 0.0001.<br><br>Returns an object containing an operationid which can be used with z_getoperationstatus and z_getoperationresult, along with key-value pairs regarding how many utxos are being shielded in this transaction and what remains to be shielded.
 
 ### Operations
@@ -105,7 +105,7 @@ It is currently not possible to cancel operations.
 
 Command | Parameters | Description
 --- | --- | ---
-z_getoperationresult <br>| [operationids] | Return OperationStatus JSON objects for all completed operations the node is currently aware of, and then remove the operation from memory.<br><br>Operationids is an optional array to filter which operations you want to receive status objects for.<br><br>Output is a list of operation status objects, where the status is either "failed", "cancelled" or "success".<br>[<br>{“operationid”: “opid-11ee…”,<br>“status”: “cancelled”},<br>{“operationid”: “opid-9876”, “status”: ”failed”},<br>{“operationid”: “opid-0e0e”,<br>“status”:”success”,<br>“execution_time”:”25”,<br>“result”: {“txid”:”af3887654…”,...}<br>},<br>]<br><br> Examples:<br>zcash-cli z_getoperationresult '["opid-8120fa20-5ee7-4587-957b-f2579c2d882b"]'<br> zcash-cli z_getoperationresult
+z_getoperationresult <br>| [operationids] | Return OperationStatus JSON objects for all completed operations the node is currently aware of, and then remove the operation from memory.<br><br>Operationids is an optional array to filter which operations you want to receive status objects for.<br><br>Output is a list of operation status objects, where the status is either "failed", "cancelled" or "success".<br>[<br>{“operationid”: “opid-11ee…”,<br>“status”: “cancelled”},<br>{“operationid”: “opid-9876”, “status”: ”failed”},<br>{“operationid”: “opid-0e0e”,<br>“status”:”success”,<br>“execution_time”:”25”,<br>“result”: {“txid”:”af3887654…”,...}<br>},<br>]<br><br> Examples:<br>resistance-cli z_getoperationresult '["opid-8120fa20-5ee7-4587-957b-f2579c2d882b"]'<br> resistance-cli z_getoperationresult
 z_getoperationstatus <br>| [operationids] | Return OperationStatus JSON objects for all operations the node is currently aware of.<br><br>Operationids is an optional array to filter which operations you want to receive status objects for.<br><br>Output is a list of operation status objects.<br>[<br>{“operationid”: “opid-12ee…”,<br>“status”: “queued”},<br>{“operationid”: “opd-098a…”, “status”: ”executing”},<br>{“operationid”: “opid-9876”, “status”: ”failed”}<br>]<br><br>When the operation succeeds, the status object will also include the result.<br><br>{“operationid”: “opid-0e0e”,<br>“status”:”success”,<br>“execution_time”:”25”,<br>“result”: {“txid”:”af3887654…”,...}<br>}
 z_listoperationids <br>| [state] | Return a list of operationids for all operations which the node is currently aware of.<br><br>State is an optional string parameter to filter the operations you want listed by their state.  Acceptable parameter values are ‘queued’, ‘executing’, ‘success’, ‘failed’, ‘cancelled’.<br><br>[“opid-0e0e…”, “opid-1af4…”, … ]
 

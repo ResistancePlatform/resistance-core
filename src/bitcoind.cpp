@@ -116,7 +116,7 @@ bool AppInit(int argc, char* argv[])
                    "- .deb package: %s\n")).c_str(),
                 GetConfigFile().string().c_str(),
                 "contrib/debian/examples/resistance.conf",
-                "/usr/share/doc/zcash/examples/zcash.conf");
+                "/usr/share/doc/resistance/examples/resistance.conf");
             return false;
         } catch (const std::exception& e) {
             fprintf(stderr,"Error reading configuration file: %s\n", e.what());

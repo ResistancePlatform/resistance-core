@@ -20,7 +20,7 @@ function stats()
 	for W in Zcash Resistance zcash resistance; do
 		echo "$W seen `fgrep -r $W $D | wc -l` times in `fgrep -rl $W $D | wc -l` files"
 	done
-	for W in ZEC RES; do
+	for W in ZEC RES zcutil resutil; do
 		echo "$W seen `fgrep -rw $W $D | wc -l` times in `fgrep -rwl $W $D | wc -l` files"
 	done
 }
@@ -38,10 +38,16 @@ s/Zcash/Resistance/g; s/zcash/resistance/g
 fgrep -lrwZ --exclude-dir=.git --exclude-dir=contrib --exclude='*release-notes*' --exclude=res-rebrand.sh \
 	ZEC -- $D | xargs -0 sed -i 's/ZEC/RES/g'
 
+fgrep -lrwZ --exclude-dir=.git --exclude-dir=contrib --exclude='*release-notes*' --exclude=res-rebrand.sh \
+	zcutil -- $D | xargs -0 sed -i 's/zcutil/resutil/g'
+
 echo "After:"
 stats
 
 cd $D # So that we don't rename parts of the pathname
+
 for N in doc/man/zcash*.1; do
 	mv $N ${N/zcash/resistance}
 done
+
+mv zcutil resutil

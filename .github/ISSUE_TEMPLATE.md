@@ -1,6 +1,6 @@
 <!--- Remove text and sections that do not apply -->
 
-This issue tracker is only for technical issues related to zcashd.
+This issue tracker is only for technical issues related to resistanced.
 
 General Zcash questions and/or support requests and are best directed to the [Zcash Forums](https://forum.z.cash) or [Community Rocket.Chat](https://chat.zcashcommunity.com).
 
@@ -21,8 +21,8 @@ Tell us what should happen
 ### Actual behaviour + errors
 Tell us what happens instead including any noticable error output (any messages displayed on-screen when e.g. a crash occurred)
 
-### The version of Zcash you were using:
-Run `zcashd --version` to find out
+### The version of Resistance you were using:
+Run `resistanced --version` to find out
 
 ### Machine specs:
 - OS name + version:
@@ -37,6 +37,6 @@ Run `zcashd --version` to find out
 This includes the relevant contents of `~/.zcash/debug.log`. You can paste raw text, attach the file directly in the issue or link to the text via a pastebin type site.
 Please also include any non-standard things you did during compilation (extra flags, dependency version changes etc.) if applicable.
 
-### Do you have a backup of `~/.zcash` directory and/or take a VM snapshot?
-- Backing up / making a copy of the `~/.zcash` directory might help make the problem reproducible. Please redact appropriately.
+### Do you have a backup of `~/.resistance` directory and/or take a VM snapshot?
+- Backing up / making a copy of the `~/.resistance` directory might help make the problem reproducible. Please redact appropriately.
 - Taking a VM snapshot is really helpful for interactively testing fixes

@@ -19,19 +19,19 @@ from test_framework.util import initialize_chain_clean, start_nodes, \
 import time
 
 #
-# In this test we connect Sprout, Overwinter, and Sapling mininodes to a Zcashd
+# In this test we connect Sprout, Overwinter, and Sapling mininodes to a Resistanced
 # node which will activate Overwinter at block 10 and Sapling at block 15.
 #
 # We test:
-# 1. the mininodes stay connected to Zcash with Sprout consensus rules
+# 1. the mininodes stay connected to Resistance with Sprout consensus rules
 # 2. when Overwinter activates, the Sprout mininodes are dropped
-# 3. new Overwinter and Sapling nodes can connect to Zcash
-# 4. new Sprout nodes cannot connect to Zcash
+# 3. new Overwinter and Sapling nodes can connect to Resistance
+# 4. new Sprout nodes cannot connect to Resistance
 # 5. when Sapling activates, the Overwinter mininodes are dropped
-# 6. new Sapling nodes can connect to Zcash
-# 7. new Sprout and Overwinter nodes cannot connect to Zcash
+# 6. new Sapling nodes can connect to Resistance
+# 7. new Sprout and Overwinter nodes cannot connect to Resistance
 #
-# This test *does not* verify that prior to each activation, the Zcashd
+# This test *does not* verify that prior to each activation, the Resistanced
 # node will prefer connections with NU-aware nodes, with an eviction process
 # that prioritizes non-NU-aware connections.
 #
@@ -83,7 +83,7 @@ class NUPeerManagementTest(BitcoinTestFramework):
         self.nodes[0].generate(9)
         assert_equal(9, self.nodes[0].getblockcount())
 
-        # Verify mininodes are still connected to zcashd node
+        # Verify mininodes are still connected to resistanced node
         peerinfo = self.nodes[0].getpeerinfo()
         versions = [x["version"] for x in peerinfo]
         assert_equal(10, versions.count(SPROUT_PROTO_VERSION))
@@ -95,7 +95,7 @@ class NUPeerManagementTest(BitcoinTestFramework):
         assert_equal(10, self.nodes[0].getblockcount())
         print('Overwinter active')
 
-        # Mininodes send ping message to zcashd node.
+        # Mininodes send ping message to resistanced node.
         pingCounter = 1
         for node in nodes:
             node.send_message(msg_ping(pingCounter))
@@ -114,17 +114,17 @@ class NUPeerManagementTest(BitcoinTestFramework):
         # Extend the Overwinter chain with another block.
         self.nodes[0].generate(1)
 
-        # Connect a new Overwinter mininode to the zcashd node, which is accepted.
+        # Connect a new Overwinter mininode to the resistanced node, which is accepted.
         nodes.append(NodeConn('127.0.0.1', p2p_port(0), self.nodes[0], test, "regtest", OVERWINTER_PROTO_VERSION))
         time.sleep(3)
         assert_equal(21, len(self.nodes[0].getpeerinfo()))
 
-        # Connect a new Sapling mininode to the zcashd node, which is accepted.
+        # Connect a new Sapling mininode to the resistanced node, which is accepted.
         nodes.append(NodeConn('127.0.0.1', p2p_port(0), self.nodes[0], test, "regtest", SAPLING_PROTO_VERSION))
         time.sleep(3)
         assert_equal(22, len(self.nodes[0].getpeerinfo()))
 
-        # Try to connect a new Sprout mininode to the zcashd node, which is rejected.
+        # Try to connect a new Sprout mininode to the resistanced node, which is rejected.
         sprout = NodeConn('127.0.0.1', p2p_port(0), self.nodes[0], test, "regtest", SPROUT_PROTO_VERSION)
         nodes.append(sprout)
         time.sleep(3)
@@ -142,7 +142,7 @@ class NUPeerManagementTest(BitcoinTestFramework):
         assert_equal(15, self.nodes[0].getblockcount())
         print('Sapling active')
 
-        # Mininodes send ping message to zcashd node.
+        # Mininodes send ping message to resistanced node.
         pingCounter = 1
         for node in nodes:
             node.send_message(msg_ping(pingCounter))
@@ -161,18 +161,18 @@ class NUPeerManagementTest(BitcoinTestFramework):
         # Extend the Sapling chain with another block.
         self.nodes[0].generate(1)
 
-        # Connect a new Sapling mininode to the zcashd node, which is accepted.
+        # Connect a new Sapling mininode to the resistanced node, which is accepted.
         nodes.append(NodeConn('127.0.0.1', p2p_port(0), self.nodes[0], test, "regtest", SAPLING_PROTO_VERSION))
         time.sleep(3)
         assert_equal(12, len(self.nodes[0].getpeerinfo()))
 
-        # Try to connect a new Sprout mininode to the zcashd node, which is rejected.
+        # Try to connect a new Sprout mininode to the resistanced node, which is rejected.
         sprout = NodeConn('127.0.0.1', p2p_port(0), self.nodes[0], test, "regtest", SPROUT_PROTO_VERSION)
         nodes.append(sprout)
         time.sleep(3)
         assert("Version must be 170006 or greater" in str(sprout.rejectMessage))
 
-        # Try to connect a new Overwinter mininode to the zcashd node, which is rejected.
+        # Try to connect a new Overwinter mininode to the resistanced node, which is rejected.
         sprout = NodeConn('127.0.0.1', p2p_port(0), self.nodes[0], test, "regtest", OVERWINTER_PROTO_VERSION)
         nodes.append(sprout)
         time.sleep(3)

@@ -19,7 +19,7 @@ class thread_group;
 } // namespace boost
 
 extern CWallet* pwalletMain;
-extern ZCJoinSplit* pzcashParams;
+extern ZCJoinSplit* presistanceParams;
 
 void StartShutdown();
 bool ShutdownRequested();

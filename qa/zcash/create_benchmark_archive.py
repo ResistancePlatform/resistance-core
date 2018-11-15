@@ -10,13 +10,13 @@ import sys
 import tarfile
 import time
 
-ZCASH_CLI = './src/zcash-cli'
+ZCASH_CLI = './src/resistance-cli'
 USAGE = """
 Requirements:
 - find
 - xz
 - %s (edit ZCASH_CLI in this script to alter the path)
-- A running mainnet zcashd using the default datadir with -txindex=1
+- A running mainnet resistanced using the default datadir with -txindex=1
 
 Example usage:
 

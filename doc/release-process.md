@@ -63,12 +63,12 @@ Run the release script, which will verify you are on the latest clean
 checkout of master, create a branch, then commit standard automated
 changes to that branch locally:
 
-    $ ./zcutil/make-release.py <RELEASE> <RELEASE_PREV> <RELEASE_FROM> <APPROX_RELEASE_HEIGHT>
+    $ ./resutil/make-release.py <RELEASE> <RELEASE_PREV> <RELEASE_FROM> <APPROX_RELEASE_HEIGHT>
 
 Examples:
 
-    $ ./zcutil/make-release.py v1.0.9 v1.0.8-1 v1.0.8-1 120000
-    $ ./zcutil/make-release.py v1.0.13 v1.0.13-rc1 v1.0.12 222900
+    $ ./resutil/make-release.py v1.0.9 v1.0.8-1 v1.0.8-1 120000
+    $ ./resutil/make-release.py v1.0.13 v1.0.13-rc1 v1.0.12 222900
 
 ### Create, Review, and Merge the release branch pull request
 
@@ -131,14 +131,14 @@ the marking to see what GitHub wants to be done.
 
 ### Deploy testnet
 
-Notify the Zcash DevOps engineer/sysadmin that the release has been tagged. They update some variables in the company's automation code and then run an Ansible playbook, which:
+Notify the Resistance DevOps engineer/sysadmin that the release has been tagged. They update some variables in the company's automation code and then run an Ansible playbook, which:
 
-* builds Zcash based on the specified branch
+* builds Resistance based on the specified branch
 * deploys it as a public service (e.g. betatestnet.z.cash, mainnet.z.cash)
 * often the same server can be re-used, and the role idempotently handles upgrades, but if not then they also need to update DNS records
 * possible manual steps: blowing away the `testnet3` dir, deleting old parameters, restarting DNS seeder
 
-Then, verify that nodes can connect to the testnet server, and update the guide on the wiki to ensure the correct hostname is listed in the recommended zcash.conf.
+Then, verify that nodes can connect to the testnet server, and update the guide on the wiki to ensure the correct hostname is listed in the recommended resistance.conf.
 
 ### Update the 1.0 User Guide
 

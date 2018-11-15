@@ -1,1 +1,1 @@
-dist_man1_MANS=zcashd.1 zcash-cli.1 zcash-fetch-params.1 zcash-tx.1
+dist_man1_MANS=resistanced.1 resistance-cli.1 resistance-fetch-params.1 resistance-tx.1

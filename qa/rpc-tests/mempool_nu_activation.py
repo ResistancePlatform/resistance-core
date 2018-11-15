@@ -40,7 +40,7 @@ class MempoolUpgradeActivationTest(BitcoinTestFramework):
         self.nodes[0].generate(97)
         self.sync_all()
 
-        # Shield some ZEC
+        # Shield some RES
         node1_taddr = self.nodes[1].getnewaddress()
         node0_zaddr = self.nodes[0].z_getnewaddress('sprout')
         recipients = [{'address': node0_zaddr, 'amount': Decimal('10')}]

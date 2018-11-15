@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 #
-# Execute all of the automated tests related to Zcash.
+# Execute all of the automated tests related to Resistance.
 #
 
 import argparse
@@ -64,24 +64,24 @@ def check_security_hardening():
     ret &= subprocess.call(['make', '-C', repofile('src'), 'check-security']) == 0
 
     # The remaining checks are only for ELF binaries
-    # Assume that if zcashd is an ELF binary, they all are
-    with open(repofile('src/zcashd'), 'rb') as f:
+    # Assume that if resistanced is an ELF binary, they all are
+    with open(repofile('src/resistanced'), 'rb') as f:
         magic = f.read(4)
         if not magic.startswith(b'\x7fELF'):
             return ret
 
-    ret &= test_rpath_runpath('src/zcashd')
-    ret &= test_rpath_runpath('src/zcash-cli')
-    ret &= test_rpath_runpath('src/zcash-gtest')
-    ret &= test_rpath_runpath('src/zcash-tx')
+    ret &= test_rpath_runpath('src/resistanced')
+    ret &= test_rpath_runpath('src/resistance-cli')
+    ret &= test_rpath_runpath('src/resistance-gtest')
+    ret &= test_rpath_runpath('src/resistance-tx')
     ret &= test_rpath_runpath('src/test/test_bitcoin')
 
     # NOTE: checksec.sh does not reliably determine whether FORTIFY_SOURCE
     # is enabled for the entire binary. See issue #915.
-    ret &= test_fortify_source('src/zcashd')
-    ret &= test_fortify_source('src/zcash-cli')
-    ret &= test_fortify_source('src/zcash-gtest')
-    ret &= test_fortify_source('src/zcash-tx')
+    ret &= test_fortify_source('src/resistanced')
+    ret &= test_fortify_source('src/resistance-cli')
+    ret &= test_fortify_source('src/resistance-gtest')
+    ret &= test_fortify_source('src/resistance-tx')
     ret &= test_fortify_source('src/test/test_bitcoin')
 
     return ret
@@ -145,7 +145,7 @@ STAGES = [
 
 STAGE_COMMANDS = {
     'btest': [repofile('src/test/test_bitcoin'), '-p'],
-    'gtest': [repofile('src/zcash-gtest')],
+    'gtest': [repofile('src/resistance-gtest')],
     'sec-hard': check_security_hardening,
     'no-dot-so': ensure_no_dot_so_in_depends,
     'util-test': util_test,

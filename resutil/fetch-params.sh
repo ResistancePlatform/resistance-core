@@ -3,9 +3,9 @@
 set -eu
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
-    PARAMS_DIR="$HOME/Library/Application Support/ZcashParams"
+    PARAMS_DIR="$HOME/Library/Application Support/ResistanceParams"
 else
-    PARAMS_DIR="$HOME/.zcash-params"
+    PARAMS_DIR="$HOME/.resistance-params"
 fi
 
 SPROUT_PKEY_NAME='sprout-proving.key'
@@ -88,7 +88,7 @@ EOF
 function fetch_failure {
     cat >&2 <<EOF
 
-Failed to fetch the Zcash zkSNARK parameters!
+Failed to fetch the Resistance zkSNARK parameters!
 Try installing one of the following programs and make sure you're online:
 
  * ipfs
@@ -159,9 +159,9 @@ function main() {
     || exit_locked_error
 
     cat <<EOF
-Zcash - fetch-params.sh
+Resistance - fetch-params.sh
 
-This script will fetch the Zcash zkSNARK parameters and verify their
+This script will fetch the Resistance zkSNARK parameters and verify their
 integrity with sha256sum.
 
 If they already exist locally, it will exit now and do nothing else.
@@ -173,7 +173,7 @@ EOF
         mkdir -p "$PARAMS_DIR"
         README_PATH="$PARAMS_DIR/README"
         cat >> "$README_PATH" <<EOF
-This directory stores common Zcash zkSNARK parameters. Note that it is
+This directory stores common Resistance zkSNARK parameters. Note that it is
 distinct from the daemon's -datadir argument because the parameters are
 large and may be shared across multiple distinct -datadir's such as when
 setting up test networks.

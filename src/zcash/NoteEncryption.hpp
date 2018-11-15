@@ -1,5 +1,5 @@
 /*
-See the Zcash protocol specification for more information.
+See the Resistance protocol specification for more information.
 https://github.com/zcash/zips/blob/master/protocol/protocol.pdf
 */
 

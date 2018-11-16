@@ -65,7 +65,6 @@ BITCOIN_TESTS =\
   test/convertbits_tests.cpp \
   test/crypto_tests.cpp \
   test/DoS_tests.cpp \
-  test/equihash_tests.cpp \
   test/getarg_tests.cpp \
   test/hash_tests.cpp \
   test/key_tests.cpp \

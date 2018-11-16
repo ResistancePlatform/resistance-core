@@ -10,7 +10,6 @@
 #include "init.h"
 #include "primitives/transaction.h"
 #include "base58.h"
-#include "crypto/equihash.h"
 #include "chain.h"
 #include "chainparams.h"
 #include "consensus/upgrades.h"
@@ -161,67 +160,6 @@ double benchmark_verify_joinsplit(const JSDescription &joinsplit)
     uint256 joinSplitPubKey;
     auto verifier = libzcash::ProofVerifier::Strict();
     joinsplit.Verify(*presistanceParams, verifier, joinSplitPubKey);
-    return timer_stop(tv_start);
-}
-
-#ifdef ENABLE_MINING
-double benchmark_solve_equihash()
-{
-    CBlock pblock;
-    CEquihashInput I{pblock};
-    CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
-    ss << I;
-
-    unsigned int n = Params(CBaseChainParams::MAIN).EquihashN();
-    unsigned int k = Params(CBaseChainParams::MAIN).EquihashK();
-    crypto_generichash_blake2b_state eh_state;
-    EhInitialiseState(n, k, eh_state);
-    crypto_generichash_blake2b_update(&eh_state, (unsigned char*)&ss[0], ss.size());
-
-    uint256 nonce;
-    randombytes_buf(nonce.begin(), 32);
-    crypto_generichash_blake2b_update(&eh_state,
-                                    nonce.begin(),
-                                    nonce.size());
-
-    struct timeval tv_start;
-    timer_start(tv_start);
-    std::set<std::vector<unsigned int>> solns;
-    EhOptimisedSolveUncancellable(n, k, eh_state,
-                                  [](std::vector<unsigned char> soln) { return false; });
-    return timer_stop(tv_start);
-}
-
-std::vector<double> benchmark_solve_equihash_threaded(int nThreads)
-{
-    std::vector<double> ret;
-    std::vector<std::future<double>> tasks;
-    std::vector<std::thread> threads;
-    for (int i = 0; i < nThreads; i++) {
-        std::packaged_task<double(void)> task(&benchmark_solve_equihash);
-        tasks.emplace_back(task.get_future());
-        threads.emplace_back(std::move(task));
-    }
-    std::future_status status;
-    for (auto it = tasks.begin(); it != tasks.end(); it++) {
-        it->wait();
-        ret.push_back(it->get());
-    }
-    for (auto it = threads.begin(); it != threads.end(); it++) {
-        it->join();
-    }
-    return ret;
-}
-#endif // ENABLE_MINING
-
-double benchmark_verify_equihash()
-{
-    CChainParams params = Params(CBaseChainParams::MAIN);
-    CBlock genesis = Params(CBaseChainParams::MAIN).GenesisBlock();
-    CBlockHeader genesis_header = genesis.GetBlockHeader();
-    struct timeval tv_start;
-    timer_start(tv_start);
-    CheckEquihashSolution(&genesis_header, params);
     return timer_stop(tv_start);
 }
 

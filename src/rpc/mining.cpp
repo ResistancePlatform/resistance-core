@@ -8,9 +8,6 @@
 #include "consensus/consensus.h"
 #include "consensus/validation.h"
 #include "core_io.h"
-#ifdef ENABLE_MINING
-#include "crypto/equihash.h"
-#endif
 #include "init.h"
 #include "main.h"
 #include "metrics.h"
@@ -202,8 +199,6 @@ UniValue generate(const UniValue& params, bool fHelp)
     }
     unsigned int nExtraNonce = 0;
     UniValue blockHashes(UniValue::VARR);
-    unsigned int n = Params().EquihashN();
-    unsigned int k = Params().EquihashK();
     while (nHeight < nHeightEnd)
     {
 #ifdef ENABLE_WALLET
@@ -219,44 +214,16 @@ UniValue generate(const UniValue& params, bool fHelp)
             IncrementExtraNonce(pblock, chainActive.Tip(), nExtraNonce);
         }
 
-        // Hash state
-        crypto_generichash_blake2b_state eh_state;
-        EhInitialiseState(n, k, eh_state);
-
-        // I = the block header minus nonce and solution.
-        CEquihashInput I{*pblock};
-        CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
-        ss << I;
-
-        // H(I||...
-        crypto_generichash_blake2b_update(&eh_state, (unsigned char*)&ss[0], ss.size());
-
         while (true) {
+            uint256 hash = pblock->GetPoWHash();
+            solutionTargetChecks.increment();
+            if (CheckProofOfWork(hash, pblock->nBits, Params().GetConsensus()))
+                break;
             // Yes, there is a chance every nonce could fail to satisfy the -regtest
-            // target -- 1 in 2^(2^256). That ain't gonna happen
+            // target -- 1 in 2^256. That ain't gonna happen
             pblock->nNonce = ArithToUint256(UintToArith256(pblock->nNonce) + 1);
-
-            // H(I||V||...
-            crypto_generichash_blake2b_state curr_state;
-            curr_state = eh_state;
-            crypto_generichash_blake2b_update(&curr_state,
-                                              pblock->nNonce.begin(),
-                                              pblock->nNonce.size());
-
-            // (x_1, x_2, ...) = A(I, V, n, k)
-            std::function<bool(std::vector<unsigned char>)> validBlock =
-                    [&pblock](std::vector<unsigned char> soln) {
-                pblock->nSolution = soln;
-                solutionTargetChecks.increment();
-                return CheckProofOfWork(pblock->GetHash(), pblock->nBits, Params().GetConsensus());
-            };
-            bool found = EhBasicSolveUncancellable(n, k, curr_state, validBlock);
-            ehSolverRuns.increment();
-            if (found) {
-                goto endloop;
-            }
         }
-endloop:
+
         CValidationState state;
         if (!ProcessNewBlock(state, NULL, pblock, true, NULL))
             throw JSONRPCError(RPC_INTERNAL_ERROR, "ProcessNewBlock, block not accepted");

@@ -4,18 +4,12 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "miner.h"
-#ifdef ENABLE_MINING
-#include "pow/tromp/equi_miner.h"
-#endif
 
 #include "amount.h"
 #include "chainparams.h"
 #include "consensus/consensus.h"
 #include "consensus/upgrades.h"
 #include "consensus/validation.h"
-#ifdef ENABLE_MINING
-#include "crypto/equihash.h"
-#endif
 #include "hash.h"
 #include "key_io.h"
 #include "main.h"
@@ -389,7 +383,6 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn)
         pblock->hashFinalSaplingRoot   = sapling_tree.root();
         UpdateTime(pblock, Params().GetConsensus(), pindexPrev);
         pblock->nBits          = GetNextWorkRequired(pindexPrev, pblock, Params().GetConsensus());
-        pblock->nSolution.clear();
         pblocktemplate->vTxSigOps[0] = GetLegacySigOpCount(pblock->vtx[0]);
 
         CValidationState state;
@@ -526,13 +519,6 @@ void static BitcoinMiner()
     // Each thread has its own counter
     unsigned int nExtraNonce = 0;
 
-    unsigned int n = chainparams.EquihashN();
-    unsigned int k = chainparams.EquihashK();
-
-    std::string solver = GetArg("-equihashsolver", "default");
-    assert(solver == "tromp" || solver == "default");
-    LogPrint("pow", "Using Equihash solver \"%s\" with n = %u, k = %u\n", solver, n, k);
-
     std::mutex m_cs;
     bool cancelSolver = false;
     boost::signals2::connection c = uiInterface.NotifyBlockTip.connect(
@@ -596,121 +582,28 @@ void static BitcoinMiner()
             arith_uint256 hashTarget = arith_uint256().SetCompact(pblock->nBits);
 
             while (true) {
-                // Hash state
-                crypto_generichash_blake2b_state state;
-                EhInitialiseState(n, k, state);
+                uint256 hash = pblock->GetPoWHash();
 
-                // I = the block header minus nonce and solution.
-                CEquihashInput I{*pblock};
-                CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
-                ss << I;
+                solutionTargetChecks.increment();
 
-                // H(I||...
-                crypto_generichash_blake2b_update(&state, (unsigned char*)&ss[0], ss.size());
-
-                // H(I||V||...
-                crypto_generichash_blake2b_state curr_state;
-                curr_state = state;
-                crypto_generichash_blake2b_update(&curr_state,
-                                                  pblock->nNonce.begin(),
-                                                  pblock->nNonce.size());
-
-                // (x_1, x_2, ...) = A(I, V, n, k)
-                LogPrint("pow", "Running Equihash solver \"%s\" with nNonce = %s\n",
-                         solver, pblock->nNonce.ToString());
-
-                std::function<bool(std::vector<unsigned char>)> validBlock =
-#ifdef ENABLE_WALLET
-                        [&pblock, &hashTarget, &pwallet, &reservekey, &m_cs, &cancelSolver, &chainparams]
-#else
-                        [&pblock, &hashTarget, &m_cs, &cancelSolver, &chainparams]
-#endif
-                        (std::vector<unsigned char> soln) {
-                    // Write the solution to the hash and compute the result.
-                    LogPrint("pow", "- Checking solution against target\n");
-                    pblock->nSolution = soln;
-                    solutionTargetChecks.increment();
-
-                    if (UintToArith256(pblock->GetHash()) > hashTarget) {
-                        return false;
-                    }
-
+                if (UintToArith256(hash) <= hashTarget) {
                     // Found a solution
                     SetThreadPriority(THREAD_PRIORITY_NORMAL);
                     LogPrintf("ResistanceMiner:\n");
-                    LogPrintf("proof-of-work found  \n  hash: %s  \ntarget: %s\n", pblock->GetHash().GetHex(), hashTarget.GetHex());
+                    LogPrintf("proof-of-work found  \n  hash: %s  \ntarget: %s\n", hash.GetHex(), hashTarget.GetHex());
 #ifdef ENABLE_WALLET
-                    if (ProcessBlockFound(pblock, *pwallet, reservekey)) {
+                    ProcessBlockFound(pblock, *pwallet, reservekey);
 #else
-                    if (ProcessBlockFound(pblock)) {
+                    ProcessBlockFound(pblock);
 #endif
-                        // Ignore chain updates caused by us
-                        std::lock_guard<std::mutex> lock{m_cs};
-                        cancelSolver = false;
-                    }
                     SetThreadPriority(THREAD_PRIORITY_LOWEST);
 
                     // In regression test mode, stop mining after a block is found.
-                    if (chainparams.MineBlocksOnDemand()) {
-                        // Increment here because throwing skips the call below
-                        ehSolverRuns.increment();
+                    if (chainparams.MineBlocksOnDemand())
                         throw boost::thread_interrupted();
-                    }
 
-                    return true;
+                    break;
                 };
-                std::function<bool(EhSolverCancelCheck)> cancelled = [&m_cs, &cancelSolver](EhSolverCancelCheck pos) {
-                    std::lock_guard<std::mutex> lock{m_cs};
-                    return cancelSolver;
-                };
-
-                // TODO: factor this out into a function with the same API for each solver.
-                if (solver == "tromp") {
-                    // Create solver and initialize it.
-                    equi eq(1);
-                    eq.setstate(&curr_state);
-
-                    // Initialization done, start algo driver.
-                    eq.digit0(0);
-                    eq.xfull = eq.bfull = eq.hfull = 0;
-                    eq.showbsizes(0);
-                    for (u32 r = 1; r < WK; r++) {
-                        (r&1) ? eq.digitodd(r, 0) : eq.digiteven(r, 0);
-                        eq.xfull = eq.bfull = eq.hfull = 0;
-                        eq.showbsizes(r);
-                    }
-                    eq.digitK(0);
-                    ehSolverRuns.increment();
-
-                    // Convert solution indices to byte array (decompress) and pass it to validBlock method.
-                    for (size_t s = 0; s < eq.nsols; s++) {
-                        LogPrint("pow", "Checking solution %d\n", s+1);
-                        std::vector<eh_index> index_vector(PROOFSIZE);
-                        for (size_t i = 0; i < PROOFSIZE; i++) {
-                            index_vector[i] = eq.sols[s][i];
-                        }
-                        std::vector<unsigned char> sol_char = GetMinimalFromIndices(index_vector, DIGITBITS);
-
-                        if (validBlock(sol_char)) {
-                            // If we find a POW solution, do not try other solutions
-                            // because they become invalid as we created a new block in blockchain.
-                            break;
-                        }
-                    }
-                } else {
-                    try {
-                        // If we find a valid block, we rebuild
-                        bool found = EhOptimisedSolve(n, k, curr_state, validBlock, cancelled);
-                        ehSolverRuns.increment();
-                        if (found) {
-                            break;
-                        }
-                    } catch (EhSolverCancelledException&) {
-                        LogPrint("pow", "Equihash solver cancelled\n");
-                        std::lock_guard<std::mutex> lock{m_cs};
-                        cancelSolver = false;
-                    }
-                }
 
                 // Check for stop or if block needs to be rebuilt
                 boost::this_thread::interruption_point();

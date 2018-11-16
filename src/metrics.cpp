@@ -243,8 +243,7 @@ int printMiningStatus(bool mining)
     if (mining) {
         auto nThreads = miningTimer.threadCount();
         if (nThreads > 0) {
-            std::cout << strprintf(_("You are mining with the %s solver on %d threads."),
-                                   GetArg("-equihashsolver", "default"), nThreads) << std::endl;
+            std::cout << strprintf(_("You are mining with %d threads."), nThreads) << std::endl;
         } else {
             bool fvNodesEmpty;
             {
@@ -310,9 +309,6 @@ int printMetrics(size_t cols, bool mining)
     }
 
     if (mining && loaded) {
-        std::cout << "- " << strprintf(_("You have completed %d Equihash solver runs."), ehSolverRuns.get()) << std::endl;
-        lines++;
-
         int mined = 0;
         int orphaned = 0;
         CAmount immature {0};

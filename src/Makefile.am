@@ -326,9 +326,6 @@ crypto_libbitcoin_crypto_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_CONFIG_INCLUDES)
 crypto_libbitcoin_crypto_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 crypto_libbitcoin_crypto_a_SOURCES = \
   crypto/common.h \
-  crypto/equihash.cpp \
-  crypto/equihash.h \
-  crypto/equihash.tcc \
   crypto/hmac_sha256.cpp \
   crypto/hmac_sha256.h \
   crypto/hmac_sha512.cpp \
@@ -342,21 +339,10 @@ crypto_libbitcoin_crypto_a_SOURCES = \
   crypto/sha512.cpp \
   crypto/sha512.h
 
-if ENABLE_MINING
-EQUIHASH_TROMP_SOURCES = \
-  pow/tromp/equi_miner.h \
-  pow/tromp/equi.h \
-  pow/tromp/osx_barrier.h
-
-crypto_libbitcoin_crypto_a_CPPFLAGS += \
-  -DEQUIHASH_TROMP_ATOMIC
-crypto_libbitcoin_crypto_a_SOURCES += \
-  ${EQUIHASH_TROMP_SOURCES}
-endif
-
 # common: shared between resistanced and non-server tools
 libbitcoin_common_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
 libbitcoin_common_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libbitcoin_common_a_CFLAGS = $(libbitcoin_common_a_CXXFLAGS)
 libbitcoin_common_a_SOURCES = \
   amount.cpp \
   arith_uint256.cpp \
@@ -384,6 +370,8 @@ libbitcoin_common_a_SOURCES = \
   script/sign.cpp \
   script/standard.cpp \
   transaction_builder.cpp \
+  yespower/yespower-opt.c \
+  yespower/sha256.c \
   $(BITCOIN_CORE_H) \
   $(LIBZCASH_H)
 
@@ -539,7 +527,6 @@ libzcash_a_CPPFLAGS += -DMONTGOMERY_OUTPUT
 if BUILD_BITCOIN_LIBS
 include_HEADERS = script/zcashconsensus.h
 libzcashconsensus_la_SOURCES = \
-  crypto/equihash.cpp \
   crypto/hmac_sha512.cpp \
   crypto/ripemd160.cpp \
   crypto/sha1.cpp \

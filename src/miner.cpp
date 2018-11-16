@@ -614,7 +614,7 @@ void static BitcoinMiner()
                     break;
                 if ((UintToArith256(pblock->nNonce) & 0xffff) == 0xffff)
                     break;
-                if (mempool.GetTransactionsUpdated() != nTransactionsUpdatedLast && GetTime() - nStart > 60)
+                if (mempool.GetTransactionsUpdated() != nTransactionsUpdatedLast && GetTime() - nStart > 24)
                     break;
                 if (pindexPrev != chainActive.Tip())
                     break;

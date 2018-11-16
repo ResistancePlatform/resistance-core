@@ -217,8 +217,8 @@ void TxConfirmStats::Read(CAutoFile& filein)
         throw std::runtime_error("Corrupt estimates file. Mismatch in tx count bucket count");
     filein >> fileConfAvg;
     maxConfirms = fileConfAvg.size();
-    if (maxConfirms <= 0 || maxConfirms > 6 * 24 * 7) // one week
-        throw std::runtime_error("Corrupt estimates file.  Must maintain estimates for between 1 and 1008 (one week) confirms");
+    if (maxConfirms <= 0 || maxConfirms > 60 * 24) // one day
+        throw std::runtime_error("Corrupt estimates file.  Must maintain estimates for between 1 and 1440 (one day) confirms");
     for (unsigned int i = 0; i < maxConfirms; i++) {
         if (fileConfAvg[i].size() != numBuckets)
             throw std::runtime_error("Corrupt estimates file. Mismatch in fee/pri conf average bucket count");

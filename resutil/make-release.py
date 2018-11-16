@@ -257,7 +257,6 @@ def build():
         'torcontrol.cpp',
         'gtest/test_tautology.cpp',
         'gtest/test_metrics.cpp',
-        'test/equihash_tests.cpp',
         'test/util_tests.cpp',
         "Leaving directory '%s'" % src_dir,
         ], './resutil/build.sh', '-j', nproc)

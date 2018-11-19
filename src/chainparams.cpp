@@ -84,8 +84,9 @@ public:
         strCurrencyUnits = "RES";
         bip44CoinType = 133; // As registered in https://github.com/satoshilabs/slips/blob/master/slip-0044.md
         consensus.fCoinbaseMustBeProtected = true;
-        consensus.nSubsidySlowStartInterval = 20000;
-        consensus.nSubsidyHalvingInterval = 840000;
+        consensus.nSubsidySlowStartHeight = 201;
+        consensus.nSubsidySlowStartInterval = 43200;
+        consensus.nSubsidyHalvingInterval = 2200000 - 14400;
         consensus.nMajorityEnforceBlockUpgrade = 750;
         consensus.nMajorityRejectBlockOutdated = 950;
         consensus.nMajorityWindow = 4000;
@@ -206,8 +207,9 @@ public:
         strCurrencyUnits = "SER";
         bip44CoinType = 1;
         consensus.fCoinbaseMustBeProtected = true;
-        consensus.nSubsidySlowStartInterval = 20000;
-        consensus.nSubsidyHalvingInterval = 840000;
+        consensus.nSubsidySlowStartHeight = 201;
+        consensus.nSubsidySlowStartInterval = 43200;
+        consensus.nSubsidyHalvingInterval = 2200000 - 14400;
         consensus.nMajorityEnforceBlockUpgrade = 51;
         consensus.nMajorityRejectBlockOutdated = 75;
         consensus.nMajorityWindow = 400;
@@ -326,8 +328,9 @@ public:
         strCurrencyUnits = "REG";
         bip44CoinType = 1;
         consensus.fCoinbaseMustBeProtected = false;
-        consensus.nSubsidySlowStartInterval = 0;
-        consensus.nSubsidyHalvingInterval = 150;
+        consensus.nSubsidySlowStartHeight = 201;
+        consensus.nSubsidySlowStartInterval = 43200;
+        consensus.nSubsidyHalvingInterval = 2200000 - 14400;
         consensus.nMajorityEnforceBlockUpgrade = 750;
         consensus.nMajorityRejectBlockOutdated = 950;
         consensus.nMajorityWindow = 1000;

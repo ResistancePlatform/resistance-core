@@ -1730,29 +1730,25 @@ bool ReadBlockFromDisk(CBlock& block, const CBlockIndex* pindex)
 
 CAmount GetBlockSubsidy(int nHeight, const Consensus::Params& consensusParams)
 {
-    CAmount nSubsidy = 12.5 * COIN;
+    CAmount nSubsidy = 0;
 
-    // Mining slow start
-    // The subsidy is ramped up linearly, skipping the middle payout of
-    // MAX_SUBSIDY/2 to keep the monetary curve consistent with no slow start.
-    if (nHeight < consensusParams.nSubsidySlowStartInterval / 2) {
-        nSubsidy /= consensusParams.nSubsidySlowStartInterval;
-        nSubsidy *= nHeight;
-        return nSubsidy;
-    } else if (nHeight < consensusParams.nSubsidySlowStartInterval) {
-        nSubsidy /= consensusParams.nSubsidySlowStartInterval;
-        nSubsidy *= (nHeight+1);
-        return nSubsidy;
+    if (nHeight >= 21 && nHeight <= 80) {
+        nSubsidy = 1000000ULL * COIN;
+    } else if (nHeight < consensusParams.nSubsidySlowStartHeight) {
+        nSubsidy = 0;
+    } else if (nHeight < consensusParams.nSubsidySlowStartHeight + consensusParams.nSubsidySlowStartInterval) {
+        int relHeight = nHeight - consensusParams.nSubsidySlowStartHeight + 1;
+        nSubsidy = 20ULL * COIN * relHeight / consensusParams.nSubsidySlowStartInterval;
+    } else {
+        int relHeight = nHeight - (consensusParams.nSubsidySlowStartHeight + consensusParams.nSubsidySlowStartInterval) + 1;
+        unsigned int halvings = relHeight / consensusParams.nSubsidyHalvingInterval;
+        relHeight %= consensusParams.nSubsidyHalvingInterval;
+        if (halvings > 63) // Ensure the right shift's behavior is defined
+            halvings = 63;
+        nSubsidy = (20ULL * COIN) >> halvings;
+        nSubsidy = nSubsidy / 2 + nSubsidy * (consensusParams.nSubsidyHalvingInterval - relHeight) / (2 * consensusParams.nSubsidyHalvingInterval);
     }
 
-    assert(nHeight > consensusParams.SubsidySlowStartShift());
-    int halvings = (nHeight - consensusParams.SubsidySlowStartShift()) / consensusParams.nSubsidyHalvingInterval;
-    // Force block reward to zero when right shift is undefined.
-    if (halvings >= 64)
-        return 0;
-
-    // Subsidy is cut in half every 840,000 blocks which will occur approximately every 4 years.
-    nSubsidy >>= halvings;
     return nSubsidy;
 }
 

@@ -83,7 +83,7 @@ public:
         strNetworkID = "main";
         strCurrencyUnits = "RES";
         bip44CoinType = 133; // As registered in https://github.com/satoshilabs/slips/blob/master/slip-0044.md
-        consensus.fCoinbaseMustBeProtected = true;
+        consensus.fCoinbaseMustBeProtected = false;
         consensus.nSubsidySlowStartHeight = 201;
         consensus.nSubsidySlowStartInterval = 43200;
         consensus.nSubsidyHalvingInterval = 2200000 - 14400;
@@ -206,7 +206,7 @@ public:
         strNetworkID = "test";
         strCurrencyUnits = "SER";
         bip44CoinType = 1;
-        consensus.fCoinbaseMustBeProtected = true;
+        consensus.fCoinbaseMustBeProtected = false;
         consensus.nSubsidySlowStartHeight = 201;
         consensus.nSubsidySlowStartInterval = 43200;
         consensus.nSubsidyHalvingInterval = 2200000 - 14400;

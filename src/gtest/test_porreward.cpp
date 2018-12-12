@@ -136,7 +136,7 @@ TEST(por_reward_test, testnet) {
 }
 
 
-#define NUM_REGTEST_POR_ADDRESSES 1
+#define NUM_REGTEST_POR_ADDRESSES NUM_TESTNET_POR_ADDRESSES
 
 TEST(por_reward_test, regtest) {
     SelectParams(CBaseChainParams::REGTEST);
@@ -154,20 +154,21 @@ TEST(por_reward_test, slow_start_subsidy) {
     int maxHeight = params.GetConsensus().GetLastPorRewardBlockHeight();    
     CAmount totalSubsidy = 0;
     for (int nHeight = 1; nHeight <= maxHeight; nHeight++) {
-        CAmount nSubsidy = GetBlockSubsidy(nHeight, params.GetConsensus()) / 5;
+        CAmount nSubsidy = GetBlockSubsidy(nHeight, params.GetConsensus()) * Params().GetConsensus().nDevelopmentRewardPercentage / 100;
         totalSubsidy += nSubsidy;
     }
     
-    ASSERT_TRUE(totalSubsidy == MAX_MONEY/10.0);
+    ASSERT_TRUE(totalSubsidy == MAX_MONEY * Params().GetConsensus().nDevelopmentRewardPercentage / 100);
 #endif
 }
 
 
-// For use with mainnet and testnet which each have 48 addresses.
+// For use with mainnet and testnet which each have 1 address.
 // Verify the number of rewards each individual address receives.
 void verifyNumberOfRewards() {
 #if 0
     CChainParams params = Params();
+    int addressCount = NUM_MAINNET_POR_ADDRESSES >= NUM_TESTNET_POR_ADDRESSES ? NUM_MAINNET_POR_ADDRESSES : NUM_TESTNET_POR_ADDRESSES;
     int maxHeight = params.GetConsensus().GetLastPorRewardBlockHeight();
     std::multiset<std::string> ms;
     for (int nHeight = 1; nHeight <= maxHeight; nHeight++) {
@@ -175,10 +176,10 @@ void verifyNumberOfRewards() {
     }
 
     ASSERT_TRUE(ms.count(params.GetPorRewardAddressAtIndex(0)) == maxHeight);
-    for (int i = 1; i <= 46; i++) {
+    for (int i = 1; i < addressCount-1; i++) {
         ASSERT_TRUE(ms.count(params.GetPorRewardAddressAtIndex(i)) == maxHeight);
     }
-    ASSERT_TRUE(ms.count(params.GetPorRewardAddressAtIndex(47)) == maxHeight);
+    ASSERT_TRUE(ms.count(params.GetPorRewardAddressAtIndex(addressCount-1)) == maxHeight);
 #endif
 }
 

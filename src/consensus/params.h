@@ -71,7 +71,8 @@ struct Params {
     int nSubsidySlowStartHeight;
     int nSubsidySlowStartInterval;
     int nSubsidyHalvingInterval;
-    int GetLastFoundersRewardBlockHeight() const { return 0x7fffffff; }
+    int nPorRewardPercentage;
+    int GetLastPorRewardBlockHeight() const { return 0x7fffffff; }
     /** Used to check majorities for block version upgrade */
     int nMajorityEnforceBlockUpgrade;
     int nMajorityRejectBlockOutdated;

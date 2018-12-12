@@ -87,6 +87,7 @@ public:
         consensus.nSubsidySlowStartHeight = 201;
         consensus.nSubsidySlowStartInterval = 43200;
         consensus.nSubsidyHalvingInterval = 2200000 - 14400;
+        consensus.nPorRewardPercentage = 30;
         consensus.nMajorityEnforceBlockUpgrade = 750;
         consensus.nMajorityRejectBlockOutdated = 950;
         consensus.nMajorityWindow = 4000;
@@ -191,9 +192,9 @@ public:
                             //   total number of tx / (checkpoint block height / (24 * 60))
         };
 
-        // Founders reward script expects a vector of 2-of-3 multisig addresses
-        vFoundersRewardAddress = { "rs9AsX1ygyk38Lutfo6x48c6R3ikYApzeBz" };
-        assert(vFoundersRewardAddress.size() <= consensus.GetLastFoundersRewardBlockHeight());
+        // PoR reward script expects a vector of 2-of-3 multisig addresses
+        vPorRewardAddress = { "r37omieE18jLRnsBXsgkn8YUUaDeUE8kZPd" };
+        assert(vPorRewardAddress.size() <= consensus.GetLastPorRewardBlockHeight());
     }
 };
 static CMainParams mainParams;
@@ -211,6 +212,7 @@ public:
         consensus.nSubsidySlowStartHeight = 201;
         consensus.nSubsidySlowStartInterval = 43200;
         consensus.nSubsidyHalvingInterval = 2200000 - 14400;
+        consensus.nPorRewardPercentage = 30;
         consensus.nMajorityEnforceBlockUpgrade = 51;
         consensus.nMajorityRejectBlockOutdated = 75;
         consensus.nMajorityWindow = 400;
@@ -313,9 +315,9 @@ public:
                             //   total number of tx / (checkpoint block height / (24 * 60))
         };
 
-        // Founders reward script expects a vector of 2-of-3 multisig addresses
-        vFoundersRewardAddress = { "rs9AsX1ygyk38Lutfo6x48c6R3ikYApzeBz" };
-        assert(vFoundersRewardAddress.size() <= consensus.GetLastFoundersRewardBlockHeight());
+        // PoR reward script expects a vector of 2-of-3 multisig addresses
+        vPorRewardAddress = { "rs8MA1zvQTjx5VHKmoDwqMWNbnG35GvcmEs" };
+        assert(vPorRewardAddress.size() <= consensus.GetLastPorRewardBlockHeight());
     }
 };
 static CTestNetParams testNetParams;
@@ -333,6 +335,7 @@ public:
         consensus.nSubsidySlowStartHeight = 201;
         consensus.nSubsidySlowStartInterval = 43200;
         consensus.nSubsidyHalvingInterval = 2200000 - 14400;
+        consensus.nPorRewardPercentage = 30;
         consensus.nMajorityEnforceBlockUpgrade = 750;
         consensus.nMajorityRejectBlockOutdated = 950;
         consensus.nMajorityWindow = 1000;
@@ -426,9 +429,9 @@ public:
         bech32HRPs[SAPLING_INCOMING_VIEWING_KEY] = "zivkregtestsapling";
         bech32HRPs[SAPLING_EXTENDED_SPEND_KEY]   = "secret-extended-key-regtest";
 
-        // Founders reward script expects a vector of 2-of-3 multisig addresses
-        vFoundersRewardAddress = { "rs9AsX1ygyk38Lutfo6x48c6R3ikYApzeBz" };
-        assert(vFoundersRewardAddress.size() <= consensus.GetLastFoundersRewardBlockHeight());
+        // PoR reward script expects a vector of 2-of-3 multisig addresses
+        vPorRewardAddress = { "rs8MA1zvQTjx5VHKmoDwqMWNbnG35GvcmEs" };
+        assert(vPorRewardAddress.size() <= consensus.GetLastPorRewardBlockHeight());
     }
 
     void UpdateNetworkUpgradeParameters(Consensus::UpgradeIndex idx, int nActivationHeight)
@@ -481,23 +484,23 @@ bool SelectParamsFromCommandLine()
 }
 
 
-// Block height must be >0 and <=last founders reward block height
-// Index variable i ranges from 0 - (vFoundersRewardAddress.size()-1)
-std::string CChainParams::GetFoundersRewardAddressAtHeight(int nHeight) const {
-    int maxHeight = consensus.GetLastFoundersRewardBlockHeight();
+// Block height must be >0 and <=last PoR reward block height
+// Index variable i ranges from 0 - (vPorRewardAddress.size()-1)
+std::string CChainParams::GetPorRewardAddressAtHeight(int nHeight) const {
+    int maxHeight = consensus.GetLastPorRewardBlockHeight();
     assert(nHeight > 0 && nHeight <= maxHeight);
 
-    size_t addressChangeInterval = (maxHeight + vFoundersRewardAddress.size()) / vFoundersRewardAddress.size();
+    size_t addressChangeInterval = (maxHeight + vPorRewardAddress.size()) / vPorRewardAddress.size();
     size_t i = nHeight / addressChangeInterval;
-    return vFoundersRewardAddress[i];
+    return vPorRewardAddress[i];
 }
 
-// Block height must be >0 and <=last founders reward block height
-// The founders reward address is expected to be a multisig (P2SH) address
-CScript CChainParams::GetFoundersRewardScriptAtHeight(int nHeight) const {
-    assert(nHeight > 0 && nHeight <= consensus.GetLastFoundersRewardBlockHeight());
+// Block height must be >0 and <=last PoR reward block height
+// The PoR reward address is expected to be a multisig (P2SH) address
+CScript CChainParams::GetPorRewardScriptAtHeight(int nHeight) const {
+    assert(nHeight > 0 && nHeight <= consensus.GetLastPorRewardBlockHeight());
 
-    CTxDestination address = DecodeDestination(GetFoundersRewardAddressAtHeight(nHeight).c_str());
+    CTxDestination address = DecodeDestination(GetPorRewardAddressAtHeight(nHeight).c_str());
     assert(IsValidDestination(address));
     assert(boost::get<CScriptID>(&address) != nullptr);
     CScriptID scriptID = boost::get<CScriptID>(address); // address is a boost variant
@@ -505,9 +508,9 @@ CScript CChainParams::GetFoundersRewardScriptAtHeight(int nHeight) const {
     return script;
 }
 
-std::string CChainParams::GetFoundersRewardAddressAtIndex(int i) const {
-    assert(i >= 0 && i < vFoundersRewardAddress.size());
-    return vFoundersRewardAddress[i];
+std::string CChainParams::GetPorRewardAddressAtIndex(int i) const {
+    assert(i >= 0 && i < vPorRewardAddress.size());
+    return vPorRewardAddress[i];
 }
 
 void UpdateNetworkUpgradeParameters(Consensus::UpgradeIndex idx, int nActivationHeight)

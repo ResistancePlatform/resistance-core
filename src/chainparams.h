@@ -91,10 +91,10 @@ public:
     const std::string& Bech32HRP(Bech32Type type) const { return bech32HRPs[type]; }
     const std::vector<SeedSpec6>& FixedSeeds() const { return vFixedSeeds; }
     const CCheckpointData& Checkpoints() const { return checkpointData; }
-    /** Return the founder's reward address and script for a given block height */
-    std::string GetFoundersRewardAddressAtHeight(int height) const;
-    CScript GetFoundersRewardScriptAtHeight(int height) const;
-    std::string GetFoundersRewardAddressAtIndex(int i) const;
+    /** Return the PoR reward address and script for a given block height */
+    std::string GetPorRewardAddressAtHeight(int height) const;
+    CScript GetPorRewardScriptAtHeight(int height) const;
+    std::string GetPorRewardAddressAtIndex(int i) const;
     /** Enforce coinbase consensus rule in regtest mode */
     void SetRegTestCoinbaseMustBeProtected() { consensus.fCoinbaseMustBeProtected = true; }
 protected:
@@ -120,7 +120,7 @@ protected:
     bool fMineBlocksOnDemand = false;
     bool fTestnetToBeDeprecatedFieldRPC = false;
     CCheckpointData checkpointData;
-    std::vector<std::string> vFoundersRewardAddress;
+    std::vector<std::string> vPorRewardAddress;
 };
 
 /**

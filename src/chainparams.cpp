@@ -193,7 +193,7 @@ public:
         };
 
         // PoR reward script expects a vector of 2-of-3 multisig addresses
-        vPorRewardAddress = { "rs9AsX1ygyk38Lutfo6x48c6R3ikYApzeBz" };
+        vPorRewardAddress = { "r37omieE18jLRnsBXsgkn8YUUaDeUE8kZPd" };
         assert(vPorRewardAddress.size() <= consensus.GetLastPorRewardBlockHeight());
     }
 };
@@ -316,7 +316,7 @@ public:
         };
 
         // PoR reward script expects a vector of 2-of-3 multisig addresses
-        vPorRewardAddress = { "rs9AsX1ygyk38Lutfo6x48c6R3ikYApzeBz" };
+        vPorRewardAddress = { "rs8MA1zvQTjx5VHKmoDwqMWNbnG35GvcmEs" };
         assert(vPorRewardAddress.size() <= consensus.GetLastPorRewardBlockHeight());
     }
 };
@@ -430,7 +430,7 @@ public:
         bech32HRPs[SAPLING_EXTENDED_SPEND_KEY]   = "secret-extended-key-regtest";
 
         // PoR reward script expects a vector of 2-of-3 multisig addresses
-        vPorRewardAddress = { "rs9AsX1ygyk38Lutfo6x48c6R3ikYApzeBz" };
+        vPorRewardAddress = { "rs8MA1zvQTjx5VHKmoDwqMWNbnG35GvcmEs" };
         assert(vPorRewardAddress.size() <= consensus.GetLastPorRewardBlockHeight());
     }
 

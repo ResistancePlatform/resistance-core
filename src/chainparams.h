@@ -95,6 +95,10 @@ public:
     std::string GetPorRewardAddressAtHeight(int height) const;
     CScript GetPorRewardScriptAtHeight(int height) const;
     std::string GetPorRewardAddressAtIndex(int i) const;
+    /** Return the PlatformDev fund address and script for a given block height */
+    std::string GetPlatformDevFundAddressAtHeight(int height) const;
+    CScript GetPlatformDevFundScriptAtHeight(int height) const;
+    std::string GetPlatformDevFundAddressAtIndex(int i) const;
     /** Enforce coinbase consensus rule in regtest mode */
     void SetRegTestCoinbaseMustBeProtected() { consensus.fCoinbaseMustBeProtected = true; }
 protected:
@@ -121,6 +125,7 @@ protected:
     bool fTestnetToBeDeprecatedFieldRPC = false;
     CCheckpointData checkpointData;
     std::vector<std::string> vPorRewardAddress;
+    std::vector<std::string> vPlatformDevFundAddress;
 };
 
 /**

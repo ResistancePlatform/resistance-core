@@ -73,6 +73,8 @@ struct Params {
     int nSubsidyHalvingInterval;
     int nPorRewardPercentage;
     int GetLastPorRewardBlockHeight() const { return 0x7fffffff; }
+    int nPlatformDevFundPercentage;
+    int GetLastPlatformDevFundBlockHeight() const { return 0x7fffffff; }
     /** Used to check majorities for block version upgrade */
     int nMajorityEnforceBlockUpgrade;
     int nMajorityRejectBlockOutdated;

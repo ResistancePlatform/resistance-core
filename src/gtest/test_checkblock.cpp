@@ -40,6 +40,7 @@ TEST(CheckBlock, BlockSproutRejectsBadVersion) {
     SelectParams(CBaseChainParams::MAIN);
 
     CMutableTransaction mtx;
+    CAmount subsidy = GetBlockSubsidy(1, Params().GetConsensus());
     mtx.vin.resize(1);
     mtx.vin[0].prevout.SetNull();
     mtx.vin[0].scriptSig = CScript() << 1 << OP_0;
@@ -47,8 +48,11 @@ TEST(CheckBlock, BlockSproutRejectsBadVersion) {
     mtx.vout[0].scriptPubKey = CScript() << OP_TRUE;
     mtx.vout[0].nValue = 0;
     mtx.vout.push_back(CTxOut(
-        GetBlockSubsidy(1, Params().GetConsensus())*Params().GetConsensus().nPorRewardPercentage/100,
+        subsidy*Params().GetConsensus().nPorRewardPercentage/100,
         Params().GetPorRewardScriptAtHeight(1)));
+    mtx.vout.push_back(CTxOut(
+        subsidy*Params().GetConsensus().nPlatformDevFundPercentage/100,
+        Params().GetPlatformDevFundScriptAtHeight(1)));
     mtx.fOverwintered = false;
     mtx.nVersion = -1;
     mtx.nVersionGroupId = 0;
@@ -82,6 +86,7 @@ protected:
     // Returns a valid but empty mutable transaction at block height 1.
     CMutableTransaction GetFirstBlockCoinbaseTx() {
         CMutableTransaction mtx;
+        CAmount subsidy = GetBlockSubsidy(1, Params().GetConsensus());
 
         // No inputs.
         mtx.vin.resize(1);
@@ -97,8 +102,13 @@ protected:
 
         // Give it a PoR Reward vout for height 1.
         mtx.vout.push_back(CTxOut(
-                    GetBlockSubsidy(1, Params().GetConsensus())*Params().GetConsensus().nPorRewardPercentage/100,
+                    subsidy*Params().GetConsensus().nPorRewardPercentage/100,
                     Params().GetPorRewardScriptAtHeight(1)));
+
+        // Give it a PlatformDev fund vout for height 1.
+        mtx.vout.push_back(CTxOut(
+                    subsidy*Params().GetConsensus().nPlatformDevFundPercentage/100,
+                    Params().GetPlatformDevFundScriptAtHeight(1)));
 
         return mtx;
     }
@@ -144,6 +154,8 @@ protected:
 TEST_F(ContextualCheckBlockTest, BadCoinbaseHeight) {
     // Put a transaction in a block with no height in scriptSig
     CMutableTransaction mtx = GetFirstBlockCoinbaseTx();
+    CAmount subsidy = GetBlockSubsidy(1, Params().GetConsensus());
+
     mtx.vin[0].scriptSig = CScript() << OP_0;
     mtx.vout.pop_back(); // remove the FR output
 
@@ -156,8 +168,13 @@ TEST_F(ContextualCheckBlockTest, BadCoinbaseHeight) {
 
     // Give the transaction a PoR Reward vout
     mtx.vout.push_back(CTxOut(
-                GetBlockSubsidy(1, Params().GetConsensus())*Params().GetConsensus().nPorRewardPercentage/100,
+                subsidy*Params().GetConsensus().nPorRewardPercentage/100,
                 Params().GetPorRewardScriptAtHeight(1)));
+
+    // Give the transaction a PlatformDev fund vout
+    mtx.vout.push_back(CTxOut(
+                subsidy*Params().GetConsensus().nPlatformDevFundPercentage/100,
+                Params().GetPlatformDevFundScriptAtHeight(1)));
 
     // Treating block as non-genesis should fail
     CTransaction tx2 {mtx};

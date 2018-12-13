@@ -354,12 +354,16 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn)
         txNew.vout.resize(1);
         txNew.vout[0].scriptPubKey = scriptPubKeyIn;
         txNew.vout[0].nValue = subsidy;
+        // Add fees
+        txNew.vout[0].nValue += nFees;
         // Set to 0 so expiry height does not apply to coinbase txs
         txNew.nExpiryHeight = 0;
 
         if ((nHeight > 0) && (nHeight <= chainparams.GetConsensus().GetLastPorRewardBlockHeight())) {
             // PoR reward is 30% of the block subsidy
             auto vPorReward = subsidy * chainparams.GetConsensus().nPorRewardPercentage / 100;
+            // PoR fee reward is 30% of transaction fees
+            vPorReward += nFees * chainparams.GetConsensus().nPorRewardTxPercentage / 100;
             // Take PoR reward away from us
             txNew.vout[0].nValue -= vPorReward;
 
@@ -370,6 +374,8 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn)
         if ((nHeight > 0) && (nHeight <= chainparams.GetConsensus().GetLastPlatformDevFundBlockHeight())) {
             // PlatformDev fund is 10% of the block subsidy
             auto vPlatformDevFund = subsidy * chainparams.GetConsensus().nPlatformDevFundPercentage / 100;
+            // PlatformDev fee fund is 10% of transaction fees
+            vPlatformDevFund += nFees * chainparams.GetConsensus().nPlatformDevFundTxPercentage / 100;
             // Take PlatformDev fund away from us
             txNew.vout[0].nValue -= vPlatformDevFund;
 
@@ -377,8 +383,6 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn)
             txNew.vout.push_back(CTxOut(vPlatformDevFund, chainparams.GetPlatformDevFundScriptAtHeight(nHeight)));
         }
 
-        // Add fees
-        txNew.vout[0].nValue += nFees;
         txNew.vin[0].scriptSig = CScript() << nHeight << OP_0;
 
         pblock->vtx[0] = txNew;

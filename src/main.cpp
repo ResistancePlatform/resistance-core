@@ -2573,12 +2573,52 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
     int64_t nTime1 = GetTimeMicros(); nTimeConnect += nTime1 - nTimeStart;
     LogPrint("bench", "      - Connect %u transactions: %.2fms (%.3fms/tx, %.3fms/txin) [%.2fs]\n", (unsigned)block.vtx.size(), 0.001 * (nTime1 - nTimeStart), 0.001 * (nTime1 - nTimeStart) / block.vtx.size(), nInputs <= 1 ? 0 : 0.001 * (nTime1 - nTimeStart) / (nInputs-1), nTimeConnect * 0.000001);
 
-    CAmount blockReward = nFees + GetBlockSubsidy(pindex->nHeight, chainparams.GetConsensus());
+    CAmount subsidy = GetBlockSubsidy(pindex->nHeight, chainparams.GetConsensus());
+    CAmount blockReward = nFees + subsidy;
     if (block.vtx[0].GetValueOut() > blockReward)
         return state.DoS(100,
                          error("ConnectBlock(): coinbase pays too much (actual=%d vs limit=%d)",
                                block.vtx[0].GetValueOut(), blockReward),
                                REJECT_INVALID, "bad-cb-amount");
+
+    // Check PoR fee reward
+    if ((pindex->nHeight <= chainparams.GetConsensus().GetLastPorRewardBlockHeight())) {
+        bool found = false;
+
+        CAmount porBlockReward = subsidy * chainparams.GetConsensus().nPorRewardPercentage / 100;
+        CAmount porFeeReward = nFees * chainparams.GetConsensus().nPorRewardTxPercentage / 100;
+
+        BOOST_FOREACH(const CTxOut& output, block.vtx[0].vout) {
+            if (output.scriptPubKey == chainparams.GetPorRewardScriptAtHeight(pindex->nHeight)) {
+                if (output.nValue == (porBlockReward + porFeeReward)) {
+                    found = true;
+                    break;
+                }
+            }
+        }
+        if (!found) {
+            return state.DoS(100, error("%s: PoR fee reward missing", __func__), REJECT_INVALID, "cb-no-por-fee-reward");
+        }
+    }
+    // Check PlatformDev fee fund
+    if ((pindex->nHeight <= chainparams.GetConsensus().GetLastPlatformDevFundBlockHeight())) {
+        bool found = false;
+
+        CAmount devBlockReward = subsidy * chainparams.GetConsensus().nPlatformDevFundPercentage / 100;
+        CAmount devFeeReward = nFees * chainparams.GetConsensus().nPlatformDevFundTxPercentage / 100;
+
+        BOOST_FOREACH(const CTxOut& output, block.vtx[0].vout) {
+            if (output.scriptPubKey == chainparams.GetPlatformDevFundScriptAtHeight(pindex->nHeight)) {
+                if (output.nValue == (devBlockReward + devFeeReward)) {
+                    found = true;
+                    break;
+                }
+            }
+        }
+        if (!found) {
+            return state.DoS(100, error("%s: PlatformDev fee fund missing", __func__), REJECT_INVALID, "cb-no-dev-fee-fund");
+        }
+    }
 
     if (!control.Wait())
         return state.DoS(100, false);
@@ -3614,7 +3654,7 @@ bool ContextualCheckBlock(const CBlock& block, CValidationState& state, CBlockIn
 
         BOOST_FOREACH(const CTxOut& output, block.vtx[0].vout) {
             if (output.scriptPubKey == Params().GetPorRewardScriptAtHeight(nHeight)) {
-                if (output.nValue == (subsidy * consensusParams.nPorRewardPercentage / 100)) {
+                if (output.nValue >= (subsidy * consensusParams.nPorRewardPercentage / 100)) {
                     found = true;
                     break;
                 }
@@ -3637,7 +3677,7 @@ bool ContextualCheckBlock(const CBlock& block, CValidationState& state, CBlockIn
 
         BOOST_FOREACH(const CTxOut& output, block.vtx[0].vout) {
             if (output.scriptPubKey == Params().GetPlatformDevFundScriptAtHeight(nHeight)) {
-                if (output.nValue == (subsidy * consensusParams.nPlatformDevFundPercentage / 100)) {
+                if (output.nValue >= (subsidy * consensusParams.nPlatformDevFundPercentage / 100)) {
                     found = true;
                     break;
                 }

@@ -71,9 +71,23 @@ struct Params {
     int nSubsidySlowStartHeight;
     int nSubsidySlowStartInterval;
     int nSubsidyHalvingInterval;
+    /**
+     * PoR reward percentage of block reward
+     */
     int nPorRewardPercentage;
+    /**
+     * PoR reward percentage of transaction fees
+     */
+    int nPorRewardTxPercentage;
     int GetLastPorRewardBlockHeight() const { return 0x7fffffff; }
+    /**
+     * PlatformDev fund percentage of block reward
+     */
     int nPlatformDevFundPercentage;
+    /**
+     * PlatformDev fund percentage of transaction fees
+     */
+    int nPlatformDevFundTxPercentage;
     int GetLastPlatformDevFundBlockHeight() const { return 0x7fffffff; }
     /** Used to check majorities for block version upgrade */
     int nMajorityEnforceBlockUpgrade;

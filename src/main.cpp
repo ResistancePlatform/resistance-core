@@ -3609,20 +3609,43 @@ bool ContextualCheckBlock(const CBlock& block, CValidationState& state, CBlockIn
     // The last PoR reward block is defined as the block just before the
     // first subsidy halving block, which occurs at halving_interval + slow_start_shift
     if ((nHeight > 0) && (nHeight <= consensusParams.GetLastPorRewardBlockHeight())) {
-        bool foundPoR = false;
+        bool found = false;
         CAmount subsidy = GetBlockSubsidy(nHeight, consensusParams);
 
         BOOST_FOREACH(const CTxOut& output, block.vtx[0].vout) {
             if (output.scriptPubKey == Params().GetPorRewardScriptAtHeight(nHeight)) {
                 if (output.nValue == (subsidy * consensusParams.nPorRewardPercentage / 100)) {
-                    foundPoR = true;
+                    found = true;
                     break;
                 }
             }
         }
 
-        if (!foundPoR) {
+        if (!found) {
             return state.DoS(100, error("%s: PoR reward missing", __func__), REJECT_INVALID, "cb-no-por-reward");
+        }
+    }
+
+    // Coinbase transaction must include an output sending 10% of
+    // the block reward to a PlatformDev fund script, until the last PlatformDevFund
+    // block is reached, with exception of the genesis block.
+    // The last PlatformDev fund block is defined as the block just before the
+    // first subsidy halving block, which occurs at halving_interval + slow_start_shift
+    if ((nHeight > 0) && (nHeight <= consensusParams.GetLastPlatformDevFundBlockHeight())) {
+        bool found = false;
+        CAmount subsidy = GetBlockSubsidy(nHeight, consensusParams);
+
+        BOOST_FOREACH(const CTxOut& output, block.vtx[0].vout) {
+            if (output.scriptPubKey == Params().GetPlatformDevFundScriptAtHeight(nHeight)) {
+                if (output.nValue == (subsidy * consensusParams.nPlatformDevFundPercentage / 100)) {
+                    found = true;
+                    break;
+                }
+            }
+        }
+
+        if (!found) {
+            return state.DoS(100, error("%s: PlatformDev fund missing", __func__), REJECT_INVALID, "cb-no-dev-fund");
         }
     }
 

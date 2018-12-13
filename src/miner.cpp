@@ -348,22 +348,33 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn)
 
         // Create coinbase tx
         CMutableTransaction txNew = CreateNewContextualCMutableTransaction(chainparams.GetConsensus(), nHeight);
+        CAmount subsidy = GetBlockSubsidy(nHeight, chainparams.GetConsensus());
         txNew.vin.resize(1);
         txNew.vin[0].prevout.SetNull();
         txNew.vout.resize(1);
         txNew.vout[0].scriptPubKey = scriptPubKeyIn;
-        txNew.vout[0].nValue = GetBlockSubsidy(nHeight, chainparams.GetConsensus());
+        txNew.vout[0].nValue = subsidy;
         // Set to 0 so expiry height does not apply to coinbase txs
         txNew.nExpiryHeight = 0;
 
         if ((nHeight > 0) && (nHeight <= chainparams.GetConsensus().GetLastPorRewardBlockHeight())) {
             // PoR reward is 30% of the block subsidy
-            auto vPorReward = txNew.vout[0].nValue * chainparams.GetConsensus().nPorRewardPercentage / 100;
-            // Take some reward away from us
+            auto vPorReward = subsidy * chainparams.GetConsensus().nPorRewardPercentage / 100;
+            // Take PoR reward away from us
             txNew.vout[0].nValue -= vPorReward;
 
             // And give it to the PoR
             txNew.vout.push_back(CTxOut(vPorReward, chainparams.GetPorRewardScriptAtHeight(nHeight)));
+        }
+
+        if ((nHeight > 0) && (nHeight <= chainparams.GetConsensus().GetLastPlatformDevFundBlockHeight())) {
+            // PlatformDev fund is 10% of the block subsidy
+            auto vPlatformDevFund = subsidy * chainparams.GetConsensus().nPlatformDevFundPercentage / 100;
+            // Take PlatformDev fund away from us
+            txNew.vout[0].nValue -= vPlatformDevFund;
+
+            // And give it to the PlatformDev fund
+            txNew.vout.push_back(CTxOut(vPlatformDevFund, chainparams.GetPlatformDevFundScriptAtHeight(nHeight)));
         }
 
         // Add fees

@@ -88,6 +88,7 @@ public:
         consensus.nSubsidySlowStartInterval = 43200;
         consensus.nSubsidyHalvingInterval = 2200000 - 14400;
         consensus.nPorRewardPercentage = 30;
+        consensus.nPlatformDevFundPercentage = 10;
         consensus.nMajorityEnforceBlockUpgrade = 750;
         consensus.nMajorityRejectBlockOutdated = 950;
         consensus.nMajorityWindow = 4000;
@@ -195,6 +196,9 @@ public:
         // PoR reward script expects a vector of 2-of-3 multisig addresses
         vPorRewardAddress = { "r37omieE18jLRnsBXsgkn8YUUaDeUE8kZPd" };
         assert(vPorRewardAddress.size() <= consensus.GetLastPorRewardBlockHeight());
+        // PlatformDev fund script expects a vector of 2-of-3 multisig addresses
+        vPlatformDevFundAddress = { "r36mCPCzNWhcPzVrjxZuNKLeNBiYDPD4Tqi" };
+        assert(vPlatformDevFundAddress.size() <= consensus.GetLastPlatformDevFundBlockHeight());
     }
 };
 static CMainParams mainParams;
@@ -213,6 +217,7 @@ public:
         consensus.nSubsidySlowStartInterval = 43200;
         consensus.nSubsidyHalvingInterval = 2200000 - 14400;
         consensus.nPorRewardPercentage = 30;
+        consensus.nPlatformDevFundPercentage = 10;
         consensus.nMajorityEnforceBlockUpgrade = 51;
         consensus.nMajorityRejectBlockOutdated = 75;
         consensus.nMajorityWindow = 400;
@@ -317,6 +322,9 @@ public:
         // PoR reward script expects a vector of 2-of-3 multisig addresses
         vPorRewardAddress = { "rs8MA1zvQTjx5VHKmoDwqMWNbnG35GvcmEs" };
         assert(vPorRewardAddress.size() <= consensus.GetLastPorRewardBlockHeight());
+        // PlatformDev fund script expects a vector of 2-of-3 multisig addresses
+        vPlatformDevFundAddress = { "rs1ipbEkuysjmybyPAr6z85brggV2sBrdEZ" };
+        assert(vPlatformDevFundAddress.size() <= consensus.GetLastPlatformDevFundBlockHeight());
     }
 };
 static CTestNetParams testNetParams;
@@ -335,6 +343,7 @@ public:
         consensus.nSubsidySlowStartInterval = 43200;
         consensus.nSubsidyHalvingInterval = 2200000 - 14400;
         consensus.nPorRewardPercentage = 30;
+        consensus.nPlatformDevFundPercentage = 10;
         consensus.nMajorityEnforceBlockUpgrade = 750;
         consensus.nMajorityRejectBlockOutdated = 950;
         consensus.nMajorityWindow = 1000;
@@ -431,6 +440,9 @@ public:
         // PoR reward script expects a vector of 2-of-3 multisig addresses
         vPorRewardAddress = { "rs8MA1zvQTjx5VHKmoDwqMWNbnG35GvcmEs" };
         assert(vPorRewardAddress.size() <= consensus.GetLastPorRewardBlockHeight());
+        // PlatformDev fund script expects a vector of 2-of-3 multisig addresses
+        vPlatformDevFundAddress = { "rs1ipbEkuysjmybyPAr6z85brggV2sBrdEZ" };
+        assert(vPlatformDevFundAddress.size() <= consensus.GetLastPlatformDevFundBlockHeight());
     }
 
     void UpdateNetworkUpgradeParameters(Consensus::UpgradeIndex idx, int nActivationHeight)
@@ -510,6 +522,35 @@ CScript CChainParams::GetPorRewardScriptAtHeight(int nHeight) const {
 std::string CChainParams::GetPorRewardAddressAtIndex(int i) const {
     assert(i >= 0 && i < vPorRewardAddress.size());
     return vPorRewardAddress[i];
+}
+
+// Block height must be >0 and <=last PlatformDev fund block height
+// Index variable i ranges from 0 - (vPlatformDevFundAddress.size()-1)
+std::string CChainParams::GetPlatformDevFundAddressAtHeight(int nHeight) const {
+    int maxHeight = consensus.GetLastPlatformDevFundBlockHeight();
+    assert(nHeight > 0 && nHeight <= maxHeight);
+
+    size_t addressChangeInterval = (maxHeight + vPlatformDevFundAddress.size()) / vPlatformDevFundAddress.size();
+    size_t i = nHeight / addressChangeInterval;
+    return vPlatformDevFundAddress[i];
+}
+
+// Block height must be >0 and <=last PlatformDev fund block height
+// The PlatformDev fund address is expected to be a multisig (P2SH) address
+CScript CChainParams::GetPlatformDevFundScriptAtHeight(int nHeight) const {
+    assert(nHeight > 0 && nHeight <= consensus.GetLastPlatformDevFundBlockHeight());
+
+    CTxDestination address = DecodeDestination(GetPlatformDevFundAddressAtHeight(nHeight).c_str());
+    assert(IsValidDestination(address));
+    assert(boost::get<CScriptID>(&address) != nullptr);
+    CScriptID scriptID = boost::get<CScriptID>(address); // address is a boost variant
+    CScript script = CScript() << OP_HASH160 << ToByteVector(scriptID) << OP_EQUAL;
+    return script;
+}
+
+std::string CChainParams::GetPlatformDevFundAddressAtIndex(int i) const {
+    assert(i >= 0 && i < vPlatformDevFundAddress.size());
+    return vPlatformDevFundAddress[i];
 }
 
 void UpdateNetworkUpgradeParameters(Consensus::UpgradeIndex idx, int nActivationHeight)

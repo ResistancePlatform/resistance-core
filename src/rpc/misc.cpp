@@ -25,7 +25,14 @@
 
 #include "zcash/Address.hpp"
 
+#include "komodo_globals.h"
+#include "komodo_cJSON.c"
+#include "komodo_utils.h"
+#include "komodo_jumblr.h"
+
 using namespace std;
+
+extern int32_t JUMBLR_PAUSE;
 
 /**
  * @note Do not add or change anything in the information returned by this
@@ -452,6 +459,62 @@ UniValue verifymessage(const UniValue& params, bool fHelp)
     return (pubkey.GetID() == *keyID);
 }
 
+UniValue jumblr_deposit(const UniValue& params, bool fHelp)
+{
+    int32_t retval; UniValue result(UniValue::VOBJ);
+    if (fHelp || params.size() != 1)
+        throw runtime_error("jumblr_deposit \"depositaddress\"\n");
+    string addr = params[0].get_str();
+    CTxDestination address = DecodeDestination(addr);
+    if ( IsValidDestination(address) != 0 )
+    {
+        if ( (retval= Jumblr_depositaddradd((char *)addr.c_str())) >= 0 )
+        {
+            result.push_back(Pair("result", retval));
+            JUMBLR_PAUSE = 0;
+        }
+        else result.push_back(Pair("error", retval));
+    } else result.push_back(Pair("error", "invalid address"));
+    return(result);
+}
+
+UniValue jumblr_secret(const UniValue& params, bool fHelp)
+{
+    int32_t retval; UniValue result(UniValue::VOBJ);
+    if (fHelp || params.size() != 1)
+        throw runtime_error("jumblr_secret \"secretaddress\"\n");
+    string addr = params[0].get_str();
+    CTxDestination address = DecodeDestination(addr);
+    if ( IsValidDestination(address) != 0 )
+    {
+        retval = Jumblr_secretaddradd((char *)addr.c_str());
+        result.push_back(Pair("result", "success"));
+        result.push_back(Pair("num", retval));
+        JUMBLR_PAUSE = 0;
+    } else result.push_back(Pair("error", "invalid address"));
+    return(result);
+}
+
+UniValue jumblr_pause(const UniValue& params, bool fHelp)
+{
+    int32_t retval; UniValue result(UniValue::VOBJ);
+    if (fHelp )
+        throw runtime_error("jumblr_pause\n");
+    JUMBLR_PAUSE = 1;
+    result.push_back(Pair("result", "paused"));
+    return(result);
+}
+
+UniValue jumblr_resume(const UniValue& params, bool fHelp)
+{
+    int32_t retval; UniValue result(UniValue::VOBJ);
+    if (fHelp )
+        throw runtime_error("jumblr_resume\n");
+    JUMBLR_PAUSE = 0;
+    result.push_back(Pair("result", "resumed"));
+    return(result);
+}
+
 UniValue setmocktime(const UniValue& params, bool fHelp)
 {
     if (fHelp || params.size() != 1)
@@ -491,6 +554,10 @@ static const CRPCCommand commands[] =
     { "util",               "z_validateaddress",      &z_validateaddress,      true  }, /* uses wallet if enabled */
     { "util",               "createmultisig",         &createmultisig,         true  },
     { "util",               "verifymessage",          &verifymessage,          true  },
+    { "util",               "jumblr_deposit",         &jumblr_deposit,         true  },
+    { "util",               "jumblr_secret",          &jumblr_secret,          true  },
+    { "util",               "jumblr_pause",           &jumblr_pause,           true  },
+    { "util",               "jumblr_resume",          &jumblr_resume,          true  },
 
     /* Not shown in help */
     { "hidden",             "setmocktime",            &setmocktime,            true  },

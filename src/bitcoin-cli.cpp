@@ -9,6 +9,7 @@
 #include "rpc/protocol.h"
 #include "util.h"
 #include "utilstrencodings.h"
+#include "komodo_utils.h"
 
 #include <boost/filesystem/operations.hpp>
 #include <stdio.h>
@@ -76,6 +77,7 @@ static int AppInitRPC(int argc, char* argv[])
     // Parameters
     //
     ParseParameters(argc, argv);
+    komodo_args(argv[0]);
     if (argc<2 || mapArgs.count("-?") || mapArgs.count("-h") || mapArgs.count("-help") || mapArgs.count("-version")) {
         std::string strUsage = _("Resistance RPC client version") + " " + FormatFullVersion() + "\n" + PrivacyInfo();
         if (!mapArgs.count("-version")) {

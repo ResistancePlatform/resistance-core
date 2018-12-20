@@ -36,7 +36,7 @@ LIBBITCOIN_CRYPTO=crypto/libbitcoin_crypto.a
 LIBSECP256K1=secp256k1/libsecp256k1.la
 LIBSNARK=snark/libsnark.a
 LIBUNIVALUE=univalue/libunivalue.la
-LIBZCASH=libzcash.a
+LIBZCASH=libzcash.a -lcurl
 
 if ENABLE_ZMQ
 LIBBITCOIN_ZMQ=libbitcoin_zmq.a
@@ -372,6 +372,9 @@ libbitcoin_common_a_SOURCES = \
   transaction_builder.cpp \
   yespower/yespower-opt.c \
   yespower/sha256.c \
+  mini-gmp.cpp \
+  cJSON.c \
+  komodo_globals.cpp \
   $(BITCOIN_CORE_H) \
   $(LIBZCASH_H)
 
@@ -408,6 +411,9 @@ libbitcoin_cli_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
 libbitcoin_cli_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libbitcoin_cli_a_SOURCES = \
   rpc/client.cpp \
+  mini-gmp.cpp \
+  cJSON.c \
+  komodo_globals.cpp \
   $(BITCOIN_CORE_H) \
   $(LIBZCASH_H)
 

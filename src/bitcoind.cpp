@@ -12,6 +12,7 @@
 #include "util.h"
 #include "httpserver.h"
 #include "httprpc.h"
+#include "komodo_utils.h"
 
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/filesystem.hpp>
@@ -92,6 +93,17 @@ bool AppInit(int argc, char* argv[])
 
     try
     {
+        komodo_args(argv[0]);
+        fprintf(stderr,"call komodo_args.(%s) NOTARY_PUBKEY.(%s)\n",argv[0],NOTARY_PUBKEY.c_str());
+        while ( ASSETCHAIN_INIT == 0 )
+        {
+            #ifdef _WIN32
+            boost::this_thread::sleep_for(boost::chrono::seconds(1));
+            #else
+            sleep(1);
+            #endif
+        }
+
         if (!boost::filesystem::is_directory(GetDataDir(false)))
         {
             fprintf(stderr, "Error: Specified data directory \"%s\" does not exist.\n", mapArgs["-datadir"].c_str());

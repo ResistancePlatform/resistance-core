@@ -77,7 +77,7 @@ void *chainparams_commandline(void *ptr)
         #endif
     }
 
-    fprintf(stderr,">>>>>>>>>> %s: port.%u/%u magic.%08x %u %u coins\n",ASSETCHAINS_SYMBOL,ASSETCHAINS_PORT,ASSETCHAINS_PORT+1,ASSETCHAINS_MAGIC,ASSETCHAINS_MAGIC,(uint32_t)ASSETCHAINS_SUPPLY);
+    LogPrintf(">>>>>>>>>> %s: port.%u/%u magic.%08x %u %u coins\n",ASSETCHAINS_SYMBOL,ASSETCHAINS_PORT,ASSETCHAINS_PORT+1,ASSETCHAINS_MAGIC,ASSETCHAINS_MAGIC,(uint32_t)ASSETCHAINS_SUPPLY);
 
     ASSETCHAIN_INIT = 1;
     return(0);

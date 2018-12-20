@@ -779,7 +779,7 @@ static int32_t bitcoin_addr2rmd160(uint8_t *addrtypep,uint8_t rmd160[20],char *c
         memcpy(rmd160,buf+1,20);
         if ( (buf[21]&0xff) == hash.bytes[31] && (buf[22]&0xff) == hash.bytes[30] &&(buf[23]&0xff) == hash.bytes[29] && (buf[24]&0xff) == hash.bytes[28] )
         {
-            //printf("coinaddr.(%s) valid checksum addrtype.%02x\n",coinaddr,*addrtypep);
+            //LogPrintf("coinaddr.(%s) valid checksum addrtype.%02x\n",coinaddr,*addrtypep);
             return(20);
         }
         else
@@ -790,8 +790,8 @@ static int32_t bitcoin_addr2rmd160(uint8_t *addrtypep,uint8_t rmd160[20],char *c
                 hash = bits256_doublesha256(0,buf,len);
             }
             for (i=0; i<len; i++)
-                printf("%02x ",buf[i]);
-            printf("\nhex checkhash.(%s) len.%d mismatch %02x %02x %02x %02x vs %02x %02x %02x %02x\n",coinaddr,len,buf[len-1]&0xff,buf[len-2]&0xff,buf[len-3]&0xff,buf[len-4]&0xff,hash.bytes[31],hash.bytes[30],hash.bytes[29],hash.bytes[28]);
+                LogPrintf("%02x ",buf[i]);
+            LogPrintf("\nhex checkhash.(%s) len.%d mismatch %02x %02x %02x %02x vs %02x %02x %02x %02x\n",coinaddr,len,buf[len-1]&0xff,buf[len-2]&0xff,buf[len-3]&0xff,buf[len-4]&0xff,hash.bytes[31],hash.bytes[30],hash.bytes[29],hash.bytes[28]);
         }
     }
     return(0);
@@ -813,7 +813,7 @@ static char *bitcoin_address(char *coinaddr,uint8_t addrtype,uint8_t *pubkey_or_
         //uint8_t checktype,rmd160[20];
         //bitcoin_addr2rmd160(&checktype,rmd160,coinaddr);
         //if ( strcmp(checkaddr,coinaddr) != 0 )
-        //    printf("checkaddr.(%s) vs coinaddr.(%s) %02x vs [%02x] memcmp.%d\n",checkaddr,coinaddr,addrtype,checktype,memcmp(rmd160,data+1,20));
+        //    LogPrintf("checkaddr.(%s) vs coinaddr.(%s) %02x vs [%02x] memcmp.%d\n",checkaddr,coinaddr,addrtype,checktype,memcmp(rmd160,data+1,20));
     }
     return(coinaddr);
 }
@@ -832,7 +832,7 @@ static int32_t komodo_baseid(char *origbase)
     for (i=0; i<=MAX_CURRENCIES; i++)
         if ( strcmp(CURRENCIES[i],base) == 0 )
             return(i);
-    //printf("illegal base.(%s) %s\n",origbase,base);
+    //LogPrintf("illegal base.(%s) %s\n",origbase,base);
     return(-1);
 }
 
@@ -885,7 +885,7 @@ static int32_t unhex(char c)
     int32_t hex;
     if ( (hex= _unhex(c)) < 0 )
     {
-        //printf("unhex: illegal hexchar.(%c)\n",c);
+        //LogPrintf("unhex: illegal hexchar.(%c)\n",c);
     }
     return(hex);
 }
@@ -895,7 +895,7 @@ static unsigned char _decode_hex(char *hex) { return((unhex(hex[0])<<4) | unhex(
 static int32_t decode_hex(uint8_t *bytes,int32_t n,char *hex)
 {
     int32_t adjust,i = 0;
-    //printf("decode.(%s)\n",hex);
+    //LogPrintf("decode.(%s)\n",hex);
     if ( is_hexstr(hex,n) <= 0 )
     {
         memset(bytes,0,n);
@@ -908,7 +908,7 @@ static int32_t decode_hex(uint8_t *bytes,int32_t n,char *hex)
         if ( n > 0 )
         {
             bytes[0] = unhex(hex[0]);
-            printf("decode_hex n.%d hex[0] (%c) -> %d hex.(%s) [n*2+1: %d] [n*2: %d %c] len.%ld\n",n,hex[0],bytes[0],hex,hex[n*2+1],hex[n*2],hex[n*2],(long)strlen(hex));
+            LogPrintf("decode_hex n.%d hex[0] (%c) -> %d hex.(%s) [n*2+1: %d] [n*2: %d %c] len.%ld\n",n,hex[0],bytes[0],hex,hex[n*2+1],hex[n*2],hex[n*2],(long)strlen(hex));
         }
         bytes++;
         hex++;
@@ -945,10 +945,10 @@ static int32_t init_hexbytes_noT(char *hexbytes,unsigned char *message,long len)
     {
         hexbytes[i*2] = hexbyte((message[i]>>4) & 0xf);
         hexbytes[i*2 + 1] = hexbyte(message[i] & 0xf);
-        //printf("i.%d (%02x) [%c%c]\n",i,message[i],hexbytes[i*2],hexbytes[i*2+1]);
+        //LogPrintf("i.%d (%02x) [%c%c]\n",i,message[i],hexbytes[i*2],hexbytes[i*2+1]);
     }
     hexbytes[len*2] = 0;
-    //printf("len.%ld\n",len*2+1);
+    //LogPrintf("len.%ld\n",len*2+1);
     return((int32_t)len*2+1);
 }
 
@@ -1072,7 +1072,7 @@ static char *clonestr(char *str)
     char *clone;
     if ( str == 0 || str[0] == 0 )
     {
-        printf("warning cloning nullstr.%p\n",str);
+        LogPrintf("warning cloning nullstr.%p\n",str);
 #ifdef __APPLE__
         while ( 1 ) sleep(1);
 #endif
@@ -1094,7 +1094,7 @@ static int32_t safecopy(char *dest,char *src,long len)
             dest[i] = src[i];
         if ( i == len )
         {
-            printf("safecopy: %s too long %ld\n",src,len);
+            LogPrintf("safecopy: %s too long %ld\n",src,len);
 #ifdef __APPLE__
             //getchar();
 #endif
@@ -1116,7 +1116,7 @@ static char *parse_conf_line(char *line,char *field)
         line++;
     while ( line[strlen(line)-1] == '\r' || line[strlen(line)-1] == '\n' || line[strlen(line)-1] == ' ' )
         line[strlen(line)-1] = 0;
-    //printf("LINE.(%s)\n",line);
+    //LogPrintf("LINE.(%s)\n",line);
     _stripwhite(line,0);
     return(clonestr(line));
 }
@@ -1126,7 +1126,7 @@ static double OS_milliseconds()
     struct timeval tv; double millis;
     gettimeofday(&tv,NULL);
     millis = ((double)tv.tv_sec * 1000. + (double)tv.tv_usec / 1000.);
-    //printf("tv_sec.%ld usec.%d %f\n",tv.tv_sec,tv.tv_usec,millis);
+    //LogPrintf("tv_sec.%ld usec.%d %f\n",tv.tv_sec,tv.tv_usec,millis);
     return(millis);
 }
 
@@ -1153,8 +1153,8 @@ static void OS_randombytes(unsigned char *x,long xlen)
         {
             int32_t j;
             for (j=0; j<i; j++)
-                printf("%02x ",x[j]);
-            printf("-> %p\n",x);
+                LogPrintf("%02x ",x[j]);
+            LogPrintf("-> %p\n",x);
         }
         x += i;
         xlen -= i;
@@ -1178,7 +1178,7 @@ static void queue_enqueue(char *name,queue_t *queue,struct queueitem *item)
         strcpy(queue->name,name);
     if ( item == 0 )
     {
-        printf("FATAL type error: queueing empty value\n");
+        LogPrintf("FATAL type error: queueing empty value\n");
         return;
     }
     lock_queue(queue);
@@ -1215,7 +1215,7 @@ static void *queue_delete(queue_t *queue,struct queueitem *copy,int32_t copysize
             {
                 DL_DELETE(queue->list,item);
                 portable_mutex_unlock(&queue->mutex);
-                printf("name.(%s) deleted item.%p list.%p\n",queue->name,item,queue->list);
+                LogPrintf("name.(%s) deleted item.%p list.%p\n",queue->name,item,queue->list);
                 return(item);
             }
         }
@@ -1235,7 +1235,7 @@ static void *queue_free(queue_t *queue)
             DL_DELETE(queue->list,item);
             free(item);
         }
-        //printf("name.(%s) dequeue.%p list.%p\n",queue->name,item,queue->list);
+        //LogPrintf("name.(%s) dequeue.%p list.%p\n",queue->name,item,queue->list);
     }
     portable_mutex_unlock(&queue->mutex);
     return(0);
@@ -1253,7 +1253,7 @@ static void *queue_clone(queue_t *clone,queue_t *queue,int32_t size)
             memcpy(ptr,item,size);
             queue_enqueue(queue->name,clone,ptr);
         }
-        //printf("name.(%s) dequeue.%p list.%p\n",queue->name,item,queue->list);
+        //LogPrintf("name.(%s) dequeue.%p list.%p\n",queue->name,item,queue->list);
     }
     portable_mutex_unlock(&queue->mutex);
     return(0);
@@ -1289,7 +1289,7 @@ static uint16_t komodo_userpass(char *username,char *password,FILE *fp)
     {
         if ( line[0] == '#' )
             continue;
-        //printf("line.(%s) %p %p\n",line,strstr(line,(char *)"rpcuser"),strstr(line,(char *)"rpcpassword"));
+        //LogPrintf("line.(%s) %p %p\n",line,strstr(line,(char *)"rpcuser"),strstr(line,(char *)"rpcpassword"));
         if ( (str= strstr(line,(char *)"rpcuser")) != 0 )
             rpcuser = parse_conf_line(str,(char *)"rpcuser");
         else if ( (str= strstr(line,(char *)"rpcpassword")) != 0 )
@@ -1297,7 +1297,7 @@ static uint16_t komodo_userpass(char *username,char *password,FILE *fp)
         else if ( (str= strstr(line,(char *)"rpcport")) != 0 )
         {
             port = atoi(parse_conf_line(str,(char *)"rpcport"));
-            //printf("rpcport.%u in file\n",port);
+            //LogPrintf("rpcport.%u in file\n",port);
         }
     }
     if ( rpcuser != 0 && rpcpassword != 0 )
@@ -1305,7 +1305,7 @@ static uint16_t komodo_userpass(char *username,char *password,FILE *fp)
         strcpy(username,rpcuser);
         strcpy(password,rpcpassword);
     }
-    //printf("rpcuser.(%s) rpcpassword.(%s) RESUSERPASS.(%s) %u\n",rpcuser,rpcpassword,RESUSERPASS,port);
+    //LogPrintf("rpcuser.(%s) rpcpassword.(%s) RESUSERPASS.(%s) %u\n",rpcuser,rpcpassword,RESUSERPASS,port);
     if ( rpcuser != 0 )
         free(rpcuser);
     if ( rpcpassword != 0 )
@@ -1324,7 +1324,7 @@ static void komodo_statefname(char *fname,char *symbol,char *str)
             fname[len - n] = 0;
         else
         {
-            printf("unexpected fname.(%s) vs %s [%s] n.%d len.%d (%s)\n",fname,symbol,ASSETCHAINS_SYMBOL,n,len,&fname[len - n]);
+            error("unexpected fname.(%s) vs %s [%s] n.%d len.%d (%s)\n",fname,symbol,ASSETCHAINS_SYMBOL,n,len,&fname[len - n]);
             return;
         }
     }
@@ -1339,7 +1339,7 @@ static void komodo_statefname(char *fname,char *symbol,char *str)
     if ( symbol != 0 && symbol[0] != 0 && strcmp("RES",symbol) != 0 )
     {
         strcat(fname,symbol);
-        //printf("statefname.(%s) -> (%s)\n",symbol,fname);
+        //LogPrintf("statefname.(%s) -> (%s)\n",symbol,fname);
 #ifdef _WIN32
         strcat(fname,"\\");
 #else
@@ -1347,7 +1347,7 @@ static void komodo_statefname(char *fname,char *symbol,char *str)
 #endif
     }
     strcat(fname,str);
-    //printf("test.(%s) -> [%s] statename.(%s) %s\n",test,ASSETCHAINS_SYMBOL,symbol,fname);
+    //LogPrintf("test.(%s) -> [%s] statename.(%s) %s\n",test,ASSETCHAINS_SYMBOL,symbol,fname);
 }
 
 static void komodo_configfile(char *symbol,uint16_t port)
@@ -1384,8 +1384,8 @@ static void komodo_configfile(char *symbol,uint16_t port)
             {
                 fprintf(fp,"rpcuser=user%u\nrpcpassword=pass%s\nrpcport=%u\nserver=1\ntxindex=1\nrpcworkqueue=64\nrpcallowip=127.0.0.1\n",crc,password,port);
                 fclose(fp);
-                printf("Created (%s)\n",fname);
-            } else printf("Couldnt create (%s)\n",fname);
+                LogPrintf("Created (%s)\n",fname);
+            } else error("Couldnt create (%s)\n",fname);
 #endif
         }
         else
@@ -1417,8 +1417,8 @@ static void komodo_configfile(char *symbol,uint16_t port)
             RES_PORT = resport;
         sprintf(RESUSERPASS,"%s:%s",username,password);
         fclose(fp);
-//printf("KOMODO.(%s) -> userpass.(%s)\n",fname,RESUSERPASS);
-    } //else printf("couldnt open.(%s)\n",fname);
+//LogPrintf("KOMODO.(%s) -> userpass.(%s)\n",fname,RESUSERPASS);
+    } //else error("couldnt open.(%s)\n",fname);
 }
 
 static uint16_t komodo_userpass(char *userpass,char *symbol)
@@ -1515,7 +1515,7 @@ static void komodo_args(char *argv0)
     std::string name,addn; char *dirname,fname[512],arg0str[64],magicstr[9]; uint8_t magic[4],extrabuf[256],*extraptr=0; FILE *fp; uint64_t val; int32_t i,baseid,len,n,extralen = 0;
     IS_KOMODO_NOTARY = GetBoolArg("-notary", false);
     if ( (KOMODO_EXCHANGEWALLET= GetBoolArg("-exchange", false)) != 0 )
-        fprintf(stderr,"KOMODO_EXCHANGEWALLET mode active\n");
+        LogPrintf("KOMODO_EXCHANGEWALLET mode active\n");
     NOTARY_PUBKEY = GetArg("-pubkey", "");
     if ( strlen(NOTARY_PUBKEY.c_str()) == 66 )
     {
@@ -1531,7 +1531,7 @@ static void komodo_args(char *argv0)
             n = (int32_t)strlen(argv0suffix[i]);
             if ( strcmp(&argv0[len - n],argv0suffix[i]) == 0 )
             {
-                //printf("ARGV0.(%s) -> matches suffix (%s) -> ac_name.(%s)\n",argv0,argv0suffix[i],argv0names[i]);
+                //LogPrintf("ARGV0.(%s) -> matches suffix (%s) -> ac_name.(%s)\n",argv0,argv0suffix[i],argv0names[i]);
                 name = argv0names[i];
                 break;
             }
@@ -1540,7 +1540,7 @@ static void komodo_args(char *argv0)
     ASSETCHAINS_CC = GetArg("-ac_cc",0); // keep it outside the assetchains hashing so RES can do it and we dont have two identical chains other than -ac_cc
     if ( (KOMODO_REWIND= GetArg("-rewind",0)) != 0 )
     {
-        printf("KOMODO_REWIND %d\n",KOMODO_REWIND);
+        LogPrintf("KOMODO_REWIND %d\n",KOMODO_REWIND);
     }
     if ( name.c_str()[0] != 0 )
     {
@@ -1556,28 +1556,28 @@ static void komodo_args(char *argv0)
         if ( ASSETCHAINS_HALVING != 0 && ASSETCHAINS_HALVING < 1440 )
         {
             ASSETCHAINS_HALVING = 1440;
-            printf("ASSETCHAINS_HALVING must be at least 1440 blocks\n");
+            LogPrintf("ASSETCHAINS_HALVING must be at least 1440 blocks\n");
         }
         if ( ASSETCHAINS_DECAY == 100000000 && ASSETCHAINS_ENDSUBSIDY == 0 )
         {
             ASSETCHAINS_DECAY = 0;
-            printf("ASSETCHAINS_DECAY of 100000000 means linear and that needs ASSETCHAINS_ENDSUBSIDY\n");
+            LogPrintf("ASSETCHAINS_DECAY of 100000000 means linear and that needs ASSETCHAINS_ENDSUBSIDY\n");
         }
         else if ( ASSETCHAINS_DECAY > 100000000 )
         {
             ASSETCHAINS_DECAY = 0;
-            printf("ASSETCHAINS_DECAY cant be more than 100000000\n");
+            LogPrintf("ASSETCHAINS_DECAY cant be more than 100000000\n");
         }
         if ( strlen(ASSETCHAINS_OVERRIDE_PUBKEY.c_str()) == 66 && ASSETCHAINS_COMMISSION > 0 && ASSETCHAINS_COMMISSION <= 100000000 )
             decode_hex(ASSETCHAINS_OVERRIDE_PUBKEY33,33,(char *)ASSETCHAINS_OVERRIDE_PUBKEY.c_str());
         else if ( ASSETCHAINS_COMMISSION != 0 )
         {
             ASSETCHAINS_COMMISSION = 0;
-            printf("ASSETCHAINS_COMMISSION needs an ASETCHAINS_OVERRIDE_PUBKEY and cant be more than 100000000 (100%%)\n");
+            LogPrintf("ASSETCHAINS_COMMISSION needs an ASETCHAINS_OVERRIDE_PUBKEY and cant be more than 100000000 (100%%)\n");
         }
         if ( ASSETCHAINS_ENDSUBSIDY != 0 || ASSETCHAINS_REWARD != 0 || ASSETCHAINS_HALVING != 0 || ASSETCHAINS_DECAY != 0 || ASSETCHAINS_COMMISSION != 0 )
         {
-            fprintf(stderr,"end.%llu blocks, reward %.8f halving.%llu blocks, decay.%llu perc %.4f%% ac_pub=[%02x...]\n",(long long)ASSETCHAINS_ENDSUBSIDY,dstr(ASSETCHAINS_REWARD),(long long)ASSETCHAINS_HALVING,(long long)ASSETCHAINS_DECAY,dstr(ASSETCHAINS_COMMISSION)*100,ASSETCHAINS_OVERRIDE_PUBKEY33[0]);
+            LogPrintf("end.%llu blocks, reward %.8f halving.%llu blocks, decay.%llu perc %.4f%% ac_pub=[%02x...]\n",(long long)ASSETCHAINS_ENDSUBSIDY,dstr(ASSETCHAINS_REWARD),(long long)ASSETCHAINS_HALVING,(long long)ASSETCHAINS_DECAY,dstr(ASSETCHAINS_COMMISSION)*100,ASSETCHAINS_OVERRIDE_PUBKEY33[0]);
             extraptr = extrabuf;
             memcpy(extraptr,ASSETCHAINS_OVERRIDE_PUBKEY33,33), extralen = 33;
             extralen += iguana_rwnum(1,&extraptr[extralen],sizeof(ASSETCHAINS_ENDSUBSIDY),(void *)&ASSETCHAINS_ENDSUBSIDY);
@@ -1597,25 +1597,25 @@ static void komodo_args(char *argv0)
             KOMODO_MAX_MONEY = (ASSETCHAINS_SUPPLY+1) * SATOSHIDEN;
         else KOMODO_MAX_MONEY = (ASSETCHAINS_SUPPLY+1) * SATOSHIDEN + ASSETCHAINS_REWARD * (ASSETCHAINS_ENDSUBSIDY==0 ? 10000000 : ASSETCHAINS_ENDSUBSIDY);
         KOMODO_MAX_MONEY += (KOMODO_MAX_MONEY * ASSETCHAINS_COMMISSION) / SATOSHIDEN;
-        //printf("baseid.%d KOMODO_MAX_MONEY.%s %.8f\n",baseid,ASSETCHAINS_SYMBOL,(double)KOMODO_MAX_MONEY/SATOSHIDEN);
+        //LogPrintf("baseid.%d KOMODO_MAX_MONEY.%s %.8f\n",baseid,ASSETCHAINS_SYMBOL,(double)KOMODO_MAX_MONEY/SATOSHIDEN);
         ASSETCHAINS_PORT = komodo_port(ASSETCHAINS_SYMBOL,ASSETCHAINS_SUPPLY,&ASSETCHAINS_MAGIC,extraptr,extralen);
         while ( (dirname= (char *)GetDataDir(false).string().c_str()) == 0 || dirname[0] == 0 )
         {
-            fprintf(stderr,"waiting for datadir\n");
+            LogPrintf("waiting for datadir\n");
                         #ifndef _WIN32
             sleep(3);
                         #else
                         boost::this_thread::sleep(boost::posix_time::milliseconds(3000));
                         #endif
         }
-        //fprintf(stderr,"Got datadir.(%s)\n",dirname);
+        //LogPrintf("Got datadir.(%s)\n",dirname);
         if ( ASSETCHAINS_SYMBOL[0] != 0 )
         {
             int32_t komodo_baseid(char *origbase);
             komodo_configfile(ASSETCHAINS_SYMBOL,ASSETCHAINS_PORT + 1);
             komodo_userpass(ASSETCHAINS_USERPASS,ASSETCHAINS_SYMBOL);
             KOMODO_COINBASE_MATURITY = 1;
-            //fprintf(stderr,"ASSETCHAINS_PORT %s %u (%s)\n",ASSETCHAINS_SYMBOL,ASSETCHAINS_PORT,ASSETCHAINS_USERPASS);
+            //LogPrintf("ASSETCHAINS_PORT %s %u (%s)\n",ASSETCHAINS_SYMBOL,ASSETCHAINS_PORT,ASSETCHAINS_USERPASS);
         }
         //ASSETCHAINS_NOTARIES = GetArg("-ac_notaries","");
         //komodo_assetchain_pubkeys((char *)ASSETCHAINS_NOTARIES.c_str());
@@ -1629,8 +1629,8 @@ static void komodo_args(char *argv0)
         {
             fprintf(fp,iguanafmtstr,name.c_str(),name.c_str(),name.c_str(),name.c_str(),magicstr,ASSETCHAINS_PORT,ASSETCHAINS_PORT+1,"78.47.196.146");
             fclose(fp);
-            //printf("created (%s)\n",fname);
-        } else printf("error creating (%s)\n",fname);
+            //LogPrintf("created (%s)\n",fname);
+        } else error("error creating (%s)\n",fname);
 #endif
     }
     else
@@ -1665,14 +1665,14 @@ static void komodo_args(char *argv0)
                 komodo_userpass(username,password,fp);
                 sprintf(iter == 0 ? RESUSERPASS : BTCUSERPASS,"%s:%s",username,password);
                 fclose(fp);
-                //printf("KOMODO.(%s) -> userpass.(%s)\n",fname,RESUSERPASS);
-            } //else printf("couldnt open.(%s)\n",fname);
+                //LogPrintf("KOMODO.(%s) -> userpass.(%s)\n",fname,RESUSERPASS);
+            } //else error("couldnt open.(%s)\n",fname);
             if ( IS_KOMODO_NOTARY == 0 )
                 break;
         }
     }
     BITCOIND_PORT = GetArg("-rpcport", BaseParams().RPCPort());
-    //fprintf(stderr,"%s chain params initialized\n",ASSETCHAINS_SYMBOL);
+    //LogPrintf("%s chain params initialized\n",ASSETCHAINS_SYMBOL);
 }
 
 static void komodo_nameset(char *symbol,char *dest,char *source)
@@ -1718,7 +1718,7 @@ static size_t accumulatebytes(void *ptr,size_t size,size_t nmemb,struct return_s
     s->ptr = (char *)realloc(s->ptr,new_len+1);
     if ( s->ptr == NULL )
     {
-        fprintf(stderr, "accumulate realloc() failed\n");
+        error("accumulate realloc() failed\n");
         exit(-1);
     }
     memcpy(s->ptr+s->len,ptr,size*nmemb);
@@ -1739,7 +1739,7 @@ static void init_string(struct return_string *s)
     s->ptr = (char *)calloc(1,s->len+1);
     if ( s->ptr == NULL )
     {
-        fprintf(stderr,"init_string malloc() failed\n");
+        LogPrintf("init_string malloc() failed\n");
         exit(-1);
     }
     s->ptr[0] = '\0';
@@ -1763,17 +1763,17 @@ static void init_string(struct return_string *s)
 static char *post_process_bitcoind_RPC(char *debugstr,char *command,char *rpcstr,char *params)
 {
     long i,j,len; char *retstr = 0; cJSON *json,*result,*error;
-    //printf("<<<<<<<<<<< bitcoind_RPC: %s post_process_bitcoind_RPC.%s.[%s]\n",debugstr,command,rpcstr);
+    //LogPrintf("<<<<<<<<<<< bitcoind_RPC: %s post_process_bitcoind_RPC.%s.[%s]\n",debugstr,command,rpcstr);
     if ( command == 0 || rpcstr == 0 || rpcstr[0] == 0 )
     {
         if ( strcmp(command,"signrawtransaction") != 0 )
-            printf("<<<<<<<<<<< bitcoind_RPC: %s post_process_bitcoind_RPC.%s.[%s]\n",debugstr,command,rpcstr);
+            LogPrintf("<<<<<<<<<<< bitcoind_RPC: %s post_process_bitcoind_RPC.%s.[%s]\n",debugstr,command,rpcstr);
         return(rpcstr);
     }
     json = cJSON_Parse(rpcstr);
     if ( json == 0 )
     {
-        printf("<<<<<<<<<<< bitcoind_RPC: %s post_process_bitcoind_RPC.%s can't parse.(%s) params.(%s)\n",debugstr,command,rpcstr,params);
+        LogPrintf("<<<<<<<<<<< bitcoind_RPC: %s post_process_bitcoind_RPC.%s can't parse.(%s) params.(%s)\n",debugstr,command,rpcstr,params);
         free(rpcstr);
         return(0);
     }
@@ -1795,12 +1795,12 @@ static char *post_process_bitcoind_RPC(char *debugstr,char *command,char *rpcstr
         else if ( (error->type&0xff) != cJSON_NULL || (result->type&0xff) != cJSON_NULL )
         {
             if ( strcmp(command,"signrawtransaction") != 0 )
-                printf("<<<<<<<<<<< bitcoind_RPC: %s post_process_bitcoind_RPC (%s) error.%s\n",debugstr,command,rpcstr);
+                LogPrintf("<<<<<<<<<<< bitcoind_RPC: %s post_process_bitcoind_RPC (%s) error.%s\n",debugstr,command,rpcstr);
         }
         free(rpcstr);
     } else retstr = rpcstr;
     free_json(json);
-    //fprintf(stderr,"<<<<<<<<<<< bitcoind_RPC: postprocess returns.(%s)\n",retstr);
+    //LogPrintf("<<<<<<<<<<< bitcoind_RPC: postprocess returns.(%s)\n",retstr);
     return(retstr);
 }
 #endif
@@ -1828,7 +1828,7 @@ static char *bitcoind_RPC(char **retstrp,char *debugstr,char *url,char *userpass
     if ( url[0] == 0 )
         strcpy(url,"http://127.0.0.1:7876/nxt");
     if ( specialcase != 0 && 0 )
-        printf("<<<<<<<<<<< bitcoind_RPC: debug.(%s) url.(%s) command.(%s) params.(%s)\n",debugstr,url,command,params);
+        LogPrintf("<<<<<<<<<<< bitcoind_RPC: debug.(%s) url.(%s) command.(%s) params.(%s)\n",debugstr,url,command,params);
 try_again:
     if ( retstrp != 0 )
         *retstrp = 0;
@@ -1868,9 +1868,9 @@ try_again:
             
             databuf = (char *)malloc(256 + strlen(command) + strlen(params));
             sprintf(databuf,"{\"id\":\"jl777\",\"method\":\"%s\",\"params\":%s%s%s}",command,bracket0,params,bracket1);
-            //printf("url.(%s) userpass.(%s) databuf.(%s)\n",url,userpass,databuf);
+            //LogPrintf("url.(%s) userpass.(%s) databuf.(%s)\n",url,userpass,databuf);
             //
-        } //else if ( specialcase != 0 ) fprintf(stderr,"databuf.(%s)\n",params);
+        } //else if ( specialcase != 0 ) LogPrintf("databuf.(%s)\n",params);
         curl_easy_setopt(curl_handle,CURLOPT_POST,1L);
         if ( databuf != 0 )
             curl_easy_setopt(curl_handle,CURLOPT_POSTFIELDS,databuf);
@@ -1890,18 +1890,18 @@ try_again:
         numretries++;
         if ( specialcase != 0 )
         {
-            printf("<<<<<<<<<<< bitcoind_RPC.(%s): BTCD.%s timeout params.(%s) s.ptr.(%s) err.%d\n",url,command,params,s.ptr,res);
+            error("<<<<<<<<<<< bitcoind_RPC.(%s): BTCD.%s timeout params.(%s) s.ptr.(%s) err.%d\n",url,command,params,s.ptr,res);
             free(s.ptr);
             return(0);
         }
         else if ( numretries >= 1 )
         {
-            //printf("Maximum number of retries exceeded!\n");
+            //error("Maximum number of retries exceeded!\n");
             free(s.ptr);
             return(0);
         }
         if ( (rand() % 1000) == 0 )
-            printf( "curl_easy_perform() failed: %s %s.(%s %s), retries: %d\n",curl_easy_strerror(res),debugstr,url,command,numretries);
+            LogPrintf( "curl_easy_perform() failed: %s %s.(%s %s), retries: %d\n",curl_easy_strerror(res),debugstr,url,command,numretries);
         free(s.ptr);
         sleep((1<<numretries));
         goto try_again;
@@ -1914,7 +1914,7 @@ try_again:
             count++;
             elapsedsum += (OS_milliseconds() - starttime);
             if ( (count % 1000000) == 0)
-                printf("%d: ave %9.6f | elapsed %.3f millis | bitcoind_RPC.(%s) url.(%s)\n",count,elapsedsum/count,(OS_milliseconds() - starttime),command,url);
+                LogPrintf("%d: ave %9.6f | elapsed %.3f millis | bitcoind_RPC.(%s) url.(%s)\n",count,elapsedsum/count,(OS_milliseconds() - starttime),command,url);
             if ( retstrp != 0 )
             {
                 *retstrp = s.ptr;
@@ -1925,15 +1925,15 @@ try_again:
         else
         {
             if ( 0 && specialcase != 0 )
-                fprintf(stderr,"<<<<<<<<<<< bitcoind_RPC: BTCD.(%s) -> (%s)\n",params,s.ptr);
+                LogPrintf("<<<<<<<<<<< bitcoind_RPC: BTCD.(%s) -> (%s)\n",params,s.ptr);
             count2++;
             elapsedsum2 += (OS_milliseconds() - starttime);
             if ( (count2 % 10000) == 0)
-                printf("%d: ave %9.6f | elapsed %.3f millis | NXT calls.(%s) cmd.(%s)\n",count2,elapsedsum2/count2,(double)(OS_milliseconds() - starttime),url,command);
+                LogPrintf("%d: ave %9.6f | elapsed %.3f millis | NXT calls.(%s) cmd.(%s)\n",count2,elapsedsum2/count2,(double)(OS_milliseconds() - starttime),url,command);
             return(s.ptr);
         }
     }
-    printf("bitcoind_RPC: impossible case\n");
+    error("bitcoind_RPC: impossible case\n");
     free(s.ptr);
     return(0);
 }
@@ -1948,7 +1948,7 @@ static char *komodo_issuemethod(char *userpass,char *method,char *params,uint16_
     {
         sprintf(url,(char *)"http://127.0.0.1:%u",port);
         sprintf(postdata,"{\"method\":\"%s\",\"params\":%s}",method,params);
-        //printf("[%s] (%s) postdata.(%s) params.(%s) USERPASS.(%s)\n",ASSETCHAINS_SYMBOL,url,postdata,params,RESUSERPASS);
+        //LogPrintf("[%s] (%s) postdata.(%s) params.(%s) USERPASS.(%s)\n",ASSETCHAINS_SYMBOL,url,postdata,params,RESUSERPASS);
         retstr2 = bitcoind_RPC(&retstr,(char *)"debug",url,userpass,method,params);
         //retstr = curl_post(&cHandle,url,USERPASS,postdata,0,0,0,0);
     }

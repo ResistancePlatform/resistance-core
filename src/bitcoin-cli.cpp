@@ -77,7 +77,6 @@ static int AppInitRPC(int argc, char* argv[])
     // Parameters
     //
     ParseParameters(argc, argv);
-    komodo_args(argv[0]);
     if (argc<2 || mapArgs.count("-?") || mapArgs.count("-h") || mapArgs.count("-help") || mapArgs.count("-version")) {
         std::string strUsage = _("Resistance RPC client version") + " " + FormatFullVersion() + "\n" + PrivacyInfo();
         if (!mapArgs.count("-version")) {
@@ -118,6 +117,10 @@ static int AppInitRPC(int argc, char* argv[])
         fprintf(stderr, "Error: SSL mode for RPC (-rpcssl) is no longer supported.\n");
         return EXIT_FAILURE;
     }
+
+    // komodo jumblr
+    komodo_args(argv[0]);
+
     return CONTINUE_EXECUTION;
 }
 

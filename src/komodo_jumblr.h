@@ -229,12 +229,18 @@ static char *jumblr_zgetoperationstatus(char *opid)
     return(jumblr_issuemethod(RESUSERPASS,(char *)"z_getoperationstatus",params,BITCOIND_PORT));
 }
 
-static char *jumblr_sendt_to_z(char *taddr,char *zaddr,double amount)
+static char *jumblr_sendt_to_z(char *taddr,double total,char *zaddr,double amount)
 {
     char params[1024]; double fee = ((amount-3*JUMBLR_TXFEE) * JUMBLR_FEE) * 1.5;
+    double restAmount = total - amount;
     if ( jumblr_addresstype(zaddr) != 'z' || jumblr_addresstype(taddr) != 't' )
         return(clonestr((char *)"{\"error\":\"illegal address in t to z\"}"));
-    sprintf(params,"[\"%s\", [{\"address\":\"%s\",\"amount\":%.8f}, {\"address\":\"%s\",\"amount\":%.8f}], 1, %.8f]",taddr,zaddr,amount-fee-JUMBLR_TXFEE,JUMBLR_ADDR,fee,JUMBLR_TXFEE);
+    if ( restAmount < 0 )
+        return(clonestr((char *)"{\"error\":\"amount is incorrect in t to z\"}"));
+    else if ( restAmount == 0 )
+        sprintf(params,"[\"%s\", [{\"address\":\"%s\",\"amount\":%.8f}, {\"address\":\"%s\",\"amount\":%.8f}], 1, %.8f]",taddr,zaddr,amount-fee-JUMBLR_TXFEE,JUMBLR_ADDR,fee,JUMBLR_TXFEE);
+    else
+        sprintf(params,"[\"%s\", [{\"address\":\"%s\",\"amount\":%.8f}, {\"address\":\"%s\",\"amount\":%.8f}, {\"address\":\"%s\",\"amount\":%.8f}], 1, %.8f]",taddr,zaddr,amount-fee-JUMBLR_TXFEE,JUMBLR_ADDR,fee,taddr,restAmount,JUMBLR_TXFEE);
     LogPrintf("t -> z: %s\n",params);
     return(jumblr_issuemethod(RESUSERPASS,(char *)"z_sendmany",params,BITCOIND_PORT));
 }
@@ -398,7 +404,7 @@ static int32_t jumblr_itemset(struct jumblr_item *ptr,cJSON *item,char *status)
                 {
                     if ( strcmp(addr,JUMBLR_ADDR) == 0 )
                         ptr->fee = amount;
-                    else
+                    else if ( strcmp(addr,ptr->src) != 0 )
                     {
                         ptr->amount = amount;
                         safecopy(ptr->dest,addr,sizeof(ptr->dest));
@@ -429,7 +435,8 @@ static void jumblr_opidupdate(struct jumblr_item *ptr)
                         if ( strcmp(status,(char *)"success") == 0 )
                         {
                             ptr->status = jumblr_itemset(ptr,item,status);
-                            if ( (jumblr_addresstype(ptr->src) == 't' && jumblr_addresstype(ptr->src) == 'z' && strcmp(ptr->src,Jumblr_deposit) != 0) || (jumblr_addresstype(ptr->src) == 'z' && jumblr_addresstype(ptr->src) == 't' && Jumblr_secretaddrfind(ptr->dest) < 0) )
+                            if ( (jumblr_addresstype(ptr->src) == 't' && jumblr_addresstype(ptr->dest) == 'z' && strcmp(ptr->src,Jumblr_deposit) != 0) || 
+                                 (jumblr_addresstype(ptr->src) == 'z' && jumblr_addresstype(ptr->dest) == 't' && Jumblr_secretaddrfind(ptr->dest) < 0) )
                             {
                                 LogPrintf("a non-jumblr t->z pruned\n");
                                 free(jumblr_zgetoperationresult(ptr->opid));
@@ -556,7 +563,7 @@ static void jumblr_opidsupdate()
                     {
                         if ( ptr->status == 0 )
                             jumblr_opidupdate(ptr);
-                        //LogPrintf("%d: %s -> %s %.8f\n",ptr->status,ptr->src,ptr->dest,dstr(ptr->amount));
+                        //LogPrintf("jumblr_opidsupdate %d: %d %s -> %s %.8f\n",ptr->status,ptr->spent,ptr->src,ptr->dest,dstr(ptr->amount));
                         if ( jumblr_addresstype(ptr->src) == 'z' && jumblr_addresstype(ptr->dest) == 't' )
                             jumblr_prune(ptr);
                     }
@@ -668,7 +675,7 @@ static void jumblr_iteration()
                     else if ( (r & 3) == 0 && total >= SATOSHIDEN * ((JUMBLR_INCR + 3*fee)*10 + 3*JUMBLR_TXFEE) )
                         amount = SATOSHIDEN * ((JUMBLR_INCR + 3*fee)*10 + 3*JUMBLR_TXFEE);
                     else amount = SATOSHIDEN * ((JUMBLR_INCR + 3*fee) + 3*JUMBLR_TXFEE);*/
-                    if ( amount > 0 && (retstr= jumblr_sendt_to_z(Jumblr_deposit,addr,dstr(amount))) != 0 )
+                    if ( amount > 0 && (retstr= jumblr_sendt_to_z(Jumblr_deposit,dstr(total),addr,dstr(amount))) != 0 )
                     {
                         LogPrintf("sendt_to_z.(%s)\n",retstr);
                         free(retstr);
@@ -687,6 +694,7 @@ static void jumblr_iteration()
                 counter = n = 0;
                 HASH_ITER(hh,Jumblrs,ptr,tmp)
                 {
+                    //LogPrintf("jumblr_iteration %d: %d %s -> %s %.8f\n",ptr->status,ptr->spent,ptr->src,ptr->dest,dstr(ptr->amount));
                     if ( ptr->spent == 0 && ptr->status > 0 && jumblr_addresstype(ptr->src) == 't' && jumblr_addresstype(ptr->dest) == 'z' )
                     {
                         if ( (total= jumblr_balance(ptr->dest)) >= (fee + JUMBLR_FEE)*SATOSHIDEN )

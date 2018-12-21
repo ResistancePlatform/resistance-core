@@ -30,6 +30,8 @@
 #include "wallet/asyncrpcoperation_sendmany.h"
 #include "wallet/asyncrpcoperation_shieldcoinbase.h"
 
+#include "komodo_globals.h"
+ 
 #include "sodium.h"
 
 #include <stdint.h>
@@ -3516,6 +3518,11 @@ UniValue z_getoperationresult(const UniValue& params, bool fHelp)
             + HelpExampleRpc("z_getoperationresult", "'[\"operationid\", ... ]'")
         );
 
+    if (params.size() == 0 && JUMBLR_PAUSE == 0)
+        throw runtime_error(
+            "Could not call while Jumblr is working, if you want to call it please call jumblr_pause first.\n"
+        );
+        
     // This call will remove finished operations
     return z_getoperationstatus_IMPL(params, true);
 }

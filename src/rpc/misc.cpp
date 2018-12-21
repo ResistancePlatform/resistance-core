@@ -32,8 +32,6 @@
 
 using namespace std;
 
-extern int32_t JUMBLR_PAUSE;
-
 /**
  * @note Do not add or change anything in the information returned by this
  * method. `getinfo` exists for backwards-compatibility only. It combines

@@ -510,6 +510,11 @@ UniValue jumblr_resume(const UniValue& params, bool fHelp)
     int32_t retval; UniValue result(UniValue::VOBJ);
     if (fHelp )
         throw runtime_error("jumblr_resume\n");
+    if (Jumblr_deposit[0] == 0)
+    {
+        result.push_back(Pair("error", "empty deposit address"));
+        return(result);
+    }
     JUMBLR_PAUSE = 0;
     result.push_back(Pair("result", "resumed"));
     return(result);

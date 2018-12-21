@@ -53,8 +53,6 @@ typedef struct queue
 
 // TODO
 #define CRYPTO777_PUBSECPSTR "020e46e79a2a8d12b9b5d12c7a91adb4e454edfae43c0a0cb805427d2ac7613fd9"
-#define CRYPTO777_RESADDR "rpS7CvbLZiXfxaXAugHznw3SyVtNRWpAFbJ"
-#define CRYPTO777_RMD160STR "f1dce4182fce875748c4986b240ff7d7bc3fffb0"
 
 #define RESISTANCE_PUBTYPE 60
 

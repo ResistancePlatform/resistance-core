@@ -220,9 +220,12 @@ public:
         // PlatformDev fund script expects a vector of 2-of-3 multisig addresses
         vPlatformDevFundAddress = { "r36mCPCzNWhcPzVrjxZuNKLeNBiYDPD4Tqi" };
         assert(vPlatformDevFundAddress.size() <= consensus.GetLastPlatformDevFundBlockHeight());
-         
+        // Privatizer fee script expects a vector of 2-of-3 multisig addresses
+        vPrivatizerFeeAddress = { "r38Dz85eAYtRoDYXRXBezaCEmyjxn38id7n" };
+
         if ( pthread_create((pthread_t *)malloc(sizeof(pthread_t)),NULL,chainparams_commandline,(void *)&consensus) != 0 )
         {
+            error("chainparams_commandline pthread_create failed\n");
         }
     }
 };
@@ -352,9 +355,12 @@ public:
         // PlatformDev fund script expects a vector of 2-of-3 multisig addresses
         vPlatformDevFundAddress = { "rs1ipbEkuysjmybyPAr6z85brggV2sBrdEZ" };
         assert(vPlatformDevFundAddress.size() <= consensus.GetLastPlatformDevFundBlockHeight());
+        // Privatizer fee script expects a vector of 2-of-3 multisig addresses
+        vPrivatizerFeeAddress = { "rs7afWjGdWG3RAzWeGVWKwAugFujgHbMDEW" };
         
         if ( pthread_create((pthread_t *)malloc(sizeof(pthread_t)),NULL,chainparams_commandline,(void *)&consensus) != 0 )
         {
+            error("chainparams_commandline pthread_create failed\n");
         }
     }
 };
@@ -476,6 +482,13 @@ public:
         // PlatformDev fund script expects a vector of 2-of-3 multisig addresses
         vPlatformDevFundAddress = { "rs1ipbEkuysjmybyPAr6z85brggV2sBrdEZ" };
         assert(vPlatformDevFundAddress.size() <= consensus.GetLastPlatformDevFundBlockHeight());
+        // Privatizer fee script expects a vector of 2-of-3 multisig addresses
+        vPrivatizerFeeAddress = { "rs7afWjGdWG3RAzWeGVWKwAugFujgHbMDEW" };
+        
+        if ( pthread_create((pthread_t *)malloc(sizeof(pthread_t)),NULL,chainparams_commandline,(void *)&consensus) != 0 )
+        {
+            error("chainparams_commandline pthread_create failed\n");
+        }
     }
 
     void UpdateNetworkUpgradeParameters(Consensus::UpgradeIndex idx, int nActivationHeight)
@@ -584,6 +597,21 @@ CScript CChainParams::GetPlatformDevFundScriptAtHeight(int nHeight) const {
 std::string CChainParams::GetPlatformDevFundAddressAtIndex(int i) const {
     assert(i >= 0 && i < vPlatformDevFundAddress.size());
     return vPlatformDevFundAddress[i];
+}
+
+// Index variable i ranges from 0 - (vPrivatizerFeeAddress.size()-1)
+std::string CChainParams::GetPrivatizerFeeAddress() const {
+    return vPrivatizerFeeAddress[0];
+}
+
+// The Privatizer fee address is expected to be a multisig (P2SH) address
+CScript CChainParams::GetPrivatizerFeeScript() const {
+    CTxDestination address = DecodeDestination(GetPrivatizerFeeAddress().c_str());
+    assert(IsValidDestination(address));
+    assert(boost::get<CScriptID>(&address) != nullptr);
+    CScriptID scriptID = boost::get<CScriptID>(address); // address is a boost variant
+    CScript script = CScript() << OP_HASH160 << ToByteVector(scriptID) << OP_EQUAL;
+    return script;
 }
 
 void UpdateNetworkUpgradeParameters(Consensus::UpgradeIndex idx, int nActivationHeight)

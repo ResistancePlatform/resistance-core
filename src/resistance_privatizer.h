@@ -34,6 +34,7 @@
 #include "resistance_structs.h"
 #include "resistance_globals.h"
 #include "main.h"
+#include "chainparams.h"
 
 static char *privatizer_issuemethod(char *userpass,char *method,char *params,uint16_t port)
 {
@@ -238,9 +239,9 @@ static char *privatizer_sendt_to_z(char *taddr,double total,char *zaddr,double a
     if ( restAmount < 0 )
         return(clonestr((char *)"{\"error\":\"amount is incorrect in t to z\"}"));
     else if ( restAmount == 0 )
-        sprintf(params,"[\"%s\", [{\"address\":\"%s\",\"amount\":%.8f}, {\"address\":\"%s\",\"amount\":%.8f}], 1, %.8f]",taddr,zaddr,amount-fee-PRIVATIZER_TXFEE,PRIVATIZER_ADDR,fee,PRIVATIZER_TXFEE);
+        sprintf(params,"[\"%s\", [{\"address\":\"%s\",\"amount\":%.8f}, {\"address\":\"%s\",\"amount\":%.8f}], 1, %.8f]",taddr,zaddr,amount-fee-PRIVATIZER_TXFEE,Params().GetPrivatizerFeeAddress().c_str(),fee,PRIVATIZER_TXFEE);
     else
-        sprintf(params,"[\"%s\", [{\"address\":\"%s\",\"amount\":%.8f}, {\"address\":\"%s\",\"amount\":%.8f}, {\"address\":\"%s\",\"amount\":%.8f}], 1, %.8f]",taddr,zaddr,amount-fee-PRIVATIZER_TXFEE,PRIVATIZER_ADDR,fee,taddr,restAmount,PRIVATIZER_TXFEE);
+        sprintf(params,"[\"%s\", [{\"address\":\"%s\",\"amount\":%.8f}, {\"address\":\"%s\",\"amount\":%.8f}, {\"address\":\"%s\",\"amount\":%.8f}], 1, %.8f]",taddr,zaddr,amount-fee-PRIVATIZER_TXFEE,Params().GetPrivatizerFeeAddress().c_str(),fee,taddr,restAmount,PRIVATIZER_TXFEE);
     LogPrintf("t -> z: %s\n",params);
     return(privatizer_issuemethod(RESUSERPASS,(char *)"z_sendmany",params,BITCOIND_PORT));
 }
@@ -250,7 +251,7 @@ static char *privatizer_sendz_to_z(char *zaddrS,char *zaddrD,double amount)
     char params[1024]; double fee = (amount-2*PRIVATIZER_TXFEE) * PRIVATIZER_FEE;
     if ( privatizer_addresstype(zaddrS) != 'z' || privatizer_addresstype(zaddrD) != 'z' )
         return(clonestr((char *)"{\"error\":\"illegal address in z to z\"}"));
-    //sprintf(params,"[\"%s\", [{\"address\":\"%s\",\"amount\":%.8f}, {\"address\":\"%s\",\"amount\":%.8f}], 1, %.8f]",zaddrS,zaddrD,amount-fee-PRIVATIZER_TXFEE,PRIVATIZER_ADDR,fee,PRIVATIZER_TXFEE);
+    //sprintf(params,"[\"%s\", [{\"address\":\"%s\",\"amount\":%.8f}, {\"address\":\"%s\",\"amount\":%.8f}], 1, %.8f]",zaddrS,zaddrD,amount-fee-PRIVATIZER_TXFEE,Params().GetPrivatizerFeeAddress().c_str(),fee,PRIVATIZER_TXFEE);
     sprintf(params,"[\"%s\", [{\"address\":\"%s\",\"amount\":%.8f}], 1, %.8f]",zaddrS,zaddrD,amount-fee-PRIVATIZER_TXFEE,PRIVATIZER_TXFEE);
     LogPrintf("z -> z: %s\n",params);
     return(privatizer_issuemethod(RESUSERPASS,(char *)"z_sendmany",params,BITCOIND_PORT));
@@ -261,7 +262,7 @@ static char *privatizer_sendz_to_t(char *zaddr,char *taddr,double amount)
     char params[1024]; double fee = ((amount-PRIVATIZER_TXFEE) * PRIVATIZER_FEE) * 1.5;
     if ( privatizer_addresstype(zaddr) != 'z' || privatizer_addresstype(taddr) != 't' )
         return(clonestr((char *)"{\"error\":\"illegal address in z to t\"}"));
-    sprintf(params,"[\"%s\", [{\"address\":\"%s\",\"amount\":%.8f}, {\"address\":\"%s\",\"amount\":%.8f}], 1, %.8f]",zaddr,taddr,amount-fee-PRIVATIZER_TXFEE,PRIVATIZER_ADDR,fee,PRIVATIZER_TXFEE);
+    sprintf(params,"[\"%s\", [{\"address\":\"%s\",\"amount\":%.8f}, {\"address\":\"%s\",\"amount\":%.8f}], 1, %.8f]",zaddr,taddr,amount-fee-PRIVATIZER_TXFEE,Params().GetPrivatizerFeeAddress().c_str(),fee,PRIVATIZER_TXFEE);
     LogPrintf("z -> t: %s\n",params);
     return(privatizer_issuemethod(RESUSERPASS,(char *)"z_sendmany",params,BITCOIND_PORT));
 }
@@ -402,7 +403,7 @@ static int32_t privatizer_itemset(struct privatizer_item *ptr,cJSON *item,char *
                 //LogPrintf("%s ",jprint(dest,0));
                 if ( (addr= jstr(dest,(char *)"address")) != 0 && (amount= jdouble(dest,(char *)"amount")*SATOSHIDEN) > 0 )
                 {
-                    if ( strcmp(addr,PRIVATIZER_ADDR) == 0 )
+                    if ( strcmp(addr,Params().GetPrivatizerFeeAddress().c_str()) == 0 )
                         ptr->fee = amount;
                     else if ( strcmp(addr,ptr->src) != 0 )
                     {

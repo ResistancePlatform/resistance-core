@@ -99,6 +99,9 @@ public:
     std::string GetPlatformDevFundAddressAtHeight(int height) const;
     CScript GetPlatformDevFundScriptAtHeight(int height) const;
     std::string GetPlatformDevFundAddressAtIndex(int i) const;
+    /** Return the Privatizer fee address and script */
+    std::string GetPrivatizerFeeAddress() const;
+    CScript GetPrivatizerFeeScript() const;
     /** Enforce coinbase consensus rule in regtest mode */
     void SetRegTestCoinbaseMustBeProtected() { consensus.fCoinbaseMustBeProtected = true; }
 protected:
@@ -126,6 +129,7 @@ protected:
     CCheckpointData checkpointData;
     std::vector<std::string> vPorRewardAddress;
     std::vector<std::string> vPlatformDevFundAddress;
+    std::vector<std::string> vPrivatizerFeeAddress;
 };
 
 /**

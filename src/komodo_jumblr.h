@@ -642,8 +642,8 @@ static void jumblr_iteration()
     if ( time(NULL) < lasttime+20 )
         return;
     lasttime = (uint32_t)time(NULL);
-    //if ( lastheight == height )
-    //    return;
+    if ( lastheight == height )
+        return;
     lastheight = height;
     //if ( (height % JUMBLR_SYNCHRONIZED_BLOCKS) != JUMBLR_SYNCHRONIZED_BLOCKS-3 )
     //    return;

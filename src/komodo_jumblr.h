@@ -632,7 +632,7 @@ static void jumblr_iteration()
         }
     }
     height = (int32_t)chainActive.Tip()->nHeight;
-    if ( time(NULL) < lasttime+10 )
+    if ( time(NULL) < lasttime+20 )
         return;
     lasttime = (uint32_t)time(NULL);
     //if ( lastheight == height )

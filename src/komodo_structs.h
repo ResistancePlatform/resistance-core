@@ -22,33 +22,6 @@
 #include "uthash.h"
 #include "utlist.h"
 
-/*#ifdef _WIN32
-#define PACKED
-#else
-#define PACKED __attribute__((packed))
-#endif*/
-
-#define GENESIS_NBITS 0x1f00ffff
-#define KOMODO_MINRATIFY ((height < 90000) ? 7 : 11)
-#define KOMODO_NOTARIES_HARDCODED 180000 // DONT CHANGE
-#define KOMODO_MAXBLOCKS 250000 // DONT CHANGE
-
-#define KOMODO_EVENT_RATIFY 'P'
-#define KOMODO_EVENT_NOTARIZED 'N'
-#define KOMODO_EVENT_RESHEIGHT 'K' // TODO
-#define KOMODO_EVENT_REWIND 'B'
-#define KOMODO_EVENT_PRICEFEED 'V'
-#define KOMODO_EVENT_OPRETURN 'R'
-#define KOMODO_OPRETURN_DEPOSIT 'D'
-#define KOMODO_OPRETURN_ISSUED 'I' // assetchain
-#define KOMODO_OPRETURN_WITHDRAW 'W' // assetchain
-#define KOMODO_OPRETURN_REDEEMED 'X'
-
-#define KOMODO_KVPROTECTED 1
-#define KOMODO_KVBINARY 2
-#define KOMODO_KVDURATION 1440
-#define KOMODO_ASSETCHAIN_MAXLEN 65
-
 union _bits256 { uint8_t bytes[32]; uint16_t ushorts[16]; uint32_t uints[8]; uint64_t ulongs[4]; uint64_t txid; };
 typedef union _bits256 bits256;
 
@@ -102,5 +75,16 @@ struct komodo_state
 };
 
 struct return_string { char *ptr; size_t len; };
+
+struct sha256_vstate { uint64_t length; uint32_t state[8],curlen; uint8_t buf[64]; };
+struct rmd160_vstate { uint64_t length; uint8_t buf[64]; uint32_t curlen, state[5]; };
+
+struct jumblr_item
+{
+    UT_hash_handle hh;
+    int64_t amount,fee,txfee; // fee and txfee not really used (yet)
+    uint32_t spent,pad;
+    char opid[66],src[128],dest[128],status;
+};
 
 #endif /* komodo_structs__h */

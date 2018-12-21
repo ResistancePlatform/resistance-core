@@ -22,8 +22,10 @@
 #include "komodo_defs.h"
 #include "amount.h"
 #include "consensus/consensus.h"
+#include "chainparamsbase.h"
 #include "komodo_globals.h"
 #include "komodo_cJSON.h"
+#include "komodo_structs.h"
 #include "mini-gmp.h"
 
 #ifdef _WIN32
@@ -55,9 +57,6 @@ typedef struct queue
 #define CRYPTO777_RMD160STR "f1dce4182fce875748c4986b240ff7d7bc3fffb0"
 
 #define KOMODO_PUBTYPE 60
-
-struct sha256_vstate { uint64_t length; uint32_t state[8],curlen; uint8_t buf[64]; };
-struct rmd160_vstate { uint64_t length; uint8_t buf[64]; uint32_t curlen, state[5]; };
 
 // following is ported from libtom
 
@@ -818,12 +817,7 @@ static char *bitcoin_address(char *coinaddr,uint8_t addrtype,uint8_t *pubkey_or_
     return(coinaddr);
 }
 
-#define MAX_CURRENCIES 32
-const static char CURRENCIES[][8] = { "USD", "EUR", "JPY", "GBP", "AUD", "CAD", "CHF", "NZD", // major currencies
-    "CNY", "RUB", "MXN", "BRL", "INR", "HKD", "TRY", "ZAR", "PLN", "NOK", "SEK", "DKK", "CZK", "HUF", "ILS", "KRW", "MYR", "PHP", "RON", "SGD", "THB", "BGN", "IDR", "HRK",
-    "RES" };
-
-static int32_t komodo_baseid(char *origbase)
+static int32_t komodo_baseid(const char *origbase)
 {
     int32_t i; char base[64];
     for (i=0; origbase[i]!=0&&i<sizeof(base); i++)
@@ -1512,7 +1506,7 @@ const static char *argv0names[] =
 
 static void komodo_args(char *argv0)
 {
-    std::string name,addn; char *dirname,fname[512],arg0str[64],magicstr[9]; uint8_t magic[4],extrabuf[256],*extraptr=0; FILE *fp; uint64_t val; int32_t i,baseid,len,n,extralen = 0;
+    std::string conf,name,addn; char *dirname,fname[512],arg0str[64],magicstr[9]; uint8_t magic[4],extrabuf[256],*extraptr=0; FILE *fp; uint64_t val; int32_t i,baseid,len,n,extralen = 0;
     IS_KOMODO_NOTARY = GetBoolArg("-notary", false);
     if ( (KOMODO_EXCHANGEWALLET= GetBoolArg("-exchange", false)) != 0 )
         LogPrintf("KOMODO_EXCHANGEWALLET mode active\n");
@@ -1645,28 +1639,30 @@ static void komodo_args(char *argv0)
             while ( fname[strlen(fname)-1] != '\\' )
                 fname[strlen(fname)-1] = 0;
             if ( iter == 0 )
-                strcat(fname,"Resistance\\resistance.conf");
-            else strcat(fname,"Bitcoin\\bitcoin.conf");
+                strcat(fname,"resistance.conf");
+            else strcat(fname,"bitcoin.conf");
 #else
             while ( fname[strlen(fname)-1] != '/' )
                 fname[strlen(fname)-1] = 0;
 #ifdef __APPLE__
             if ( iter == 0 )
-                strcat(fname,"Resistance/resistance.conf");
-            else strcat(fname,"Bitcoin/Bitcoin.conf");
+                strcat(fname,"resistance.conf");
+            else strcat(fname,"Bitcoin.conf");
 #else
             if ( iter == 0 )
-                strcat(fname,".resistance/resistance.conf");
-            else strcat(fname,".bitcoin/bitcoin.conf");
+                strcat(fname,"resistance.conf");
+            else strcat(fname,"bitcoin.conf");
 #endif
 #endif
-            if ( (fp= fopen(fname,"rb")) != 0 )
+            if (iter == 0)
+                conf = GetArg("-conf",fname);
+            if ( (fp= fopen(conf.c_str(),"rb")) != 0 )
             {
                 komodo_userpass(username,password,fp);
                 sprintf(iter == 0 ? RESUSERPASS : BTCUSERPASS,"%s:%s",username,password);
                 fclose(fp);
-                //LogPrintf("KOMODO.(%s) -> userpass.(%s)\n",fname,RESUSERPASS);
-            } //else error("couldnt open.(%s)\n",fname);
+                //LogPrintf("Resistance.(%s) -> userpass.(%s)\n",conf.c_str(),RESUSERPASS);
+            } //else error("couldnt open.(%d. %s <-> %s)\n",iter,conf.c_str(),fname);
             if ( IS_KOMODO_NOTARY == 0 )
                 break;
         }
@@ -1689,7 +1685,7 @@ static void komodo_nameset(char *symbol,char *dest,char *source)
     }
 }
 
-static struct komodo_state *komodo_stateptrget(char *base)
+static struct komodo_state *komodo_stateptrget(const char *base)
 {
     int32_t baseid;
     if ( base == 0 || base[0] == 0 || strcmp(base,(char *)"RES") == 0 )

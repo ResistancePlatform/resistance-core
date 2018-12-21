@@ -542,7 +542,7 @@ uint64_t calc_nxt64bits(const char *NXTaddr)
     while ( *NXTaddr == '0' && *NXTaddr != 0 )
         NXTaddr++;
     if ( cmp_nxt64bits(NXTaddr,nxt64bits) != 0 )
-        LogPrintf("error calculating nxt64bits: %s -> %llx -> %s\n",NXTaddr,(long long)nxt64bits,nxt64str(nxt64bits));
+        error("error calculating nxt64bits: %s -> %llx -> %s\n",NXTaddr,(long long)nxt64bits,nxt64str(nxt64bits));
     if ( polarity < 0 )
         return(-(int64_t)nxt64bits);
     return(nxt64bits);

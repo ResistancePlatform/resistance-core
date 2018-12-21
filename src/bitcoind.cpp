@@ -13,6 +13,7 @@
 #include "httpserver.h"
 #include "httprpc.h"
 #include "komodo_utils.h"
+#include "komodo_gateway.h"
 
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/filesystem.hpp>
@@ -44,7 +45,11 @@ void WaitForShutdown(boost::thread_group* threadGroup)
     // Tell the main threads to shutdown.
     while (!fShutdown)
     {
-        MilliSleep(200);
+        if ( ASSETCHAINS_SYMBOL[0] == 0 )
+        {
+            komodo_passport_iteration();
+            MilliSleep(1000);
+        } else MilliSleep(200);
         fShutdown = ShutdownRequested();
     }
     if (threadGroup)

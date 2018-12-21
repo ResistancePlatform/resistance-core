@@ -21,9 +21,7 @@
 #include "komodo_cJSON.h"
 #include "komodo_utils.h"
 
-#define KOMODO_MAINNET_START 178999
-
-const char *Notaries_genesis[][2] =
+static const char *Notaries_genesis[][2] =
 {
     { "jl777_testA", "03b7621b44118017a16043f19b30cc8a4cfe068ac4e42417bae16ba460c80f3828" },
     { "jl777_testB", "02ebfc784a4ba768aad88d44d1045d240d47b26e248cafaf1c5169a42d7a61d344" },
@@ -62,7 +60,7 @@ const char *Notaries_genesis[][2] =
     { "titomane_SH", "035f49d7a308dd9a209e894321f010d21b7793461b0c89d6d9231a3fe5f68d9960" },
 };
 
-const char *Notaries_elected0[][2] =
+static const char *Notaries_elected0[][2] =
 {
     { "0_jl777_testA", "03b7621b44118017a16043f19b30cc8a4cfe068ac4e42417bae16ba460c80f3828" },
     { "0_jl777_testB", "02ebfc784a4ba768aad88d44d1045d240d47b26e248cafaf1c5169a42d7a61d344" },
@@ -130,10 +128,7 @@ const char *Notaries_elected0[][2] =
     { "xxspot2_XX", "03d85b221ea72ebcd25373e7961f4983d12add66a92f899deaf07bab1d8b6f5573" }
 };
 
-#define KOMODO_NOTARIES_TIMESTAMP1 1525132800 // May 1st 2018 1530921600 // 7/7/2017
-#define KOMODO_NOTARIES_HEIGHT1 ((814000 / KOMODO_ELECTION_GAP) * KOMODO_ELECTION_GAP)
-
-const char *Notaries_elected1[][2] =
+static const char *Notaries_elected1[][2] =
 {
     {"0dev1_jl777", "03b7621b44118017a16043f19b30cc8a4cfe068ac4e42417bae16ba460c80f3828" },
     {"0dev2_kolo", "030f34af4b908fb8eb2099accb56b8d157d49f6cfb691baa80fdd34f385efed961" },
@@ -200,6 +195,88 @@ const char *Notaries_elected1[][2] =
     {"webworker01_NA", "03bb7d005e052779b1586f071834c5facbb83470094cff5112f0072b64989f97d7" },
     {"xrobesx_NA", "03f0cc6d142d14a40937f12dbd99dbd9021328f45759e26f1877f2a838876709e1" },
 };
+
+static uint32_t komodo_heightstamp(int32_t height)
+{
+    return(0);
+}
+
+void komodo_stateupdate(int32_t height,uint8_t notarypubs[][33],uint8_t numnotaries,uint8_t notaryid,uint256 txhash,uint64_t voutmask,uint8_t numvouts,uint32_t *pvals,uint8_t numpvals,int32_t KMDheight,uint32_t KMDtimestamp,uint64_t opretvalue,uint8_t *opretbuf,uint16_t opretlen,uint16_t vout);
+
+static void komodo_notarysinit(int32_t origheight,uint8_t pubkeys[64][33],int32_t num)
+{
+    static int32_t hwmheight;
+    int32_t k,i,htind,height; struct knotary_entry *kp; struct knotaries_entry N;
+    if ( Pubkeys == 0 )
+        Pubkeys = (struct knotaries_entry *)calloc(1 + (KOMODO_MAXBLOCKS / KOMODO_ELECTION_GAP),sizeof(*Pubkeys));
+    memset(&N,0,sizeof(N));
+    if ( origheight > 0 )
+    {
+        height = (origheight + KOMODO_ELECTION_GAP/2);
+        height /= KOMODO_ELECTION_GAP;
+        height = ((height + 1) * KOMODO_ELECTION_GAP);
+        htind = (height / KOMODO_ELECTION_GAP);
+        if ( htind >= KOMODO_MAXBLOCKS / KOMODO_ELECTION_GAP )
+            htind = (KOMODO_MAXBLOCKS / KOMODO_ELECTION_GAP) - 1;
+        //LogPrintf("htind.%d activation %d from %d vs %d | hwmheight.%d %s\n",htind,height,origheight,(((origheight+KOMODO_ELECTION_GAP/2)/KOMODO_ELECTION_GAP)+1)*KOMODO_ELECTION_GAP,hwmheight,ASSETCHAINS_SYMBOL);
+    } else htind = 0;
+    pthread_mutex_lock(&komodo_mutex);
+    for (k=0; k<num; k++)
+    {
+        kp = (struct knotary_entry *)calloc(1,sizeof(*kp));
+        memcpy(kp->pubkey,pubkeys[k],33);
+        kp->notaryid = k;
+        HASH_ADD_KEYPTR(hh,N.Notaries,kp->pubkey,33,kp);
+        if ( 0 && height > 10000 )
+        {
+            for (i=0; i<33; i++)
+                LogPrintf("%02x",pubkeys[k][i]);
+            LogPrintf(" notarypubs.[%d] ht.%d active at %d\n",k,origheight,htind*KOMODO_ELECTION_GAP);
+        }
+    }
+    N.numnotaries = num;
+    for (i=htind; i<KOMODO_MAXBLOCKS / KOMODO_ELECTION_GAP; i++)
+    {
+        if ( Pubkeys[i].height != 0 && origheight < hwmheight )
+        {
+            LogPrintf("Pubkeys[%d].height %d < %d hwmheight, origheight.%d\n",i,Pubkeys[i].height,hwmheight,origheight);
+            break;
+        }
+        Pubkeys[i] = N;
+        Pubkeys[i].height = i * KOMODO_ELECTION_GAP;
+    }
+    pthread_mutex_unlock(&komodo_mutex);
+    if ( origheight > hwmheight )
+        hwmheight = origheight;
+}
+
+static void komodo_init(int32_t height)
+{
+    static int didinit; uint256 zero; int32_t k,n; uint8_t pubkeys[64][33];
+    if ( 0 && height != 0 )
+        LogPrintf("komodo_init ht.%d didinit.%d\n",height,didinit);
+    memset(&zero,0,sizeof(zero));
+    if ( didinit == 0 )
+    {
+        pthread_mutex_init(&komodo_mutex,NULL);
+        decode_hex(NOTARY_PUBKEY33,33,(char *)NOTARY_PUBKEY.c_str());
+        if ( height >= 0 )
+        {
+            n = (int32_t)(sizeof(Notaries_genesis)/sizeof(*Notaries_genesis));
+            for (k=0; k<n; k++)
+            {
+                if ( Notaries_genesis[k][0] == 0 || Notaries_genesis[k][1] == 0 || Notaries_genesis[k][0][0] == 0 || Notaries_genesis[k][1][0] == 0 )
+                    break;
+                decode_hex(pubkeys[k],33,(char *)Notaries_genesis[k][1]);
+            }
+            komodo_notarysinit(0,pubkeys,k);
+        }
+        //for (i=0; i<sizeof(Minerids); i++)
+        //    Minerids[i] = -2;
+        didinit = 1;
+        komodo_stateupdate(0,0,0,0,zero,0,0,0,0,0,0,0,0,0,0);
+    }
+}
 
 static int32_t komodo_notaries(uint8_t pubkeys[64][33],int32_t height,uint32_t timestamp)
 {
@@ -293,53 +370,6 @@ static int32_t komodo_ratify_threshold(int32_t height,uint64_t signedmask)
     if ( wt > (numnotaries >> 1) || (wt > 7 && (signedmask & 1) != 0) )
         return(1);
     else return(0);
-}
-
-static void komodo_notarysinit(int32_t origheight,uint8_t pubkeys[64][33],int32_t num)
-{
-    static int32_t hwmheight;
-    int32_t k,i,htind,height; struct knotary_entry *kp; struct knotaries_entry N;
-    if ( Pubkeys == 0 )
-        Pubkeys = (struct knotaries_entry *)calloc(1 + (KOMODO_MAXBLOCKS / KOMODO_ELECTION_GAP),sizeof(*Pubkeys));
-    memset(&N,0,sizeof(N));
-    if ( origheight > 0 )
-    {
-        height = (origheight + KOMODO_ELECTION_GAP/2);
-        height /= KOMODO_ELECTION_GAP;
-        height = ((height + 1) * KOMODO_ELECTION_GAP);
-        htind = (height / KOMODO_ELECTION_GAP);
-        if ( htind >= KOMODO_MAXBLOCKS / KOMODO_ELECTION_GAP )
-            htind = (KOMODO_MAXBLOCKS / KOMODO_ELECTION_GAP) - 1;
-        //LogPrintf("htind.%d activation %d from %d vs %d | hwmheight.%d %s\n",htind,height,origheight,(((origheight+KOMODO_ELECTION_GAP/2)/KOMODO_ELECTION_GAP)+1)*KOMODO_ELECTION_GAP,hwmheight,ASSETCHAINS_SYMBOL);
-    } else htind = 0;
-    pthread_mutex_lock(&komodo_mutex);
-    for (k=0; k<num; k++)
-    {
-        kp = (struct knotary_entry *)calloc(1,sizeof(*kp));
-        memcpy(kp->pubkey,pubkeys[k],33);
-        kp->notaryid = k;
-        HASH_ADD_KEYPTR(hh,N.Notaries,kp->pubkey,33,kp);
-        if ( 0 && height > 10000 )
-        {
-            for (i=0; i<33; i++)
-                LogPrintf("%02x",pubkeys[k][i]);
-            LogPrintf(" notarypubs.[%d] ht.%d active at %d\n",k,origheight,htind*KOMODO_ELECTION_GAP);
-        }
-    }
-    N.numnotaries = num;
-    for (i=htind; i<KOMODO_MAXBLOCKS / KOMODO_ELECTION_GAP; i++)
-    {
-        if ( Pubkeys[i].height != 0 && origheight < hwmheight )
-        {
-            LogPrintf("Pubkeys[%d].height %d < %d hwmheight, origheight.%d\n",i,Pubkeys[i].height,hwmheight,origheight);
-            break;
-        }
-        Pubkeys[i] = N;
-        Pubkeys[i].height = i * KOMODO_ELECTION_GAP;
-    }
-    pthread_mutex_unlock(&komodo_mutex);
-    if ( origheight > hwmheight )
-        hwmheight = origheight;
 }
 
 static int32_t komodo_chosennotary(int32_t *notaryidp,int32_t height,uint8_t *pubkey33,uint32_t timestamp)
@@ -481,67 +511,5 @@ static void komodo_notarized_update(struct komodo_state *sp,int32_t nHeight,int3
     //sp->MoMdepth = np->MoMdepth = MoMdepth;
     portable_mutex_unlock(&komodo_mutex);
 }
-
-static void komodo_init(int32_t height)
-{
-    static int didinit; uint256 zero; int32_t k,n; uint8_t pubkeys[64][33];
-    if ( 0 && height != 0 )
-        LogPrintf("komodo_init ht.%d didinit.%d\n",height,didinit);
-    memset(&zero,0,sizeof(zero));
-    if ( didinit == 0 )
-    {
-        pthread_mutex_init(&komodo_mutex,NULL);
-        decode_hex(NOTARY_PUBKEY33,33,(char *)NOTARY_PUBKEY.c_str());
-        if ( height >= 0 )
-        {
-            n = (int32_t)(sizeof(Notaries_genesis)/sizeof(*Notaries_genesis));
-            for (k=0; k<n; k++)
-            {
-                if ( Notaries_genesis[k][0] == 0 || Notaries_genesis[k][1] == 0 || Notaries_genesis[k][0][0] == 0 || Notaries_genesis[k][1][0] == 0 )
-                    break;
-                decode_hex(pubkeys[k],33,(char *)Notaries_genesis[k][1]);
-            }
-            komodo_notarysinit(0,pubkeys,k);
-        }
-        //for (i=0; i<sizeof(Minerids); i++)
-        //    Minerids[i] = -2;
-        didinit = 1;
-        komodo_stateupdate(0,0,0,0,zero,0,0,0,0,0,0,0,0,0,0);
-    }
- }
-
-/*void komodo_assetchain_pubkeys(char *jsonstr)
-{
-    cJSON *array; int32_t i,n; uint8_t pubkeys[64][33]; char *hexstr;
-    memset(pubkeys,0,sizeof(pubkeys));
-    if ( (array= cJSON_Parse(jsonstr)) != 0 )
-    {
-        if ( (n= cJSON_GetArraySize(array)) > 0 )
-        {
-            for (i=0; i<n; i++)
-            {
-                if ( (hexstr= jstri(array,i)) != 0 && is_hexstr(hexstr,0) == 66 )
-                {
-                    decode_hex(pubkeys[i],33,hexstr);
-                    LogPrintf("i.%d of n.%d pubkey.(%s)\n",i,n,hexstr);
-                }
-                else
-                {
-                    error("illegal hexstr.(%s) i.%d of n.%d\n",hexstr,i,n);
-                    break;
-                }
-            }
-            if ( i == n )
-            {
-                komodo_init(-1);
-                komodo_notarysinit(0,pubkeys,n);
-                KOMODO_EXTERNAL_NOTARIES = 1;
-                //LogPrintf("initialize pubkeys[%d]\n",n);
-            } else error("komodo_assetchain_pubkeys i.%d vs n.%d\n",i,n);
-        } else error("assetchain pubkeys n.%d\n",n);
-    }
-    //else if ( jsonstr != 0 )
-    //    error("assetchain pubkeys couldnt parse.(%s)\n",jsonstr);
-}*/
 
 #endif //komodo_notary__h

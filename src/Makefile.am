@@ -375,6 +375,7 @@ libbitcoin_common_a_SOURCES = \
   mini-gmp.cpp \
   cJSON.c \
   komodo_globals.cpp \
+  komodo_gateway.cpp \
   $(BITCOIN_CORE_H) \
   $(LIBZCASH_H)
 
@@ -414,6 +415,7 @@ libbitcoin_cli_a_SOURCES = \
   mini-gmp.cpp \
   cJSON.c \
   komodo_globals.cpp \
+  komodo_gateway.cpp \
   $(BITCOIN_CORE_H) \
   $(LIBZCASH_H)
 

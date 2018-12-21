@@ -30,40 +30,22 @@
 #ifdef _WIN32
 #include <wincrypt.h>
 #endif
-#include "komodo_defs.h"
+
+#include "komodo_structs.h"
 #include "komodo_globals.h"
-
-#define JUMBLR_ADDR "rpS7CvbLZiXfxaXAugHznw3SyVtNRWpAFbJ"
-#define JUMBLR_SYNCHRONIZED_BLOCKS 10
-#define JUMBLR_INCR 9.965
-#define JUMBLR_FEE 0.001
-#define JUMBLR_TXFEE 0.01
-#define SMALLVAL 0.000000000000001
-
-#define JUMBLR_ERROR_DUPLICATEDEPOSIT -1
-#define JUMBLR_ERROR_SECRETCANTBEDEPOSIT -2
-#define JUMBLR_ERROR_TOOMANYSECRETS -3
-#define JUMBLR_ERROR_NOTINWALLET -4
-
-struct jumblr_item
-{
-    UT_hash_handle hh;
-    int64_t amount,fee,txfee; // fee and txfee not really used (yet)
-    uint32_t spent,pad;
-    char opid[66],src[128],dest[128],status;
-} *Jumblrs;
+#include "main.h"
 
 static char *jumblr_issuemethod(char *userpass,char *method,char *params,uint16_t port)
 {
-    cJSON *retjson,*resjson = 0; char *retstr;
+    cJSON *retjson, *resultjson,*resjson = 0; char *retstr;
     if ( (retstr= komodo_issuemethod(userpass,method,params,port)) != 0 )
     {
         if ( (retjson= cJSON_Parse(retstr)) != 0 )
         {
-            if ( jobj(retjson,(char *)"result") != 0 )
-                resjson = jduplicate(jobj(retjson,(char *)"result"));
-            else if ( jobj(retjson,(char *)"error") != 0 )
-                resjson = jduplicate(jobj(retjson,(char *)"error"));
+            if ( (resultjson=jobj(retjson,(char *)"result")) != 0 )
+                resjson = jduplicate(resultjson);
+            else if ( (resultjson=jobj(retjson,(char *)"error")) != 0 )
+                resjson = jduplicate(resultjson);
             else
             {
                 resjson = cJSON_CreateObject();
@@ -188,7 +170,9 @@ static int32_t jumblr_addresstype(char *addr)
         addr[strlen(addr)-1] = 0;
         addr++;
     }
-    if ( addr[0] == 'z' && addr[1] == 'c' && strlen(addr) >= 40 )
+    if ( addr[0] == 'z' && addr[1] == 'r' && strlen(addr) >= 40 ) // mainnet
+        return('z');
+    else if ( addr[0] == 'z' && addr[1] == 't' && strlen(addr) >= 40 ) // testnet and regtest
         return('z');
     else if ( strlen(addr) < 40 )
         return('t');
@@ -648,14 +632,14 @@ static void jumblr_iteration()
         }
     }
     height = (int32_t)chainActive.Tip()->nHeight;
-    if ( time(NULL) < lasttime+40 )
+    if ( time(NULL) < lasttime+10 )
         return;
     lasttime = (uint32_t)time(NULL);
     if ( lastheight == height )
         return;
     lastheight = height;
-    if ( (height % JUMBLR_SYNCHRONIZED_BLOCKS) != JUMBLR_SYNCHRONIZED_BLOCKS-3 )
-        return;
+    //if ( (height % JUMBLR_SYNCHRONIZED_BLOCKS) != JUMBLR_SYNCHRONIZED_BLOCKS-3 )
+    //    return;
     fee = JUMBLR_INCR * JUMBLR_FEE;
     smallest = SATOSHIDEN * ((JUMBLR_INCR + 3*fee) + 3*JUMBLR_TXFEE);
     medium = SATOSHIDEN * ((JUMBLR_INCR + 3*fee)*10 + 3*JUMBLR_TXFEE);

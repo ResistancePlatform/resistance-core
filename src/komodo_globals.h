@@ -22,21 +22,87 @@
 #include "amount.h"
 #include "util.h"
 
-uint32_t komodo_heightstamp(int32_t height);
-void komodo_stateupdate(int32_t height,uint8_t notarypubs[][33],uint8_t numnotaries,uint8_t notaryid,uint256 txhash,uint64_t voutmask,uint8_t numvouts,uint32_t *pvals,uint8_t numpvals,int32_t kheight,uint32_t ktime,uint64_t opretvalue,uint8_t *opretbuf,uint16_t opretlen,uint16_t vout);
-void komodo_init(int32_t height);
-int32_t komodo_notarizeddata(int32_t nHeight,uint256 *notarized_hashp,uint256 *notarized_desttxidp);
-void komodo_init(int32_t height);
-int32_t komodo_chosennotary(int32_t *notaryidp,int32_t height,uint8_t *pubkey33,uint32_t timestamp);
-int32_t komodo_isrealtime(int32_t *resheightp);
-uint64_t komodo_paxtotal();
-int32_t komodo_longestchain();
-int32_t komodo_bannedset(int32_t *indallvoutsp,uint256 *array,int32_t max);
+#define USD 0
+#define EUR 1
+#define JPY 2
+#define GBP 3
+#define AUD 4
+#define CAD 5
+#define CHF 6
+#define NZD 7
+#define CNY 8
+#define RUB 9
+#define MXN 10
+#define BRL 11
+#define INR 12
+#define HKD 13
+#define TRY 14
+#define ZAR 15
+
+#define PLN 16
+#define NOK 17
+#define SEK 18
+#define DKK 19
+#define CZK 20
+#define HUF 21
+#define ILS 22
+#define KRW 23
+
+#define MYR 24
+#define PHP 25
+#define RON 26
+#define SGD 27
+#define THB 28
+#define BGN 29
+#define IDR 30
+#define HRK 31
+
+#define KOMODO_PAXMAX (10000 * COIN)
+#define BTCFACTOR_HEIGHT 466266
+
+#define GENESIS_NBITS 0x1f00ffff
+#define KOMODO_MINRATIFY ((height < 90000) ? 7 : 11)
+#define KOMODO_NOTARIES_HARDCODED 180000 // DONT CHANGE
+#define KOMODO_MAXBLOCKS 250000 // DONT CHANGE
+
+#define KOMODO_EVENT_RATIFY 'P'
+#define KOMODO_EVENT_NOTARIZED 'N'
+#define KOMODO_EVENT_RESHEIGHT 'K' // TODO
+#define KOMODO_EVENT_REWIND 'B'
+#define KOMODO_EVENT_PRICEFEED 'V'
+#define KOMODO_EVENT_OPRETURN 'R'
+#define KOMODO_OPRETURN_DEPOSIT 'D'
+#define KOMODO_OPRETURN_ISSUED 'I' // assetchain
+#define KOMODO_OPRETURN_WITHDRAW 'W' // assetchain
+#define KOMODO_OPRETURN_REDEEMED 'X'
+
+#define KOMODO_KVPROTECTED 1
+#define KOMODO_KVBINARY 2
+#define KOMODO_KVDURATION 1440
+#define KOMODO_ASSETCHAIN_MAXLEN 65
 
 #define KOMODO_ELECTION_GAP 2000    //((ASSETCHAINS_SYMBOL[0] == 0) ? 2000 : 100)
 #define IGUANA_MAXSCRIPTSIZE 10001
 #define KOMODO_ASSETCHAIN_MAXLEN 65
 #define JUMBLR_MAXSECRETADDRS 777
+
+#define MAX_CURRENCIES 32
+
+#define JUMBLR_ADDR "rpS7CvbLZiXfxaXAugHznw3SyVtNRWpAFbJ"
+#define JUMBLR_SYNCHRONIZED_BLOCKS 10
+#define JUMBLR_INCR 9.965
+#define JUMBLR_FEE 0.001
+#define JUMBLR_TXFEE 0.01
+#define SMALLVAL 0.000000000000001
+
+#define JUMBLR_ERROR_DUPLICATEDEPOSIT -1
+#define JUMBLR_ERROR_SECRETCANTBEDEPOSIT -2
+#define JUMBLR_ERROR_TOOMANYSECRETS -3
+#define JUMBLR_ERROR_NOTINWALLET -4
+
+#define KOMODO_MAINNET_START 178999
+#define KOMODO_NOTARIES_TIMESTAMP1 1525132800 // May 1st 2018 1530921600 // 7/7/2017
+#define KOMODO_NOTARIES_HEIGHT1 ((814000 / KOMODO_ELECTION_GAP) * KOMODO_ELECTION_GAP)
 
 extern pthread_mutex_t komodo_mutex;
 
@@ -71,5 +137,13 @@ extern CAmount KOMODO_MAX_MONEY;
 
 extern char Jumblr_secretaddrs[JUMBLR_MAXSECRETADDRS][64],Jumblr_deposit[64];
 extern int32_t Jumblr_numsecretaddrs; // if 0 -> run silent mode
+
+extern uint64_t M1SUPPLY[];
+extern int32_t Peggy_inds[539];
+extern uint64_t peggy_smooth_coeffs[sizeof(Peggy_inds)/sizeof(*Peggy_inds)];
+extern const char CURRENCIES[][8];
+extern int32_t KOMODO_LONGESTCHAIN;
+
+extern struct jumblr_item *Jumblrs;
 
 #endif //komodo_globals__h

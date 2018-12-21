@@ -1,4 +1,3 @@
-
 /******************************************************************************
  * Copyright © 2014-2017 The SuperNET Developers.                             *
  *                                                                            *
@@ -14,8 +13,8 @@
  *                                                                            *
  ******************************************************************************/
 
-#ifndef komodo_curve25519__h
-#define komodo_curve25519__h
+#ifndef resistance_curve25519__h
+#define resistance_curve25519__h
 // derived from curve25519_donna
 
 #include <stdint.h>
@@ -25,8 +24,8 @@
 #include <sodium.h>
 #endif
 
-#include "komodo_structs.h"
-#include "komodo_utils.h"
+#include "resistance_structs.h"
+#include "resistance_utils.h"
 
 // Sum two numbers: output += in
 static inline bits320 fsum(bits320 output,bits320 in)
@@ -946,14 +945,14 @@ uint64_t conv_NXTpassword(unsigned char *mysecret,unsigned char *mypublic,uint8_
     return(addr);
 }
 
-uint256 komodo_kvprivkey(uint256 *pubkeyp,char *passphrase)
+uint256 resistance_kvprivkey(uint256 *pubkeyp,char *passphrase)
 {
     uint256 privkey;
     conv_NXTpassword((uint8_t *)&privkey,(uint8_t *)pubkeyp,(uint8_t *)passphrase,(int32_t)strlen(passphrase));
     return(privkey);
 }
 
-uint256 komodo_kvsig(uint8_t *buf,int32_t len,uint256 _privkey)
+uint256 resistance_kvsig(uint8_t *buf,int32_t len,uint256 _privkey)
 {
     bits256 sig,hash,otherpub,checksig,pubkey,privkey; uint256 usig;
     memcpy(&privkey,&_privkey,sizeof(privkey));
@@ -975,7 +974,7 @@ uint256 komodo_kvsig(uint8_t *buf,int32_t len,uint256 _privkey)
     return(usig);
 }
 
-int32_t komodo_kvsigverify(uint8_t *buf,int32_t len,uint256 _pubkey,uint256 sig)
+int32_t resistance_kvsigverify(uint8_t *buf,int32_t len,uint256 _pubkey,uint256 sig)
 {
     bits256 hash,checksig,pubkey; static uint256 zeroes;
     memcpy(&pubkey,&_pubkey,sizeof(pubkey));
@@ -1005,4 +1004,4 @@ int32_t komodo_kvsigverify(uint8_t *buf,int32_t len,uint256 _pubkey,uint256 sig)
     return(0);
 }
 
-#endif //komodo_curve25519__h
+#endif //resistance_curve25519__h

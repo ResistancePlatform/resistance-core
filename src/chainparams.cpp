@@ -17,7 +17,7 @@
 
 #include "chainparamsseeds.h"
 
-#include "komodo_utils.h"
+#include "resistance_utils.h"
 
 static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesisOutputScript, uint32_t nTime, const uint256& nNonce, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
 {

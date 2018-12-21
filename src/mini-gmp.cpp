@@ -39,7 +39,7 @@ see https://www.gnu.org/licenses/.  */
 #include <string.h>
 
 #include "mini-gmp.h"
-#include "komodo_structs.h"
+#include "resistance_structs.h"
 
 
 /* Macros */

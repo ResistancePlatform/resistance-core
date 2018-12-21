@@ -20,8 +20,8 @@
  THE SOFTWARE.
  */
 
-#ifndef komodo_cJSON__h
-#define komodo_cJSON__h
+#ifndef resistance_cJSON__h
+#define resistance_cJSON__h
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,7 +32,7 @@
 #include <memory.h>
 
 #include "cJSON.h"
-#include "komodo_structs.h"
+#include "resistance_structs.h"
 
 //#include "../crypto777/OS_portable.h"
 

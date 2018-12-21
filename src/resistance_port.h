@@ -1,10 +1,10 @@
 
-#ifndef komodo_port__h
-#define komodo_port__h
+#ifndef resistance_port__h
+#define resistance_port__h
 
-#include "komodo_defs.h"
-#include "komodo_globals.h"
-#include "komodo_utils.h"
+#include "resistance_defs.h"
+#include "resistance_globals.h"
+#include "resistance_utils.h"
 
 static int32_t iguana_rwnum(int32_t rwflag,uint8_t *serialized,int32_t len,void *endianedp)
 {
@@ -49,4 +49,4 @@ static void vcalc_sha256(char deprecated[(256 >> 3) * 2 + 1],uint8_t hash[256 >>
     sha256_vdone(&md,hash);
 }
 
-#endif //komodo_port__h
+#endif //resistance_port__h

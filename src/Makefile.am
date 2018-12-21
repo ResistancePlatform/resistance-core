@@ -374,8 +374,8 @@ libbitcoin_common_a_SOURCES = \
   yespower/sha256.c \
   mini-gmp.cpp \
   cJSON.c \
-  komodo_globals.cpp \
-  komodo_gateway.cpp \
+  resistance_globals.cpp \
+  resistance_gateway.cpp \
   $(BITCOIN_CORE_H) \
   $(LIBZCASH_H)
 
@@ -414,8 +414,8 @@ libbitcoin_cli_a_SOURCES = \
   rpc/client.cpp \
   mini-gmp.cpp \
   cJSON.c \
-  komodo_globals.cpp \
-  komodo_gateway.cpp \
+  resistance_globals.cpp \
+  resistance_gateway.cpp \
   $(BITCOIN_CORE_H) \
   $(LIBZCASH_H)
 

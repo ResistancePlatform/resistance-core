@@ -13,19 +13,19 @@
  *                                                                            *
  ******************************************************************************/
 
-#ifndef komodo_interest__h
-#define komodo_interest__h
+#ifndef resistance_interest__h
+#define resistance_interest__h
 
-#include "komodo_defs.h"
+#include "resistance_defs.h"
 
 #define SATOSHIDEN ((uint64_t)100000000L)
 #define dstr(x) ((double)(x) / SATOSHIDEN)
 
-#define KOMODO_ENDOFERA 7777777
-#define KOMODO_INTEREST ((uint64_t)5000000) //((uint64_t)(0.05 * COIN))   // 5%
+#define RESISTANCE_ENDOFERA 7777777
+#define RESISTANCE_INTEREST ((uint64_t)5000000) //((uint64_t)(0.05 * COIN))   // 5%
 
 #ifdef notanymore
-static uint64_t komodo_earned_interest(int32_t height,int64_t paidinterest)
+static uint64_t resistance_earned_interest(int32_t height,int64_t paidinterest)
 {
     static uint64_t *interests; static int32_t maxheight;
     uint64_t total; int32_t ind,incr = 10000;
@@ -73,15 +73,15 @@ static uint64_t komodo_earned_interest(int32_t height,int64_t paidinterest)
     return(0);
 }
 
-static uint64_t komodo_moneysupply(int32_t height)
+static uint64_t resistance_moneysupply(int32_t height)
 {
     if ( height <= 1 || ASSETCHAINS_SYMBOL[0] == 0 )
         return(0);
-    else return(COIN * 100000000 + (height-1) * 3 + komodo_earned_interest(height,-1));
+    else return(COIN * 100000000 + (height-1) * 3 + resistance_earned_interest(height,-1));
 }
 #endif
 
-static uint64_t _komodo_interestnew(int32_t txheight,uint64_t nValue,uint32_t nLockTime,uint32_t tiptime)
+static uint64_t _resistance_interestnew(int32_t txheight,uint64_t nValue,uint32_t nLockTime,uint32_t tiptime)
 {
     int32_t minutes; uint64_t interest = 0;
     if ( nLockTime >= LOCKTIME_THRESHOLD && tiptime > nLockTime && (minutes= (tiptime - nLockTime) / 60) >= 60 )
@@ -96,23 +96,23 @@ static uint64_t _komodo_interestnew(int32_t txheight,uint64_t nValue,uint32_t nL
     return(interest);
 }
 
-static uint64_t komodo_interestnew(int32_t txheight,uint64_t nValue,uint32_t nLockTime,uint32_t tiptime)
+static uint64_t resistance_interestnew(int32_t txheight,uint64_t nValue,uint32_t nLockTime,uint32_t tiptime)
 {
     uint64_t interest = 0;
-    if ( txheight < KOMODO_ENDOFERA && nLockTime >= LOCKTIME_THRESHOLD && tiptime != 0 && nLockTime < tiptime && nValue >= 10*COIN ) //komodo_moneysupply(txheight) < MAX_MONEY &&
-        interest = _komodo_interestnew(txheight,nValue,nLockTime,tiptime);
+    if ( txheight < RESISTANCE_ENDOFERA && nLockTime >= LOCKTIME_THRESHOLD && tiptime != 0 && nLockTime < tiptime && nValue >= 10*COIN ) //resistance_moneysupply(txheight) < MAX_MONEY &&
+        interest = _resistance_interestnew(txheight,nValue,nLockTime,tiptime);
     return(interest);
 }
 
-static uint64_t komodo_interest(int32_t txheight,uint64_t nValue,uint32_t nLockTime,uint32_t tiptime)
+static uint64_t resistance_interest(int32_t txheight,uint64_t nValue,uint32_t nLockTime,uint32_t tiptime)
 {
     int32_t minutes,exception; uint64_t interestnew,numerator,denominator,interest = 0; uint32_t activation;
     activation = 1491350400;  // 1491350400 5th April
     if ( ASSETCHAINS_SYMBOL[0] != 0 )
         return(0);
-    if ( txheight >= KOMODO_ENDOFERA )
+    if ( txheight >= RESISTANCE_ENDOFERA )
         return(0);
-    if ( nLockTime >= LOCKTIME_THRESHOLD && tiptime != 0 && nLockTime < tiptime && nValue >= 10*COIN ) //komodo_moneysupply(txheight) < MAX_MONEY && 
+    if ( nLockTime >= LOCKTIME_THRESHOLD && tiptime != 0 && nLockTime < tiptime && nValue >= 10*COIN ) //resistance_moneysupply(txheight) < MAX_MONEY && 
     {
         if ( (minutes= (tiptime - nLockTime) / 60) >= 60 )
         {
@@ -122,7 +122,7 @@ static uint64_t komodo_interest(int32_t txheight,uint64_t nValue,uint32_t nLockT
                 minutes -= 59;
             denominator = (((uint64_t)365 * 24 * 60) / minutes);
             if ( denominator == 0 )
-                denominator = 1; // max KOMODO_INTEREST per transfer, do it at least annually!
+                denominator = 1; // max RESISTANCE_INTEREST per transfer, do it at least annually!
             if ( nValue > 25000LL*COIN )
             {
                 exception = 0;
@@ -154,31 +154,31 @@ static uint64_t komodo_interest(int32_t txheight,uint64_t nValue,uint32_t nLockT
                     else if ( txheight < 1000000 )
                     {
                         interest = (numerator * minutes) / ((uint64_t)365 * 24 * 60);
-                        interestnew = _komodo_interestnew(txheight,nValue,nLockTime,tiptime);
+                        interestnew = _resistance_interestnew(txheight,nValue,nLockTime,tiptime);
                         if ( interest < interestnew )
                             LogPrintf("pathA current interest %.8f vs new %.8f for ht.%d %.8f locktime.%u tiptime.%u\n",dstr(interest),dstr(interestnew),txheight,dstr(nValue),nLockTime,tiptime);
                     }
-                    else interest = _komodo_interestnew(txheight,nValue,nLockTime,tiptime);
+                    else interest = _resistance_interestnew(txheight,nValue,nLockTime,tiptime);
                 }
                 else if ( txheight < 1000000 )
                 {
-                    numerator = (nValue * KOMODO_INTEREST);
+                    numerator = (nValue * RESISTANCE_INTEREST);
                     interest = (numerator / denominator) / COIN;
-                    interestnew = _komodo_interestnew(txheight,nValue,nLockTime,tiptime);
+                    interestnew = _resistance_interestnew(txheight,nValue,nLockTime,tiptime);
                     if ( interest < interestnew )
                         LogPrintf("pathB current interest %.8f vs new %.8f for ht.%d %.8f locktime.%u tiptime.%u\n",dstr(interest),dstr(interestnew),txheight,dstr(nValue),nLockTime,tiptime);
                 }
-                else interest = _komodo_interestnew(txheight,nValue,nLockTime,tiptime);
+                else interest = _resistance_interestnew(txheight,nValue,nLockTime,tiptime);
             }
             else
             {
                 /* 250000 algo
-                    numerator = (nValue * KOMODO_INTEREST);
+                    numerator = (nValue * RESISTANCE_INTEREST);
                     if ( txheight < 250000 || numerator * minutes < 365 * 24 * 60 )
                         interest = (numerator / denominator) / COIN;
                     else interest = ((numerator * minutes) / ((uint64_t)365 * 24 * 60)) / COIN;
                 */
-                numerator = (nValue * KOMODO_INTEREST);
+                numerator = (nValue * RESISTANCE_INTEREST);
                 if ( txheight < 250000 || tiptime < activation )
                 {
                     if ( txheight < 250000 || numerator * minutes < 365 * 24 * 60 )
@@ -190,17 +190,17 @@ static uint64_t komodo_interest(int32_t txheight,uint64_t nValue,uint32_t nLockT
                     numerator = (nValue / 20); // assumes 5%!
                     interest = ((numerator * minutes) / ((uint64_t)365 * 24 * 60));
                     //LogPrintf("interest %llu %.8f <- numerator.%llu minutes.%d\n",(long long)interest,(double)interest/COIN,(long long)numerator,(int32_t)minutes);
-                    interestnew = _komodo_interestnew(txheight,nValue,nLockTime,tiptime);
+                    interestnew = _resistance_interestnew(txheight,nValue,nLockTime,tiptime);
                     if ( interest < interestnew )
                         LogPrintf("pathC current interest %.8f vs new %.8f for ht.%d %.8f locktime.%u tiptime.%u\n",dstr(interest),dstr(interestnew),txheight,dstr(nValue),nLockTime,tiptime);
                 }
-                else interest = _komodo_interestnew(txheight,nValue,nLockTime,tiptime);
+                else interest = _resistance_interestnew(txheight,nValue,nLockTime,tiptime);
             }
-            if ( 0 && numerator == (nValue * KOMODO_INTEREST) )
-                LogPrintf("komodo_interest.%d %lld %.8f nLockTime.%u tiptime.%u minutes.%d interest %lld %.8f (%llu / %llu) prod.%llu\n",txheight,(long long)nValue,(double)nValue/COIN,nLockTime,tiptime,minutes,(long long)interest,(double)interest/COIN,(long long)numerator,(long long)denominator,(long long)(numerator * minutes));
+            if ( 0 && numerator == (nValue * RESISTANCE_INTEREST) )
+                LogPrintf("resistance_interest.%d %lld %.8f nLockTime.%u tiptime.%u minutes.%d interest %lld %.8f (%llu / %llu) prod.%llu\n",txheight,(long long)nValue,(double)nValue/COIN,nLockTime,tiptime,minutes,(long long)interest,(double)interest/COIN,(long long)numerator,(long long)denominator,(long long)(numerator * minutes));
         }
     }
     return(interest);
 }
 
-#endif //komodo_interest__h
+#endif //resistance_interest__h

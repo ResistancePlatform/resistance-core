@@ -13,19 +13,19 @@
  *                                                                            *
  ******************************************************************************/
 
-#ifndef komodo_utils__h
-#define komodo_utils__h
+#ifndef resistance_utils__h
+#define resistance_utils__h
 
 #include <curl/curl.h>
 #include <curl/easy.h>
 
-#include "komodo_defs.h"
+#include "resistance_defs.h"
 #include "amount.h"
 #include "consensus/consensus.h"
 #include "chainparamsbase.h"
-#include "komodo_globals.h"
-#include "komodo_cJSON.h"
-#include "komodo_structs.h"
+#include "resistance_globals.h"
+#include "resistance_cJSON.h"
+#include "resistance_structs.h"
 #include "mini-gmp.h"
 
 #ifdef _WIN32
@@ -56,7 +56,7 @@ typedef struct queue
 #define CRYPTO777_RESADDR "rpS7CvbLZiXfxaXAugHznw3SyVtNRWpAFbJ"
 #define CRYPTO777_RMD160STR "f1dce4182fce875748c4986b240ff7d7bc3fffb0"
 
-#define KOMODO_PUBTYPE 60
+#define RESISTANCE_PUBTYPE 60
 
 // following is ported from libtom
 
@@ -817,7 +817,7 @@ static char *bitcoin_address(char *coinaddr,uint8_t addrtype,uint8_t *pubkey_or_
     return(coinaddr);
 }
 
-static int32_t komodo_baseid(const char *origbase)
+static int32_t resistance_baseid(const char *origbase)
 {
     int32_t i; char base[64];
     for (i=0; origbase[i]!=0&&i<sizeof(base); i++)
@@ -830,9 +830,9 @@ static int32_t komodo_baseid(const char *origbase)
     return(-1);
 }
 
-static int32_t komodo_is_issuer()
+static int32_t resistance_is_issuer()
 {
-    if ( ASSETCHAINS_SYMBOL[0] != 0 && komodo_baseid(ASSETCHAINS_SYMBOL) >= 0 )
+    if ( ASSETCHAINS_SYMBOL[0] != 0 && resistance_baseid(ASSETCHAINS_SYMBOL) >= 0 )
         return(1);
     else return(0);
 }
@@ -1003,7 +1003,7 @@ static int32_t iguana_rwbignum(int32_t rwflag,uint8_t *serialized,int32_t len,ui
     return(len);
 }
 
-static int32_t komodo_scriptitemlen(int32_t *opretlenp,uint8_t *script)
+static int32_t resistance_scriptitemlen(int32_t *opretlenp,uint8_t *script)
 {
     int32_t opretlen,len = 0;
     if ( (opretlen= script[len++]) >= 0x4c )
@@ -1022,7 +1022,7 @@ static int32_t komodo_scriptitemlen(int32_t *opretlenp,uint8_t *script)
     return(len);
 }
 
-static int32_t komodo_opreturnscript(uint8_t *script,uint8_t type,uint8_t *opret,int32_t opretlen)
+static int32_t resistance_opreturnscript(uint8_t *script,uint8_t type,uint8_t *opret,int32_t opretlen)
 {
     int32_t offset = 0;
     script[offset++] = 0x6a;
@@ -1274,7 +1274,7 @@ static void iguana_initQ(queue_t *Q,char *name)
         free(item);
 }
 
-static uint16_t komodo_userpass(char *username,char *password,FILE *fp)
+static uint16_t resistance_userpass(char *username,char *password,FILE *fp)
 {
     char *rpcuser,*rpcpassword,*str,line[8192]; uint16_t port = 0;
     rpcuser = rpcpassword = 0;
@@ -1307,7 +1307,7 @@ static uint16_t komodo_userpass(char *username,char *password,FILE *fp)
     return(port);
 }
 
-static void komodo_statefname(char *fname,char *symbol,char *str)
+static void resistance_statefname(char *fname,char *symbol,char *str)
 {
     int32_t n,len;
     sprintf(fname,"%s",GetDataDir(false).string().c_str());
@@ -1344,7 +1344,7 @@ static void komodo_statefname(char *fname,char *symbol,char *str)
     //LogPrintf("test.(%s) -> [%s] statename.(%s) %s\n",test,ASSETCHAINS_SYMBOL,symbol,fname);
 }
 
-static void komodo_configfile(char *symbol,uint16_t port)
+static void resistance_configfile(char *symbol,uint16_t port)
 {
     static char myusername[512],mypassword[8192];
     FILE *fp; uint16_t resport; uint8_t buf2[33]; char fname[512],buf[128],username[512],password[8192]; uint32_t crc,r,r2,i;
@@ -1384,7 +1384,7 @@ static void komodo_configfile(char *symbol,uint16_t port)
         }
         else
         {
-            komodo_userpass(myusername,mypassword,fp);
+            resistance_userpass(myusername,mypassword,fp);
             mapArgs["-rpcpassword"] = mypassword;
             mapArgs["-rpcusername"] = myusername;
             //fprintf(stderr,"myusername.(%s)\n",myusername);
@@ -1407,17 +1407,17 @@ static void komodo_configfile(char *symbol,uint16_t port)
 #endif
     if ( (fp= fopen(fname,"rb")) != 0 )
     {
-        if ( (resport= komodo_userpass(username,password,fp)) != 0 )
+        if ( (resport= resistance_userpass(username,password,fp)) != 0 )
             RES_PORT = resport;
         sprintf(RESUSERPASS,"%s:%s",username,password);
         fclose(fp);
-//LogPrintf("KOMODO.(%s) -> userpass.(%s)\n",fname,RESUSERPASS);
+//LogPrintf("RESISTANCE.(%s) -> userpass.(%s)\n",fname,RESUSERPASS);
     } //else error("couldnt open.(%s)\n",fname);
 }
 
-static uint16_t komodo_userpass(char *userpass,char *symbol)
+static uint16_t resistance_userpass(char *userpass,char *symbol)
 {
-    FILE *fp; uint16_t port = 0; char fname[512],username[512],password[512],confname[KOMODO_ASSETCHAIN_MAXLEN];
+    FILE *fp; uint16_t port = 0; char fname[512],username[512],password[512],confname[RESISTANCE_ASSETCHAIN_MAXLEN];
     userpass[0] = 0;
     if ( strcmp("RES",symbol) == 0 )
     {
@@ -1428,10 +1428,10 @@ static uint16_t komodo_userpass(char *userpass,char *symbol)
 #endif
     }
     else sprintf(confname,"%s.conf",symbol);
-    komodo_statefname(fname,symbol,confname);
+    resistance_statefname(fname,symbol,confname);
     if ( (fp= fopen(fname,"rb")) != 0 )
     {
-        port = komodo_userpass(username,password,fp);
+        port = resistance_userpass(username,password,fp);
         sprintf(userpass,"%s:%s",username,password);
         if ( strcmp(symbol,ASSETCHAINS_SYMBOL) == 0 )
             strcpy(ASSETCHAINS_USERPASS,userpass);
@@ -1441,7 +1441,7 @@ static uint16_t komodo_userpass(char *userpass,char *symbol)
     return(port);
 }
 
-static uint32_t komodo_assetmagic(char *symbol,uint64_t supply,uint8_t *extraptr,int32_t extralen)
+static uint32_t resistance_assetmagic(char *symbol,uint64_t supply,uint8_t *extraptr,int32_t extralen)
 {
     uint8_t buf[512]; uint32_t crc0=0; int32_t len = 0; bits256 hash;
     if ( strcmp(symbol,"RES") == 0 )
@@ -1458,7 +1458,7 @@ static uint32_t komodo_assetmagic(char *symbol,uint64_t supply,uint8_t *extraptr
 }
 
 // TODO
-static uint16_t komodo_assetport(uint32_t magic,int32_t extralen)
+static uint16_t resistance_assetport(uint32_t magic,int32_t extralen)
 {
     if ( magic == 0x8de4eef9 )
         return(7770);
@@ -1468,18 +1468,18 @@ static uint16_t komodo_assetport(uint32_t magic,int32_t extralen)
 }
 
 // TODO
-static uint16_t komodo_port(char *symbol,uint64_t supply,uint32_t *magicp,uint8_t *extraptr,int32_t extralen)
+static uint16_t resistance_port(char *symbol,uint64_t supply,uint32_t *magicp,uint8_t *extraptr,int32_t extralen)
 {
     if ( symbol == 0 || symbol[0] == 0 || strcmp("RES",symbol) == 0 )
     {
         *magicp = 0x8de4eef9;
         return(7770);
     }
-    *magicp = komodo_assetmagic(symbol,supply,extraptr,extralen);
-    return(komodo_assetport(*magicp,extralen));
+    *magicp = resistance_assetmagic(symbol,supply,extraptr,extralen);
+    return(resistance_assetport(*magicp,extralen));
 }
 
-static uint64_t komodo_maxallowed(int32_t baseid)
+static uint64_t resistance_maxallowed(int32_t baseid)
 {
     uint64_t mult,val = COIN * (uint64_t)10000;
     if ( baseid < 0 || baseid >= 32 )
@@ -1504,18 +1504,18 @@ const static char *argv0names[] =
     (char *)"MNZ", (char *)"MNZ", (char *)"MNZ", (char *)"MNZ", (char *)"BTCH", (char *)"BTCH", (char *)"BTCH", (char *)"BTCH"
 };
 
-static void komodo_args(char *argv0)
+static void resistance_args(char *argv0)
 {
     std::string conf,name,addn; char *dirname,fname[512],arg0str[64],magicstr[9]; uint8_t magic[4],extrabuf[256],*extraptr=0; FILE *fp; uint64_t val; int32_t i,baseid,len,n,extralen = 0;
-    IS_KOMODO_NOTARY = GetBoolArg("-notary", false);
-    if ( (KOMODO_EXCHANGEWALLET= GetBoolArg("-exchange", false)) != 0 )
-        LogPrintf("KOMODO_EXCHANGEWALLET mode active\n");
+    IS_RESISTANCE_NOTARY = GetBoolArg("-notary", false);
+    if ( (RESISTANCE_EXCHANGEWALLET= GetBoolArg("-exchange", false)) != 0 )
+        LogPrintf("RESISTANCE_EXCHANGEWALLET mode active\n");
     NOTARY_PUBKEY = GetArg("-pubkey", "");
     if ( strlen(NOTARY_PUBKEY.c_str()) == 66 )
     {
         USE_EXTERNAL_PUBKEY = 1;
-        //KOMODO_PAX = 1;
-    } //else KOMODO_PAX = GetArg("-pax",0);
+        //RESISTANCE_PAX = 1;
+    } //else RESISTANCE_PAX = GetArg("-pax",0);
     name = GetArg("-ac_name","");
     if ( argv0 != 0 )
     {
@@ -1532,9 +1532,9 @@ static void komodo_args(char *argv0)
         }
     }
     ASSETCHAINS_CC = GetArg("-ac_cc",0); // keep it outside the assetchains hashing so RES can do it and we dont have two identical chains other than -ac_cc
-    if ( (KOMODO_REWIND= GetArg("-rewind",0)) != 0 )
+    if ( (RESISTANCE_REWIND= GetArg("-rewind",0)) != 0 )
     {
-        LogPrintf("KOMODO_REWIND %d\n",KOMODO_REWIND);
+        LogPrintf("RESISTANCE_REWIND %d\n",RESISTANCE_REWIND);
     }
     if ( name.c_str()[0] != 0 )
     {
@@ -1585,14 +1585,14 @@ static void komodo_args(char *argv0)
         if ( strlen(addn.c_str()) > 0 )
             ASSETCHAINS_SEED = 1;
         strncpy(ASSETCHAINS_SYMBOL,name.c_str(),sizeof(ASSETCHAINS_SYMBOL)-1);
-        if ( (baseid= komodo_baseid(ASSETCHAINS_SYMBOL)) >= 0 && baseid < 32 )
-            KOMODO_MAX_MONEY = komodo_maxallowed(baseid);
+        if ( (baseid= resistance_baseid(ASSETCHAINS_SYMBOL)) >= 0 && baseid < 32 )
+            RESISTANCE_MAX_MONEY = resistance_maxallowed(baseid);
         else if ( ASSETCHAINS_REWARD == 0 )
-            KOMODO_MAX_MONEY = (ASSETCHAINS_SUPPLY+1) * SATOSHIDEN;
-        else KOMODO_MAX_MONEY = (ASSETCHAINS_SUPPLY+1) * SATOSHIDEN + ASSETCHAINS_REWARD * (ASSETCHAINS_ENDSUBSIDY==0 ? 10000000 : ASSETCHAINS_ENDSUBSIDY);
-        KOMODO_MAX_MONEY += (KOMODO_MAX_MONEY * ASSETCHAINS_COMMISSION) / SATOSHIDEN;
-        //LogPrintf("baseid.%d KOMODO_MAX_MONEY.%s %.8f\n",baseid,ASSETCHAINS_SYMBOL,(double)KOMODO_MAX_MONEY/SATOSHIDEN);
-        ASSETCHAINS_PORT = komodo_port(ASSETCHAINS_SYMBOL,ASSETCHAINS_SUPPLY,&ASSETCHAINS_MAGIC,extraptr,extralen);
+            RESISTANCE_MAX_MONEY = (ASSETCHAINS_SUPPLY+1) * SATOSHIDEN;
+        else RESISTANCE_MAX_MONEY = (ASSETCHAINS_SUPPLY+1) * SATOSHIDEN + ASSETCHAINS_REWARD * (ASSETCHAINS_ENDSUBSIDY==0 ? 10000000 : ASSETCHAINS_ENDSUBSIDY);
+        RESISTANCE_MAX_MONEY += (RESISTANCE_MAX_MONEY * ASSETCHAINS_COMMISSION) / SATOSHIDEN;
+        //LogPrintf("baseid.%d RESISTANCE_MAX_MONEY.%s %.8f\n",baseid,ASSETCHAINS_SYMBOL,(double)RESISTANCE_MAX_MONEY/SATOSHIDEN);
+        ASSETCHAINS_PORT = resistance_port(ASSETCHAINS_SYMBOL,ASSETCHAINS_SUPPLY,&ASSETCHAINS_MAGIC,extraptr,extralen);
         while ( (dirname= (char *)GetDataDir(false).string().c_str()) == 0 || dirname[0] == 0 )
         {
             LogPrintf("waiting for datadir\n");
@@ -1605,14 +1605,14 @@ static void komodo_args(char *argv0)
         //LogPrintf("Got datadir.(%s)\n",dirname);
         if ( ASSETCHAINS_SYMBOL[0] != 0 )
         {
-            int32_t komodo_baseid(char *origbase);
-            komodo_configfile(ASSETCHAINS_SYMBOL,ASSETCHAINS_PORT + 1);
-            komodo_userpass(ASSETCHAINS_USERPASS,ASSETCHAINS_SYMBOL);
-            KOMODO_COINBASE_MATURITY = 1;
+            int32_t resistance_baseid(char *origbase);
+            resistance_configfile(ASSETCHAINS_SYMBOL,ASSETCHAINS_PORT + 1);
+            resistance_userpass(ASSETCHAINS_USERPASS,ASSETCHAINS_SYMBOL);
+            RESISTANCE_COINBASE_MATURITY = 1;
             //LogPrintf("ASSETCHAINS_PORT %s %u (%s)\n",ASSETCHAINS_SYMBOL,ASSETCHAINS_PORT,ASSETCHAINS_USERPASS);
         }
         //ASSETCHAINS_NOTARIES = GetArg("-ac_notaries","");
-        //komodo_assetchain_pubkeys((char *)ASSETCHAINS_NOTARIES.c_str());
+        //resistance_assetchain_pubkeys((char *)ASSETCHAINS_NOTARIES.c_str());
         iguana_rwnum(1,magic,sizeof(ASSETCHAINS_MAGIC),(void *)&ASSETCHAINS_MAGIC);
         for (i=0; i<4; i++)
             sprintf(&magicstr[i<<1],"%02x",magic[i]);
@@ -1658,12 +1658,12 @@ static void komodo_args(char *argv0)
                 conf = GetArg("-conf",fname);
             if ( (fp= fopen(conf.c_str(),"rb")) != 0 )
             {
-                komodo_userpass(username,password,fp);
+                resistance_userpass(username,password,fp);
                 sprintf(iter == 0 ? RESUSERPASS : BTCUSERPASS,"%s:%s",username,password);
                 fclose(fp);
                 //LogPrintf("Resistance.(%s) -> userpass.(%s)\n",conf.c_str(),RESUSERPASS);
             } //else error("couldnt open.(%d. %s <-> %s)\n",iter,conf.c_str(),fname);
-            if ( IS_KOMODO_NOTARY == 0 )
+            if ( IS_RESISTANCE_NOTARY == 0 )
                 break;
         }
     }
@@ -1671,7 +1671,7 @@ static void komodo_args(char *argv0)
     //LogPrintf("%s chain params initialized\n",ASSETCHAINS_SYMBOL);
 }
 
-static void komodo_nameset(char *symbol,char *dest,char *source)
+static void resistance_nameset(char *symbol,char *dest,char *source)
 {
     if ( source[0] == 0 )
     {
@@ -1685,21 +1685,21 @@ static void komodo_nameset(char *symbol,char *dest,char *source)
     }
 }
 
-static struct komodo_state *komodo_stateptrget(const char *base)
+static struct resistance_state *resistance_stateptrget(const char *base)
 {
     int32_t baseid;
     if ( base == 0 || base[0] == 0 || strcmp(base,(char *)"RES") == 0 )
-        return(&KOMODO_STATES[33]);
-    else if ( (baseid= komodo_baseid(base)) >= 0 )
-        return(&KOMODO_STATES[baseid+1]);
-    else return(&KOMODO_STATES[0]);
+        return(&RESISTANCE_STATES[33]);
+    else if ( (baseid= resistance_baseid(base)) >= 0 )
+        return(&RESISTANCE_STATES[baseid+1]);
+    else return(&RESISTANCE_STATES[0]);
 }
 
-static struct komodo_state *komodo_stateptr(char *symbol,char *dest)
+static struct resistance_state *resistance_stateptr(char *symbol,char *dest)
 {
     int32_t baseid;
-    komodo_nameset(symbol,dest,ASSETCHAINS_SYMBOL);
-    return(komodo_stateptrget(symbol));
+    resistance_nameset(symbol,dest,ASSETCHAINS_SYMBOL);
+    return(resistance_stateptrget(symbol));
 }
 
 /************************************************************************
@@ -1934,7 +1934,7 @@ try_again:
     return(0);
 }
 
-static char *komodo_issuemethod(char *userpass,char *method,char *params,uint16_t port)
+static char *resistance_issuemethod(char *userpass,char *method,char *params,uint16_t port)
 {
     //static void *cHandle;
     char url[512],*retstr=0,*retstr2=0,postdata[8192];
@@ -1951,4 +1951,4 @@ static char *komodo_issuemethod(char *userpass,char *method,char *params,uint16_
     return(retstr2);
 }
 
-#endif //komodo_utils__h
+#endif //resistance_utils__h

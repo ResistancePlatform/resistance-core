@@ -12,8 +12,8 @@
 #include "util.h"
 #include "httpserver.h"
 #include "httprpc.h"
-#include "komodo_utils.h"
-#include "komodo_gateway.h"
+#include "resistance_utils.h"
+#include "resistance_gateway.h"
 
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/filesystem.hpp>
@@ -47,7 +47,7 @@ void WaitForShutdown(boost::thread_group* threadGroup)
     {
         if ( ASSETCHAINS_SYMBOL[0] == 0 )
         {
-            komodo_passport_iteration();
+            resistance_passport_iteration();
             MilliSleep(1000);
         } else MilliSleep(200);
         fShutdown = ShutdownRequested();
@@ -134,9 +134,9 @@ bool AppInit(int argc, char* argv[])
             return false;
         }
 
-        // komodo jumblr
-        komodo_args(argv[0]);
-        fprintf(stderr,"call komodo_args.(%s) NOTARY_PUBKEY.(%s)\n",argv[0],NOTARY_PUBKEY.c_str());
+        // resistance privatizer
+        resistance_args(argv[0]);
+        fprintf(stderr,"call resistance_args.(%s) NOTARY_PUBKEY.(%s)\n",argv[0],NOTARY_PUBKEY.c_str());
         while ( ASSETCHAIN_INIT == 0 )
         {
             #ifdef _WIN32

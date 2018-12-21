@@ -26,9 +26,9 @@
 #include <math.h>
 
 #include "cJSON.h"
-#include "komodo_utils.h"
-#include "komodo_cJSON.h"
-#include "komodo_interest.h"
+#include "resistance_utils.h"
+#include "resistance_cJSON.h"
+#include "resistance_interest.h"
 
 #ifndef DBL_EPSILON
 #define DBL_EPSILON 2.2204460492503131E-16

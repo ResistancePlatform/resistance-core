@@ -15,6 +15,7 @@
 #include "sync.h"
 #include "utilstrencodings.h"
 #include "utiltime.h"
+#include "resistance_globals.h"
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -459,13 +460,17 @@ void PrintExceptionContinue(const std::exception* pex, const char* pszThread)
 boost::filesystem::path GetDefaultDataDir()
 {
     namespace fs = boost::filesystem;
+    char symbol[RESISTANCE_ASSETCHAIN_MAXLEN];
+    if ( ASSETCHAINS_SYMBOL[0] != 0 )
+        strcpy(symbol,ASSETCHAINS_SYMBOL);
+    else symbol[0] = 0;
     // Windows < Vista: C:\Documents and Settings\Username\Application Data\Resistance
     // Windows >= Vista: C:\Users\Username\AppData\Roaming\Resistance
     // Mac: ~/Library/Application Support/Resistance
     // Unix: ~/.resistance
 #ifdef WIN32
     // Windows
-    return GetSpecialFolderPath(CSIDL_APPDATA) / "Resistance";
+    return symbol[0] != 0 ? (GetSpecialFolderPath(CSIDL_APPDATA) / "Resistance" / symbol) : (GetSpecialFolderPath(CSIDL_APPDATA) / "Resistance");
 #else
     fs::path pathRet;
     char* pszHome = getenv("HOME");
@@ -477,11 +482,12 @@ boost::filesystem::path GetDefaultDataDir()
     // Mac
     pathRet /= "Library/Application Support";
     TryCreateDirectory(pathRet);
-    return pathRet / "Resistance";
+    pathRet = pathRet / "Resistance";
 #else
     // Unix
-    return pathRet / ".resistance";
+    pathRet = pathRet / ".resistance";
 #endif
+    return symbol[0] != 0 ? (pathRet / symbol) : pathRet;
 #endif
 }
 

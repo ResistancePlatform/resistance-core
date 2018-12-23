@@ -25,6 +25,11 @@
 
 #include "zcash/Address.hpp"
 
+#include "resistance_globals.h"
+#include "resistance_cJSON.c"
+#include "resistance_utils.h"
+#include "resistance_privatizer.h"
+
 using namespace std;
 
 /**
@@ -452,6 +457,67 @@ UniValue verifymessage(const UniValue& params, bool fHelp)
     return (pubkey.GetID() == *keyID);
 }
 
+UniValue privatizer_deposit(const UniValue& params, bool fHelp)
+{
+    int32_t retval; UniValue result(UniValue::VOBJ);
+    if (fHelp || params.size() != 1)
+        throw runtime_error("privatizer_deposit \"depositaddress\"\n");
+    string addr = params[0].get_str();
+    CTxDestination address = DecodeDestination(addr);
+    if ( IsValidDestination(address) != 0 )
+    {
+        if ( (retval= Privatizer_depositaddradd((char *)addr.c_str())) >= 0 )
+        {
+            result.push_back(Pair("result", retval));
+            PRIVATIZER_PAUSE = 0;
+        }
+        else result.push_back(Pair("error", retval));
+    } else result.push_back(Pair("error", "invalid address"));
+    return(result);
+}
+
+UniValue privatizer_secret(const UniValue& params, bool fHelp)
+{
+    int32_t retval; UniValue result(UniValue::VOBJ);
+    if (fHelp || params.size() != 1)
+        throw runtime_error("privatizer_secret \"secretaddress\"\n");
+    string addr = params[0].get_str();
+    CTxDestination address = DecodeDestination(addr);
+    if ( IsValidDestination(address) != 0 )
+    {
+        retval = Privatizer_secretaddradd((char *)addr.c_str());
+        result.push_back(Pair("result", "success"));
+        result.push_back(Pair("num", retval));
+        PRIVATIZER_PAUSE = 0;
+    } else result.push_back(Pair("error", "invalid address"));
+    return(result);
+}
+
+UniValue privatizer_pause(const UniValue& params, bool fHelp)
+{
+    int32_t retval; UniValue result(UniValue::VOBJ);
+    if (fHelp )
+        throw runtime_error("privatizer_pause\n");
+    PRIVATIZER_PAUSE = 1;
+    result.push_back(Pair("result", "paused"));
+    return(result);
+}
+
+UniValue privatizer_resume(const UniValue& params, bool fHelp)
+{
+    int32_t retval; UniValue result(UniValue::VOBJ);
+    if (fHelp )
+        throw runtime_error("privatizer_resume\n");
+    if (Privatizer_deposit[0] == 0)
+    {
+        result.push_back(Pair("error", "empty deposit address"));
+        return(result);
+    }
+    PRIVATIZER_PAUSE = 0;
+    result.push_back(Pair("result", "resumed"));
+    return(result);
+}
+
 UniValue setmocktime(const UniValue& params, bool fHelp)
 {
     if (fHelp || params.size() != 1)
@@ -491,6 +557,10 @@ static const CRPCCommand commands[] =
     { "util",               "z_validateaddress",      &z_validateaddress,      true  }, /* uses wallet if enabled */
     { "util",               "createmultisig",         &createmultisig,         true  },
     { "util",               "verifymessage",          &verifymessage,          true  },
+    { "util",               "privatizer_deposit",         &privatizer_deposit,         true  },
+    { "util",               "privatizer_secret",          &privatizer_secret,          true  },
+    { "util",               "privatizer_pause",           &privatizer_pause,           true  },
+    { "util",               "privatizer_resume",          &privatizer_resume,          true  },
 
     /* Not shown in help */
     { "hidden",             "setmocktime",            &setmocktime,            true  },

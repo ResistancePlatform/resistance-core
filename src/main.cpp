@@ -30,6 +30,7 @@
 #include "validationinterface.h"
 #include "wallet/asyncrpcoperation_sendmany.h"
 #include "wallet/asyncrpcoperation_shieldcoinbase.h"
+#include "resistance.h"
 
 #include <algorithm>
 #include <atomic>
@@ -2220,6 +2221,8 @@ bool DisconnectBlock(CBlock& block, CValidationState& state, CBlockIndex* pindex
     if (pfClean)
         *pfClean = false;
 
+    resistance_disconnect(pindex,block);
+
     bool fClean = true;
 
     CBlockUndo blockUndo;
@@ -2675,6 +2678,8 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
 
     int64_t nTime4 = GetTimeMicros(); nTimeCallbacks += nTime4 - nTime3;
     LogPrint("bench", "    - Callbacks: %.2fms [%.2fs]\n", 0.001 * (nTime4 - nTime3), nTimeCallbacks * 0.000001);
+
+    resistance_connectblock(pindex,*(CBlock *)&block);
 
     return true;
 }
@@ -3819,11 +3824,15 @@ bool ProcessNewBlock(CValidationState &state, CNode* pfrom, CBlock* pblock, bool
 {
     // Preliminary checks
     auto verifier = libzcash::ProofVerifier::Disabled();
+    auto hash = pblock->GetHash();
+    //LogPrintf("process newblock %s\n",hash.ToString().c_str());
+    if ( chainActive.Tip() != 0 )
+        resistance_currentheight_set(chainActive.Tip()->nHeight);   
     bool checked = CheckBlock(*pblock, state, verifier);
 
     {
         LOCK(cs_main);
-        bool fRequested = MarkBlockAsReceived(pblock->GetHash());
+        bool fRequested = MarkBlockAsReceived(hash);
         fRequested |= fForceProcessing;
         if (!checked) {
             return error("%s: CheckBlock FAILED", __func__);

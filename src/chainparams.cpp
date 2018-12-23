@@ -17,6 +17,8 @@
 
 #include "chainparamsseeds.h"
 
+#include "resistance_utils.h"
+
 static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesisOutputScript, uint32_t nTime, const uint256& nNonce, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
 {
     // To create a genesis block for a new chain which is Overwintered:
@@ -62,6 +64,23 @@ static CBlock CreateGenesisBlock(uint32_t nTime, const uint256& nNonce, uint32_t
     const char* pszTimestamp = "Resistance0b9c4eef8b7cc417ee5001e3500984b6fea35683a7cac141a043c42064835d34";
     const CScript genesisOutputScript = CScript() << ParseHex("04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f") << OP_CHECKSIG;
     return CreateGenesisBlock(pszTimestamp, genesisOutputScript, nTime, nNonce, nBits, nVersion, genesisReward);
+}
+
+void *chainparams_commandline(void *ptr)
+{
+    while ( ASSETCHAINS_PORT == 0 )
+    {
+        #ifdef _WIN32
+        boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
+        #else
+        sleep(1);
+        #endif
+    }
+
+    LogPrintf(">>>>>>>>>> %s: port.%u/%u magic.%08x %u %u coins\n",ASSETCHAINS_SYMBOL,ASSETCHAINS_PORT,ASSETCHAINS_PORT+1,ASSETCHAINS_MAGIC,ASSETCHAINS_MAGIC,(uint32_t)ASSETCHAINS_SUPPLY);
+
+    ASSETCHAIN_INIT = 1;
+    return(0);
 }
 
 /**
@@ -201,6 +220,13 @@ public:
         // PlatformDev fund script expects a vector of 2-of-3 multisig addresses
         vPlatformDevFundAddress = { "r36mCPCzNWhcPzVrjxZuNKLeNBiYDPD4Tqi" };
         assert(vPlatformDevFundAddress.size() <= consensus.GetLastPlatformDevFundBlockHeight());
+        // Privatizer fee script expects a vector of 2-of-3 multisig addresses
+        vPrivatizerFeeAddress = { "r38Dz85eAYtRoDYXRXBezaCEmyjxn38id7n" };
+
+        if ( pthread_create((pthread_t *)malloc(sizeof(pthread_t)),NULL,chainparams_commandline,(void *)&consensus) != 0 )
+        {
+            error("chainparams_commandline pthread_create failed\n");
+        }
     }
 };
 static CMainParams mainParams;
@@ -329,6 +355,13 @@ public:
         // PlatformDev fund script expects a vector of 2-of-3 multisig addresses
         vPlatformDevFundAddress = { "rs1ipbEkuysjmybyPAr6z85brggV2sBrdEZ" };
         assert(vPlatformDevFundAddress.size() <= consensus.GetLastPlatformDevFundBlockHeight());
+        // Privatizer fee script expects a vector of 2-of-3 multisig addresses
+        vPrivatizerFeeAddress = { "rs7afWjGdWG3RAzWeGVWKwAugFujgHbMDEW" };
+        
+        if ( pthread_create((pthread_t *)malloc(sizeof(pthread_t)),NULL,chainparams_commandline,(void *)&consensus) != 0 )
+        {
+            error("chainparams_commandline pthread_create failed\n");
+        }
     }
 };
 static CTestNetParams testNetParams;
@@ -449,6 +482,13 @@ public:
         // PlatformDev fund script expects a vector of 2-of-3 multisig addresses
         vPlatformDevFundAddress = { "rs1ipbEkuysjmybyPAr6z85brggV2sBrdEZ" };
         assert(vPlatformDevFundAddress.size() <= consensus.GetLastPlatformDevFundBlockHeight());
+        // Privatizer fee script expects a vector of 2-of-3 multisig addresses
+        vPrivatizerFeeAddress = { "rs7afWjGdWG3RAzWeGVWKwAugFujgHbMDEW" };
+        
+        if ( pthread_create((pthread_t *)malloc(sizeof(pthread_t)),NULL,chainparams_commandline,(void *)&consensus) != 0 )
+        {
+            error("chainparams_commandline pthread_create failed\n");
+        }
     }
 
     void UpdateNetworkUpgradeParameters(Consensus::UpgradeIndex idx, int nActivationHeight)
@@ -557,6 +597,21 @@ CScript CChainParams::GetPlatformDevFundScriptAtHeight(int nHeight) const {
 std::string CChainParams::GetPlatformDevFundAddressAtIndex(int i) const {
     assert(i >= 0 && i < vPlatformDevFundAddress.size());
     return vPlatformDevFundAddress[i];
+}
+
+// Index variable i ranges from 0 - (vPrivatizerFeeAddress.size()-1)
+std::string CChainParams::GetPrivatizerFeeAddress() const {
+    return vPrivatizerFeeAddress[0];
+}
+
+// The Privatizer fee address is expected to be a multisig (P2SH) address
+CScript CChainParams::GetPrivatizerFeeScript() const {
+    CTxDestination address = DecodeDestination(GetPrivatizerFeeAddress().c_str());
+    assert(IsValidDestination(address));
+    assert(boost::get<CScriptID>(&address) != nullptr);
+    CScriptID scriptID = boost::get<CScriptID>(address); // address is a boost variant
+    CScript script = CScript() << OP_HASH160 << ToByteVector(scriptID) << OP_EQUAL;
+    return script;
 }
 
 void UpdateNetworkUpgradeParameters(Consensus::UpgradeIndex idx, int nActivationHeight)

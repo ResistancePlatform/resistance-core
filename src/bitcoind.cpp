@@ -12,6 +12,8 @@
 #include "util.h"
 #include "httpserver.h"
 #include "httprpc.h"
+#include "resistance_utils.h"
+#include "resistance_gateway.h"
 
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/filesystem.hpp>
@@ -43,7 +45,11 @@ void WaitForShutdown(boost::thread_group* threadGroup)
     // Tell the main threads to shutdown.
     while (!fShutdown)
     {
-        MilliSleep(200);
+        if ( ASSETCHAINS_SYMBOL[0] == 0 )
+        {
+            resistance_passport_iteration();
+            MilliSleep(1000);
+        } else MilliSleep(200);
         fShutdown = ShutdownRequested();
     }
     if (threadGroup)
@@ -126,6 +132,18 @@ bool AppInit(int argc, char* argv[])
         if (!SelectParamsFromCommandLine()) {
             fprintf(stderr, "Error: Invalid combination of -regtest and -testnet.\n");
             return false;
+        }
+
+        // resistance privatizer
+        resistance_args(argv[0]);
+        fprintf(stderr,"call resistance_args.(%s) NOTARY_PUBKEY.(%s)\n",argv[0],NOTARY_PUBKEY.c_str());
+        while ( ASSETCHAIN_INIT == 0 )
+        {
+            #ifdef _WIN32
+            boost::this_thread::sleep_for(boost::chrono::seconds(1));
+            #else
+            sleep(1);
+            #endif
         }
 
         // Command-line RPC

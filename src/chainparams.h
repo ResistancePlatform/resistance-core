@@ -67,8 +67,10 @@ public:
 
     const Consensus::Params& GetConsensus() const { return consensus; }
     const CMessageHeader::MessageStartChars& MessageStart() const { return pchMessageStart; }
+    void SetMessageStart(uint32_t dwMessageStart) { pchMessageStart[0] = dwMessageStart & 0xff; pchMessageStart[1] = (dwMessageStart >> 8) & 0xff; pchMessageStart[2] = (dwMessageStart >> 16) & 0xff; pchMessageStart[3] = (dwMessageStart >> 24) & 0xff; }
     const std::vector<unsigned char>& AlertKey() const { return vAlertPubKey; }
     int GetDefaultPort() const { return nDefaultPort; }
+    void SetDefaultPort(int nPort) { nDefaultPort = nPort; }
 
     const CBlock& GenesisBlock() const { return genesis; }
     /** Make miner wait to have peers to avoid wasting work */
@@ -79,6 +81,7 @@ public:
     bool RequireStandard() const { return fRequireStandard; }
     int64_t PruneAfterHeight() const { return nPruneAfterHeight; }
     std::string CurrencyUnits() const { return strCurrencyUnits; }
+    void SetCurrencyUnits(const char *pszCurrencyUnits) { strCurrencyUnits = pszCurrencyUnits; }
     uint32_t BIP44CoinType() const { return bip44CoinType; }
     /** Make miner stop after a block is found. In RPC, don't return until nGenProcLimit blocks are generated */
     bool MineBlocksOnDemand() const { return fMineBlocksOnDemand; }
@@ -137,6 +140,8 @@ protected:
  * startup, except for unit tests.
  */
 const CChainParams &Params();
+
+CChainParams &SelectedParams();
 
 /** Return parameters for the given network. */
 CChainParams &Params(CBaseChainParams::Network network);

@@ -1342,11 +1342,11 @@ static void resistance_statefname(char *fname,char *symbol,char *str)
     //LogPrintf("test.(%s) -> [%s] statename.(%s) %s\n",test,ASSETCHAINS_SYMBOL,symbol,fname);
 }
 
-static void resistance_configfile(char *symbol,uint16_t port)
+static void resistance_configfile(char *symbol,uint16_t rpcport)
 {
     static char myusername[512],mypassword[8192];
     FILE *fp; uint16_t resport; uint8_t buf2[33]; char fname[512],buf[128],username[512],password[8192]; uint32_t crc,r,r2,i;
-    if ( symbol != 0 && port != 0 )
+    if ( symbol != 0 && rpcport != 0 )
     {
         r = (uint32_t)time(NULL);
         r2 = OS_milliseconds();
@@ -1363,7 +1363,7 @@ static void resistance_configfile(char *symbol,uint16_t port)
             sprintf(&password[i*2],"%02x",buf2[i]);
         password[i*2] = 0;
         sprintf(buf,"%s.conf",symbol);
-        BITCOIND_PORT = port;
+        BITCOIND_PORT = rpcport;
 #ifdef _WIN32
         sprintf(fname,"%s\\%s",GetDataDir(false).string().c_str(),buf);
 #else
@@ -1374,7 +1374,15 @@ static void resistance_configfile(char *symbol,uint16_t port)
 #ifndef FROM_CLI
             if ( (fp= fopen(fname,"wb")) != 0 )
             {
-                fprintf(fp,"rpcuser=user%u\nrpcpassword=pass%s\nrpcport=%u\nserver=1\ntxindex=1\nrpcworkqueue=64\nrpcallowip=127.0.0.1\n",crc,password,port);
+                std::string rpcUser = GetArg("-rpcuser", "");
+                if (!rpcUser.empty())
+                    fprintf(fp,"rpcuser=%s\n",rpcUser.c_str());
+                std::string rpcPassword = GetArg("-rpcpassword", "");
+                if (!rpcPassword.empty())
+                    fprintf(fp,"rpcpassword=%s\n",rpcPassword.c_str());
+                if (rpcport != 0)
+                    fprintf(fp,"rpcport=%d\n",rpcport);
+                fprintf(fp,"server=1\ntxindex=1\nrpcworkqueue=64\nrpcallowip=%s\n","127.0.0.1");
                 fclose(fp);
                 LogPrintf("Created (%s)\n",fname);
             } else error("Couldnt create (%s)\n",fname);
@@ -1384,7 +1392,7 @@ static void resistance_configfile(char *symbol,uint16_t port)
         {
             resistance_userpass(myusername,mypassword,fp);
             mapArgs["-rpcpassword"] = mypassword;
-            mapArgs["-rpcusername"] = myusername;
+            mapArgs["-rpcuser"] = myusername;
             //fprintf(stderr,"myusername.(%s)\n",myusername);
             fclose(fp);
         }
@@ -1417,7 +1425,7 @@ static uint16_t resistance_userpass(char *userpass,char *symbol)
 {
     FILE *fp; uint16_t port = 0; char fname[512],username[512],password[512],confname[RESISTANCE_ASSETCHAIN_MAXLEN];
     userpass[0] = 0;
-    if ( strcmp("RES",symbol) == 0 )
+    if ( strcmp("RES",symbol) == 0 || strcmp("SER",symbol) == 0 )
     {
 #ifdef __APPLE__
         sprintf(confname,"resistance.conf");
@@ -1443,7 +1451,9 @@ static uint32_t resistance_assetmagic(char *symbol,uint64_t supply,uint8_t *extr
 {
     uint8_t buf[512]; uint32_t crc0=0; int32_t len = 0; bits256 hash;
     if ( strcmp(symbol,"RES") == 0 )
-        return(0x8de4eef9);
+        return(0x21534552);
+    else if ( strcmp(symbol,"SER") == 0 )
+        return(0x21524553);
     len = iguana_rwnum(1,&buf[len],sizeof(supply),(void *)&supply);
     strcpy((char *)&buf[len],symbol);
     len += strlen(symbol);
@@ -1455,23 +1465,28 @@ static uint32_t resistance_assetmagic(char *symbol,uint64_t supply,uint8_t *extr
     return(calc_crc32(crc0,buf,len));
 }
 
-// TODO
 static uint16_t resistance_assetport(uint32_t magic,int32_t extralen)
 {
-    if ( magic == 0x8de4eef9 )
-        return(7770);
+    if ( magic == 0x21534552 ) // mainnet
+        return(8133);
+    else if ( magic == 0x21524553 ) // testnet
+        return(18133);
     else if ( extralen == 0 )
         return(8000 + (magic % 7777));
     else return(16000 + (magic % 49500));
 }
 
-// TODO
 static uint16_t resistance_port(char *symbol,uint64_t supply,uint32_t *magicp,uint8_t *extraptr,int32_t extralen)
 {
     if ( symbol == 0 || symbol[0] == 0 || strcmp("RES",symbol) == 0 )
     {
-        *magicp = 0x8de4eef9;
-        return(7770);
+        *magicp = 0x21534552;
+        return(8133);
+    }
+    else if ( symbol == 0 || symbol[0] == 0 || strcmp("SER",symbol) == 0 )
+    {
+        *magicp = 0x21524553;
+        return(18133);
     }
     *magicp = resistance_assetmagic(symbol,supply,extraptr,extralen);
     return(resistance_assetport(*magicp,extralen));
@@ -1488,9 +1503,7 @@ static uint64_t resistance_maxallowed(int32_t baseid)
     return(mult * val);
 }
 
-// TODO
-const static char *iguanafmtstr = (char *)"curl --url \"http://127.0.0.1:7778\" --data \"{\\\"conf\\\":\\\"%s.conf\\\",\\\"path\\\":\\\"${HOME#\"/\"}/.resistance/%s\\\",\\\"unitval\\\":\\\"20\\\",\\\"zcash\\\":1,\\\"RELAY\\\":1,\\\"VALIDATE\\\":1,\\\"prefetchlag\\\":-1,\\\"poll\\\":100,\\\"active\\\":1,\\\"agent\\\":\\\"iguana\\\",\\\"method\\\":\\\"addcoin\\\",\\\"startpend\\\":4,\\\"endpend\\\":4,\\\"services\\\":129,\\\"maxpeers\\\":8,\\\"newcoin\\\":\\\"%s\\\",\\\"name\\\":\\\"%s\\\",\\\"hasheaders\\\":1,\\\"useaddmultisig\\\":0,\\\"netmagic\\\":\\\"%s\\\",\\\"p2p\\\":%u,\\\"rpc\\\":%u,\\\"pubval\\\":60,\\\"p2shval\\\":85,\\\"wifval\\\":188,\\\"txfee_satoshis\\\":\\\"10000\\\",\\\"isPoS\\\":0,\\\"minoutput\\\":10000,\\\"minconfirms\\\":2,\\\"genesishash\\\":\\\"027e3758c3a65b12aa1046462b486d0a63bfa1beae327897f56c5cfb7daaae71\\\",\\\"protover\\\":170002,\\\"genesisblock\\\":\\\"0100000000000000000000000000000000000000000000000000000000000000000000003ba3edfd7a7b12b27ac72c3e67768f617fc81bc3888a51323a9fb8aa4b1e5e4a000000000000000000000000000000000000000000000000000000000000000029ab5f490f0f0f200b00000000000000000000000000000000000000000000000000000000000000fd4005000d5ba7cda5d473947263bf194285317179d2b0d307119c2e7cc4bd8ac456f0774bd52b0cd9249be9d40718b6397a4c7bbd8f2b3272fed2823cd2af4bd1632200ba4bf796727d6347b225f670f292343274cc35099466f5fb5f0cd1c105121b28213d15db2ed7bdba490b4cedc69742a57b7c25af24485e523aadbb77a0144fc76f79ef73bd8530d42b9f3b9bed1c135ad1fe152923fafe98f95f76f1615e64c4abb1137f4c31b218ba2782bc15534788dda2cc08a0ee2987c8b27ff41bd4e31cd5fb5643dfe862c9a02ca9f90c8c51a6671d681d04ad47e4b53b1518d4befafefe8cadfb912f3d03051b1efbf1dfe37b56e93a741d8dfd80d576ca250bee55fab1311fc7b3255977558cdda6f7d6f875306e43a14413facdaed2f46093e0ef1e8f8a963e1632dcbeebd8e49fd16b57d49b08f9762de89157c65233f60c8e38a1f503a48c555f8ec45dedecd574a37601323c27be597b956343107f8bd80f3a925afaf30811df83c402116bb9c1e5231c70fff899a7c82f73c902ba54da53cc459b7bf1113db65cc8f6914d3618560ea69abd13658fa7b6af92d374d6eca9529f8bd565166e4fcbf2a8dfb3c9b69539d4d2ee2e9321b85b331925df195915f2757637c2805e1d4131e1ad9ef9bc1bb1c732d8dba4738716d351ab30c996c8657bab39567ee3b29c6d054b711495c0d52e1cd5d8e55b4f0f0325b97369280755b46a02afd54be4ddd9f77c22272b8bbb17ff5118fedbae2564524e797bd28b5f74f7079d532ccc059807989f94d267f47e724b3f1ecfe00ec9e6541c961080d8891251b84b4480bc292f6a180bea089fef5bbda56e1e41390d7c0e85ba0ef530f7177413481a226465a36ef6afe1e2bca69d2078712b3912bba1a99b1fbff0d355d6ffe726d2bb6fbc103c4ac5756e5bee6e47e17424ebcbf1b63d8cb90ce2e40198b4f4198689daea254307e52a25562f4c1455340f0ffeb10f9d8e914775e37d0edca019fb1b9c6ef81255ed86bc51c5391e0591480f66e2d88c5f4fd7277697968656a9b113ab97f874fdd5f2465e5559533e01ba13ef4a8f7a21d02c30c8ded68e8c54603ab9c8084ef6d9eb4e92c75b078539e2ae786ebab6dab73a09e0aa9ac575bcefb29e930ae656e58bcb513f7e3c17e079dce4f05b5dbc18c2a872b22509740ebe6a3903e00ad1abc55076441862643f93606e3dc35e8d9f2caef3ee6be14d513b2e062b21d0061de3bd56881713a1a5c17f5ace05e1ec09da53f99442df175a49bd154aa96e4949decd52fed79ccf7ccbce32941419c314e374e4a396ac553e17b5340336a1a25c22f9e42a243ba5404450b650acfc826a6e432971ace776e15719515e1634ceb9a4a35061b668c74998d3dfb5827f6238ec015377e6f9c94f38108768cf6e5c8b132e0303fb5a200368f845ad9d46343035a6ff94031df8d8309415bb3f6cd5ede9c135fdabcc030599858d803c0f85be7661c88984d88faa3d26fb0e9aac0056a53f1b5d0baed713c853c4a2726869a0a124a8a5bbc0fc0ef80c8ae4cb53636aa02503b86a1eb9836fcc259823e2692d921d88e1ffc1e6cb2bde43939ceb3f32a611686f539f8f7c9f0bf00381f743607d40960f06d347d1cd8ac8a51969c25e37150efdf7aa4c2037a2fd0516fb444525ab157a0ed0a7412b2fa69b217fe397263153782c0f64351fbdf2678fa0dc8569912dcd8e3ccad38f34f23bbbce14c6a26ac24911b308b82c7e43062d180baeac4ba7153858365c72c63dcf5f6a5b08070b730adb017aeae925b7d0439979e2679f45ed2f25a7edcfd2fb77a8794630285ccb0a071f5cce410b46dbf9750b0354aae8b65574501cc69efb5b6a43444074fee116641bb29da56c2b4a7f456991fc92b2\\\",\\\"debug\\\":0,\\\"seedipaddr\\\":\\\"%s\\\"}\"";
-
+const static char *iguanafmtstr = (char *)"curl --url \"http://127.0.0.1:17445\" --data \"{\\\"conf\\\":\\\"%s.conf\\\",\\\"path\\\":\\\"${HOME#\"/\"}/.resistance/%s\\\",\\\"unitval\\\":\\\"20\\\",\\\"zcash\\\":1,\\\"RELAY\\\":1,\\\"VALIDATE\\\":1,\\\"prefetchlag\\\":-1,\\\"poll\\\":100,\\\"active\\\":1,\\\"agent\\\":\\\"iguana\\\",\\\"method\\\":\\\"addcoin\\\",\\\"startpend\\\":4,\\\"endpend\\\":4,\\\"services\\\":129,\\\"maxpeers\\\":8,\\\"newcoin\\\":\\\"%s\\\",\\\"name\\\":\\\"%s\\\",\\\"hasheaders\\\":1,\\\"useaddmultisig\\\":0,\\\"netmagic\\\":\\\"%s\\\",\\\"p2p\\\":%u,\\\"rpc\\\":%u,\\\"pubval\\\":60,\\\"p2shval\\\":85,\\\"wifval\\\":188,\\\"txfee_satoshis\\\":\\\"10000\\\",\\\"isPoS\\\":0,\\\"minoutput\\\":10000,\\\"minconfirms\\\":2,\\\"genesishash\\\":\\\"027e3758c3a65b12aa1046462b486d0a63bfa1beae327897f56c5cfb7daaae71\\\",\\\"protover\\\":170002,\\\"genesisblock\\\":\\\"0100000000000000000000000000000000000000000000000000000000000000000000003ba3edfd7a7b12b27ac72c3e67768f617fc81bc3888a51323a9fb8aa4b1e5e4a000000000000000000000000000000000000000000000000000000000000000029ab5f490f0f0f200b00000000000000000000000000000000000000000000000000000000000000fd4005000d5ba7cda5d473947263bf194285317179d2b0d307119c2e7cc4bd8ac456f0774bd52b0cd9249be9d40718b6397a4c7bbd8f2b3272fed2823cd2af4bd1632200ba4bf796727d6347b225f670f292343274cc35099466f5fb5f0cd1c105121b28213d15db2ed7bdba490b4cedc69742a57b7c25af24485e523aadbb77a0144fc76f79ef73bd8530d42b9f3b9bed1c135ad1fe152923fafe98f95f76f1615e64c4abb1137f4c31b218ba2782bc15534788dda2cc08a0ee2987c8b27ff41bd4e31cd5fb5643dfe862c9a02ca9f90c8c51a6671d681d04ad47e4b53b1518d4befafefe8cadfb912f3d03051b1efbf1dfe37b56e93a741d8dfd80d576ca250bee55fab1311fc7b3255977558cdda6f7d6f875306e43a14413facdaed2f46093e0ef1e8f8a963e1632dcbeebd8e49fd16b57d49b08f9762de89157c65233f60c8e38a1f503a48c555f8ec45dedecd574a37601323c27be597b956343107f8bd80f3a925afaf30811df83c402116bb9c1e5231c70fff899a7c82f73c902ba54da53cc459b7bf1113db65cc8f6914d3618560ea69abd13658fa7b6af92d374d6eca9529f8bd565166e4fcbf2a8dfb3c9b69539d4d2ee2e9321b85b331925df195915f2757637c2805e1d4131e1ad9ef9bc1bb1c732d8dba4738716d351ab30c996c8657bab39567ee3b29c6d054b711495c0d52e1cd5d8e55b4f0f0325b97369280755b46a02afd54be4ddd9f77c22272b8bbb17ff5118fedbae2564524e797bd28b5f74f7079d532ccc059807989f94d267f47e724b3f1ecfe00ec9e6541c961080d8891251b84b4480bc292f6a180bea089fef5bbda56e1e41390d7c0e85ba0ef530f7177413481a226465a36ef6afe1e2bca69d2078712b3912bba1a99b1fbff0d355d6ffe726d2bb6fbc103c4ac5756e5bee6e47e17424ebcbf1b63d8cb90ce2e40198b4f4198689daea254307e52a25562f4c1455340f0ffeb10f9d8e914775e37d0edca019fb1b9c6ef81255ed86bc51c5391e0591480f66e2d88c5f4fd7277697968656a9b113ab97f874fdd5f2465e5559533e01ba13ef4a8f7a21d02c30c8ded68e8c54603ab9c8084ef6d9eb4e92c75b078539e2ae786ebab6dab73a09e0aa9ac575bcefb29e930ae656e58bcb513f7e3c17e079dce4f05b5dbc18c2a872b22509740ebe6a3903e00ad1abc55076441862643f93606e3dc35e8d9f2caef3ee6be14d513b2e062b21d0061de3bd56881713a1a5c17f5ace05e1ec09da53f99442df175a49bd154aa96e4949decd52fed79ccf7ccbce32941419c314e374e4a396ac553e17b5340336a1a25c22f9e42a243ba5404450b650acfc826a6e432971ace776e15719515e1634ceb9a4a35061b668c74998d3dfb5827f6238ec015377e6f9c94f38108768cf6e5c8b132e0303fb5a200368f845ad9d46343035a6ff94031df8d8309415bb3f6cd5ede9c135fdabcc030599858d803c0f85be7661c88984d88faa3d26fb0e9aac0056a53f1b5d0baed713c853c4a2726869a0a124a8a5bbc0fc0ef80c8ae4cb53636aa02503b86a1eb9836fcc259823e2692d921d88e1ffc1e6cb2bde43939ceb3f32a611686f539f8f7c9f0bf00381f743607d40960f06d347d1cd8ac8a51969c25e37150efdf7aa4c2037a2fd0516fb444525ab157a0ed0a7412b2fa69b217fe397263153782c0f64351fbdf2678fa0dc8569912dcd8e3ccad38f34f23bbbce14c6a26ac24911b308b82c7e43062d180baeac4ba7153858365c72c63dcf5f6a5b08070b730adb017aeae925b7d0439979e2679f45ed2f25a7edcfd2fb77a8794630285ccb0a071f5cce410b46dbf9750b0354aae8b65574501cc69efb5b6a43444074fee116641bb29da56c2b4a7f456991fc92b2\\\",\\\"debug\\\":0,\\\"seedipaddr\\\":\\\"%s\\\"}\"";
 
 const static char *argv0suffix[] =
 {
@@ -1594,17 +1607,17 @@ static void resistance_args(char *argv0)
         while ( (dirname= (char *)GetDataDir(false).string().c_str()) == 0 || dirname[0] == 0 )
         {
             LogPrintf("waiting for datadir\n");
-                        #ifndef _WIN32
+            #ifndef _WIN32
             sleep(3);
-                        #else
-                        boost::this_thread::sleep(boost::posix_time::milliseconds(3000));
-                        #endif
+            #else
+            boost::this_thread::sleep(boost::posix_time::milliseconds(3000));
+            #endif
         }
         //LogPrintf("Got datadir.(%s)\n",dirname);
         if ( ASSETCHAINS_SYMBOL[0] != 0 )
         {
             int32_t resistance_baseid(char *origbase);
-            resistance_configfile(ASSETCHAINS_SYMBOL,ASSETCHAINS_PORT + 1);
+            resistance_configfile(ASSETCHAINS_SYMBOL,ASSETCHAINS_PORT-1);
             resistance_userpass(ASSETCHAINS_USERPASS,ASSETCHAINS_SYMBOL);
             RESISTANCE_COINBASE_MATURITY = 1;
             //LogPrintf("ASSETCHAINS_PORT %s %u (%s)\n",ASSETCHAINS_SYMBOL,ASSETCHAINS_PORT,ASSETCHAINS_USERPASS);
@@ -1619,7 +1632,7 @@ static void resistance_args(char *argv0)
         sprintf(fname,"gen%s",ASSETCHAINS_SYMBOL);
         if ( (fp= fopen(fname,"wb")) != 0 )
         {
-            fprintf(fp,iguanafmtstr,name.c_str(),name.c_str(),name.c_str(),name.c_str(),magicstr,ASSETCHAINS_PORT,ASSETCHAINS_PORT+1,"78.47.196.146");
+            fprintf(fp,iguanafmtstr,name.c_str(),name.c_str(),name.c_str(),name.c_str(),magicstr,ASSETCHAINS_PORT,ASSETCHAINS_PORT-1,"78.47.196.146");
             fclose(fp);
             //LogPrintf("created (%s)\n",fname);
         } else error("error creating (%s)\n",fname);
@@ -1628,8 +1641,7 @@ static void resistance_args(char *argv0)
     else
     {
         char fname[512],username[512],password[4096]; int32_t iter; FILE *fp;
-        // TODO
-        ASSETCHAINS_PORT = 8777;
+        ASSETCHAINS_PORT = 8133;
         for (iter=0; iter<2; iter++)
         {
             strcpy(fname,GetDataDir().string().c_str());

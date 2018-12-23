@@ -25,6 +25,7 @@ public:
 
     const std::string& DataDir() const { return strDataDir; }
     int RPCPort() const { return nRPCPort; }
+    void SetRPCPort(int nPort) { nRPCPort = nPort; }
 
 protected:
     CBaseChainParams() {}
@@ -38,6 +39,8 @@ protected:
  * startup, except for unit tests.
  */
 const CBaseChainParams& BaseParams();
+
+CBaseChainParams& SelectedBaseParams();
 
 /** Sets the params returned by Params() to those for the given network. */
 void SelectBaseParams(CBaseChainParams::Network network);

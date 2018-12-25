@@ -91,6 +91,7 @@ public:
         consensus.nPlatformDevFundPercentage = 10;
         consensus.nPorRewardTxPercentage = 30;
         consensus.nPlatformDevFundTxPercentage = 10;
+        consensus.nCoinbaseMaturity = 100;
         consensus.nMajorityEnforceBlockUpgrade = 750;
         consensus.nMajorityRejectBlockOutdated = 950;
         consensus.nMajorityWindow = 4000;
@@ -222,6 +223,7 @@ public:
         consensus.nPlatformDevFundPercentage = 10;
         consensus.nPorRewardTxPercentage = 30;
         consensus.nPlatformDevFundTxPercentage = 10;
+        consensus.nCoinbaseMaturity = 2;
         consensus.nMajorityEnforceBlockUpgrade = 51;
         consensus.nMajorityRejectBlockOutdated = 75;
         consensus.nMajorityWindow = 400;
@@ -350,6 +352,7 @@ public:
         consensus.nPlatformDevFundPercentage = 10;
         consensus.nPorRewardTxPercentage = 30;
         consensus.nPlatformDevFundTxPercentage = 10;
+        consensus.nCoinbaseMaturity = 2;
         consensus.nMajorityEnforceBlockUpgrade = 750;
         consensus.nMajorityRejectBlockOutdated = 950;
         consensus.nMajorityWindow = 1000;

@@ -335,7 +335,7 @@ int printMetrics(size_t cols, bool mining)
                         reward += subsidy*consensusParams.nPlatformDevFundPercentage/100;
                     }
                     subsidy -= reward;
-                    if (std::max(0, COINBASE_MATURITY - (tipHeight - height)) > 0) {
+                    if (std::max(0, consensusParams.nCoinbaseMaturity - (tipHeight - height)) > 0) {
                         immature += subsidy;
                     } else {
                         mature += subsidy;

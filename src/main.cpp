@@ -1504,7 +1504,7 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState &state, const CTransa
         double dPriority = view.GetPriority(tx, chainActive.Height());
 
         // Keep track of transactions that spend a coinbase, which we re-scan
-        // during reorgs to ensure COINBASE_MATURITY is still met.
+        // during reorgs to ensure nCoinbaseMaturity is still met.
         bool fSpendsCoinbase = false;
         BOOST_FOREACH(const CTxIn &txin, tx.vin) {
             const CCoins *coins = view.AccessCoins(txin.prevout.hash);
@@ -1988,7 +1988,7 @@ bool CheckTxInputs(const CTransaction& tx, CValidationState& state, const CCoins
 
             if (coins->IsCoinBase()) {
                 // Ensure that coinbases are matured
-                if (nSpendHeight - coins->nHeight < COINBASE_MATURITY) {
+                if (nSpendHeight - coins->nHeight < consensusParams.nCoinbaseMaturity) {
                     return state.Invalid(
                         error("CheckInputs(): tried to spend coinbase at depth %d", nSpendHeight - coins->nHeight),
                         REJECT_INVALID, "bad-txns-premature-spend-of-coinbase");
@@ -3070,7 +3070,7 @@ static bool ActivateBestChainStep(CValidationState &state, CBlockIndex *pindexMo
     //   then pindexFork will be null, and we would need to remove the entire chain including
     //   our genesis block. In practice this (probably) won't happen because of checks elsewhere.
     auto reorgLength = pindexOldTip ? pindexOldTip->nHeight - (pindexFork ? pindexFork->nHeight : -1) : 0;
-    static_assert(MAX_REORG_LENGTH > 0, "We must be able to reorg some distance");
+    assert(MAX_REORG_LENGTH > 0); // We must be able to reorg some distance
     if (reorgLength > MAX_REORG_LENGTH) {
         auto msg = strprintf(_(
             "A block chain reorganization has been detected that would roll back %d blocks! "

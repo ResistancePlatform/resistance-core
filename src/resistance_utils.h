@@ -1511,9 +1511,14 @@ const static char *argv0names[] =
     (char *)"MNZ", (char *)"MNZ", (char *)"MNZ", (char *)"MNZ", (char *)"BTCH", (char *)"BTCH", (char *)"BTCH", (char *)"BTCH"
 };
 
+void resistance_init_globals();
+
 static void resistance_args(char *argv0)
 {
     std::string conf,name,addn; char *dirname,fname[512],arg0str[64],magicstr[9]; uint8_t magic[4],extrabuf[256],*extraptr=0; FILE *fp; uint64_t val; int32_t i,baseid,len,n,extralen = 0;
+
+    resistance_init_globals();
+
     IS_RESISTANCE_NOTARY = GetBoolArg("-notary", false);
     if ( (RESISTANCE_EXCHANGEWALLET= GetBoolArg("-exchange", false)) != 0 )
         LogPrintf("RESISTANCE_EXCHANGEWALLET mode active\n");
@@ -1611,7 +1616,6 @@ static void resistance_args(char *argv0)
             int32_t resistance_baseid(char *origbase);
             resistance_configfile(ASSETCHAINS_SYMBOL,ASSETCHAINS_PORT-1);
             resistance_userpass(ASSETCHAINS_USERPASS,ASSETCHAINS_SYMBOL);
-            RESISTANCE_COINBASE_MATURITY = 1;
             //LogPrintf("ASSETCHAINS_PORT %s %u (%s)\n",ASSETCHAINS_SYMBOL,ASSETCHAINS_PORT,ASSETCHAINS_USERPASS);
         }
         //ASSETCHAINS_NOTARIES = GetArg("-ac_notaries","");

@@ -562,4 +562,11 @@ static void resistance_disconnect(CBlockIndex *pindex,CBlock& block)
     } else error("resistance_disconnect: ht.%d cant get resistance_state.(%s)\n",pindex->nHeight,ASSETCHAINS_SYMBOL);
 }
 
+void resistance_init_globals()
+{
+    memset(RESISTANCE_STATES, 0, sizeof(RESISTANCE_STATES));
+
+    RESISTANCE_COINBASE_MATURITY = Params().GetConsensus().nCoinbaseMaturity;
+}
+
 #endif //resistance__h

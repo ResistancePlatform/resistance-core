@@ -70,11 +70,7 @@ void *chainparams_commandline(void *ptr)
 {
     while ( ASSETCHAINS_PORT == 0 )
     {
-        #ifdef _WIN32
-        boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
-        #else
-        sleep(1);
-        #endif
+        MilliSleep(1000);
     }
 
     CChainParams &params = SelectedParams();

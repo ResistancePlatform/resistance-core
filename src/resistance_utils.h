@@ -1065,9 +1065,6 @@ static char *clonestr(char *str)
     if ( str == 0 || str[0] == 0 )
     {
         LogPrintf("warning cloning nullstr.%p\n",str);
-#ifdef __APPLE__
-        while ( 1 ) sleep(1);
-#endif
         str = (char *)"<nullstr>";
     }
     clone = (char *)malloc(strlen(str)+16);
@@ -1122,23 +1119,23 @@ static double OS_milliseconds()
     return(millis);
 }
 
-#ifndef _WIN32
 static void OS_randombytes(unsigned char *x,long xlen)
 {
+#ifndef _WIN32
     static int fd = -1;
     int32_t i;
     if (fd == -1) {
         for (;;) {
             fd = open("/dev/urandom",O_RDONLY);
             if (fd != -1) break;
-            sleep(1);
+            MilliSleep(1000);
         }
     }
     while (xlen > 0) {
         if (xlen < 1048576) i = (int32_t)xlen; else i = 1048576;
         i = (int32_t)read(fd,x,i);
         if (i < 1) {
-            sleep(1);
+            MilliSleep(1000);
             continue;
         }
         if ( 0 )
@@ -1151,8 +1148,11 @@ static void OS_randombytes(unsigned char *x,long xlen)
         x += i;
         xlen -= i;
     }
-}
+    return;
+#else
+    randombytes_buf(x,xlen);
 #endif
+}
 
 static void lock_queue(queue_t *queue)
 {
@@ -1354,11 +1354,7 @@ static void resistance_configfile(char *symbol,uint16_t rpcport)
         memcpy(&buf[sizeof(r)],&r2,sizeof(r2));
         memcpy(&buf[sizeof(r)+sizeof(r2)],symbol,strlen(symbol));
         crc = calc_crc32(0,(uint8_t *)buf,(int32_t)(sizeof(r)+sizeof(r2)+strlen(symbol)));
-                #ifdef _WIN32
-                randombytes_buf(buf2,sizeof(buf2));
-                #else
         OS_randombytes(buf2,sizeof(buf2));
-                #endif
         for (i=0; i<sizeof(buf2); i++)
             sprintf(&password[i*2],"%02x",buf2[i]);
         password[i*2] = 0;
@@ -1607,11 +1603,7 @@ static void resistance_args(char *argv0)
         while ( (dirname= (char *)GetDataDir(false).string().c_str()) == 0 || dirname[0] == 0 )
         {
             LogPrintf("waiting for datadir\n");
-            #ifndef _WIN32
-            sleep(3);
-            #else
-            boost::this_thread::sleep(boost::posix_time::milliseconds(3000));
-            #endif
+            MilliSleep(3000);
         }
         //LogPrintf("Got datadir.(%s)\n",dirname);
         if ( ASSETCHAINS_SYMBOL[0] != 0 )
@@ -1909,7 +1901,7 @@ try_again:
         if ( (rand() % 1000) == 0 )
             LogPrintf( "curl_easy_perform() failed: %s %s.(%s %s), retries: %d\n",curl_easy_strerror(res),debugstr,url,command,numretries);
         free(s.ptr);
-        sleep((1<<numretries));
+        MilliSleep((1<<numretries) * 1000);
         goto try_again;
         
     }

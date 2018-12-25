@@ -502,7 +502,7 @@ bool resistance_passport_iteration()
     while ( RESISTANCE_INITDONE == 0 )
     {
         LogPrintf("[%s] PASSPORT iteration waiting for RESISTANCE_INITDONE\n",ASSETCHAINS_SYMBOL);
-        sleep(3);
+        MilliSleep(3000);
         return false;
     }
     refsp = resistance_stateptr(symbol,dest);

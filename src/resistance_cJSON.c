@@ -270,7 +270,7 @@ char *jprint(cJSON *json,int32_t freeflag)
     if ( json == 0 )
         return(clonestr((char *)"{}"));
     //portable_mutex_lock(&mutex);
-    //usleep(5000);
+    //MilliSleep(5);
     str = cJSON_Print(json), _stripwhite(str,' ');
     if ( freeflag != 0 )
         free_json(json);
@@ -528,7 +528,7 @@ uint64_t calc_nxt64bits(const char *NXTaddr)
 #ifdef __APPLE__
             //while ( 1 )
             {
-                //sleep(60);
+                //MilliSleep(60000);
                 LogPrintf("calc_nxt64bits: illegal char.(%c %d) in (%s).%d\n",c,c,NXTaddr,(int32_t)i);
             }
 #endif

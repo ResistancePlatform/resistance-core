@@ -139,11 +139,7 @@ bool AppInit(int argc, char* argv[])
         fprintf(stderr,"call resistance_args.(%s) NOTARY_PUBKEY.(%s)\n",argv[0],NOTARY_PUBKEY.c_str());
         while ( ASSETCHAIN_INIT == 0 )
         {
-            #ifdef _WIN32
-            boost::this_thread::sleep_for(boost::chrono::seconds(1));
-            #else
-            sleep(1);
-            #endif
+            MilliSleep(1000);
         }
 
         // Command-line RPC

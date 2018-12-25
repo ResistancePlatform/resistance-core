@@ -89,6 +89,8 @@ struct Params {
      */
     int nPlatformDevFundTxPercentage;
     int GetLastPlatformDevFundBlockHeight() const { return 0x7fffffff; }
+    /** Coinbase transaction outputs can only be spent after this number of new blocks (network rule) */
+    int nCoinbaseMaturity;
     /** Used to check majorities for block version upgrade */
     int nMajorityEnforceBlockUpgrade;
     int nMajorityRejectBlockOutdated;

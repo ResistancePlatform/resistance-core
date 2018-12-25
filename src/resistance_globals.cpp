@@ -30,7 +30,7 @@ uint64_t PENDING_RESISTANCE_TX=0;
 struct resistance_kv *RESISTANCE_KV=0;
 pthread_mutex_t RESISTANCE_KV_mutex;
 
-int RESISTANCE_COINBASE_MATURITY=COINBASE_MATURITY;
+int RESISTANCE_COINBASE_MATURITY=100;
 CAmount RESISTANCE_MAX_MONEY=0;
 
 char Privatizer_secretaddrs[PRIVATIZER_MAXSECRETADDRS][64]={"",},Privatizer_deposit[64]="";

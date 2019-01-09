@@ -83,7 +83,7 @@ int32_t resistance_parsestatefile(struct resistance_state *sp,FILE *fp,char *sym
                 errs++;
             //if ( matched != 0 ) global independent states -> inside *sp
             //LogPrintf("%s.%d load[%s] ht.%d\n",ASSETCHAINS_SYMBOL,ht,symbol,kheight);
-            resistance_eventadd_kmdheight(sp,symbol,ht,kheight,0);
+            resistance_eventadd_resheight(sp,symbol,ht,kheight,0);
         }
         else if ( func == 'T' )
         {
@@ -94,7 +94,7 @@ int32_t resistance_parsestatefile(struct resistance_state *sp,FILE *fp,char *sym
                 errs++;
             //if ( matched != 0 ) global independent states -> inside *sp
             //LogPrintf("%s.%d load[%s] ht.%d t.%u\n",ASSETCHAINS_SYMBOL,ht,symbol,kheight,ktimestamp);
-            resistance_eventadd_kmdheight(sp,symbol,ht,kheight,ktimestamp);
+            resistance_eventadd_resheight(sp,symbol,ht,kheight,ktimestamp);
         }
         else if ( func == 'R' )
         {
@@ -225,7 +225,7 @@ int32_t resistance_parsestatefiledata(struct resistance_state *sp,uint8_t *filed
             int32_t kheight;
             if ( memread(&kheight,sizeof(kheight),filedata,&fpos,datalen) != sizeof(kheight) )
                 errs++;
-             resistance_eventadd_kmdheight(sp,symbol,ht,kheight,0);
+             resistance_eventadd_resheight(sp,symbol,ht,kheight,0);
         }
         else if ( func == 'T' )
         {
@@ -236,7 +236,7 @@ int32_t resistance_parsestatefiledata(struct resistance_state *sp,uint8_t *filed
                 errs++;
             //if ( matched != 0 ) global independent states -> inside *sp
             //LogPrintf("%s.%d load[%s] ht.%d t.%u\n",ASSETCHAINS_SYMBOL,ht,symbol,kheight,ktimestamp);
-            resistance_eventadd_kmdheight(sp,symbol,ht,kheight,ktimestamp);
+            resistance_eventadd_resheight(sp,symbol,ht,kheight,ktimestamp);
         }
         else if ( func == 'R' )
         {
@@ -373,12 +373,12 @@ int32_t resistance_longestchain()
     return(0);
 }
 
-int32_t resistance_isrealtime(int32_t *kmdheightp)
+int32_t resistance_isrealtime(int32_t *resheightp)
 {
     struct resistance_state *sp; CBlockIndex *pindex;
     if ( (sp= resistance_stateptrget((char *)"RES")) != 0 )
-        *kmdheightp = sp->CURRENT_HEIGHT;
-    else *kmdheightp = 0;
+        *resheightp = sp->CURRENT_HEIGHT;
+    else *resheightp = 0;
     if ( (pindex= chainActive.Tip()) != 0 && pindex->nHeight >= (int32_t)resistance_longestchain() )
         return(1);
     else return(0);
@@ -407,12 +407,12 @@ uint64_t resistance_paxtotal()
                 {
                     if ( pax2->fiatoshis != 0 )
                     {
-                        pax->resistanceshis = pax2->resistanceshis;
+                        pax->satoshis = pax2->satoshis;
                         pax->fiatoshis = pax2->fiatoshis;
                         basesp->issued += pax->fiatoshis;
                         pax->didstats = 1;
                         if ( strcmp(str,ASSETCHAINS_SYMBOL) == 0 )
-                            LogPrintf("########### %p issued %s += %.8f kmdheight.%d %.8f other.%d\n",basesp,str,dstr(pax->fiatoshis),pax->height,dstr(pax->resistanceshis),pax->otherheight);
+                            LogPrintf("########### %p issued %s += %.8f resheight.%d %.8f other.%d\n",basesp,str,dstr(pax->fiatoshis),pax->height,dstr(pax->satoshis),pax->otherheight);
                         pax2->marked = pax->height;
                         pax->marked = pax->height;
                     }
@@ -422,18 +422,18 @@ uint64_t resistance_paxtotal()
                     //bitcoin_address(coinaddr,addrtype,rmd160,20);
                     if ( (checktoshis= resistance_paxprice(&seed,pax->height,pax->source,(char *)"RES",(uint64_t)pax->fiatoshis)) != 0 )
                     {
-                        if ( resistance_paxcmp(pax->source,pax->height,pax->resistanceshis,checktoshis,seed) != 0 )
+                        if ( resistance_paxcmp(pax->source,pax->height,pax->satoshis,checktoshis,seed) != 0 )
                         {
                             pax->marked = pax->height;
-                            //LogPrintf("WITHDRAW.%s mark <- %d %.8f != %.8f\n",pax->source,pax->height,dstr(checktoshis),dstr(pax->resistanceshis));
+                            //LogPrintf("WITHDRAW.%s mark <- %d %.8f != %.8f\n",pax->source,pax->height,dstr(checktoshis),dstr(pax->satoshis));
                         }
                         else if ( pax->validated == 0 )
                         {
-                            pax->validated = pax->resistanceshis = checktoshis;
+                            pax->validated = pax->satoshis = checktoshis;
                             //int32_t j; for (j=0; j<32; j++)
                             //    LogPrintf("%02x",((uint8_t *)&pax->txid)[j]);
                             //if ( strcmp(str,ASSETCHAINS_SYMBOL) == 0 )
-                            //    LogPrintf(" v%d %p got WITHDRAW.%s kmd.%d ht.%d %.8f -> %.8f/%.8f\n",pax->vout,pax,pax->source,pax->height,pax->otherheight,dstr(pax->fiatoshis),dstr(pax->resistanceshis),dstr(checktoshis));
+                            //    LogPrintf(" v%d %p got WITHDRAW.%s res.%d ht.%d %.8f -> %.8f/%.8f\n",pax->vout,pax,pax->source,pax->height,pax->otherheight,dstr(pax->fiatoshis),dstr(pax->satoshis),dstr(checktoshis));
                         }
                     }
                 }
@@ -445,7 +445,7 @@ uint64_t resistance_paxtotal()
     {
         pax->ready = 0;
         if ( 0 && pax->type == 'A' )
-            LogPrintf("%p pax.%s <- %s marked.%d %.8f -> %.8f validated.%d approved.%d\n",pax,pax->symbol,pax->source,pax->marked,dstr(pax->resistanceshis),dstr(pax->fiatoshis),pax->validated != 0,pax->approved != 0);
+            LogPrintf("%p pax.%s <- %s marked.%d %.8f -> %.8f validated.%d approved.%d\n",pax,pax->symbol,pax->source,pax->marked,dstr(pax->satoshis),dstr(pax->fiatoshis),pax->validated != 0,pax->approved != 0);
         if ( pax->marked != 0 )
             continue;
         if ( strcmp(symbol,pax->symbol) == 0 || pax->type == 'A' )
@@ -464,28 +464,28 @@ uint64_t resistance_paxtotal()
                 {
                     if ( pax->validated != 0 )
                     {
-                        total += pax->resistanceshis;
+                        total += pax->satoshis;
                         pax->ready = 1;
                     }
                     else
                     {
                         seed = 0;
                         checktoshis = resistance_paxprice(&seed,pax->height,pax->source,(char *)"RES",(uint64_t)pax->fiatoshis);
-                        //LogPrintf("paxtotal PAX_fiatdest ht.%d price %s %.8f -> RES %.8f vs %.8f\n",pax->height,pax->symbol,(double)pax->fiatoshis/COIN,(double)pax->resistanceshis/COIN,(double)checktoshis/COIN);
-                        //LogPrintf(" v%d %.8f k.%d ht.%d\n",pax->vout,dstr(pax->resistanceshis),pax->height,pax->otherheight);
+                        //LogPrintf("paxtotal PAX_fiatdest ht.%d price %s %.8f -> RES %.8f vs %.8f\n",pax->height,pax->symbol,(double)pax->fiatoshis/COIN,(double)pax->satoshis/COIN,(double)checktoshis/COIN);
+                        //LogPrintf(" v%d %.8f k.%d ht.%d\n",pax->vout,dstr(pax->satoshis),pax->height,pax->otherheight);
                         if ( seed != 0 && checktoshis != 0 )
                         {
-                            if ( checktoshis == pax->resistanceshis )
+                            if ( checktoshis == pax->satoshis )
                             {
-                                total += pax->resistanceshis;
-                                pax->validated = pax->resistanceshis;
+                                total += pax->satoshis;
+                                pax->validated = pax->satoshis;
                                 pax->ready = 1;
                             } else pax->marked = pax->height;
                         }
                     }
                 }
                 if ( 0 && pax->ready != 0 )
-                    LogPrintf("%p (%c) pax.%s marked.%d %.8f -> %.8f validated.%d approved.%d ready.%d ht.%d\n",pax,pax->type,pax->symbol,pax->marked,dstr(pax->resistanceshis),dstr(pax->fiatoshis),pax->validated != 0,pax->approved != 0,pax->ready,pax->height);
+                    LogPrintf("%p (%c) pax.%s marked.%d %.8f -> %.8f validated.%d approved.%d ready.%d ht.%d\n",pax,pax->type,pax->symbol,pax->marked,dstr(pax->satoshis),dstr(pax->fiatoshis),pax->validated != 0,pax->approved != 0,pax->ready,pax->height);
             }
         }
     }
@@ -642,7 +642,7 @@ bool resistance_passport_iteration()
     return true;
 }
 
-int32_t resistance_paxcmp(char *symbol,int32_t kmdheight,uint64_t value,uint64_t checkvalue,uint64_t seed)
+int32_t resistance_paxcmp(char *symbol,int32_t resheight,uint64_t value,uint64_t checkvalue,uint64_t seed)
 {
     int32_t ratio;
     if ( seed == 0 && checkvalue != 0 )
@@ -653,7 +653,7 @@ int32_t resistance_paxcmp(char *symbol,int32_t kmdheight,uint64_t value,uint64_t
         else
         {
             if ( ASSETCHAINS_SYMBOL[0] != 0 )
-                LogPrintf("ht.%d ignore mismatched %s value %lld vs checkvalue %lld -> ratio.%d\n",kmdheight,symbol,(long long)value,(long long)checkvalue,ratio);
+                LogPrintf("ht.%d ignore mismatched %s value %lld vs checkvalue %lld -> ratio.%d\n",resheight,symbol,(long long)value,(long long)checkvalue,ratio);
             return(-1);
         }
     }
@@ -724,7 +724,7 @@ void resistance_gateway_deposit(char *coinaddr,uint64_t value,const char *symbol
     {
         strcpy(pax->coinaddr,coinaddr);
         if ( value != 0 )
-            pax->resistanceshis = value;
+            pax->satoshis = value;
         if ( symbol != 0 )
             strcpy(pax->symbol,symbol);
         if ( source != 0 )
@@ -765,7 +765,7 @@ int32_t resistance_rwapproval(int32_t rwflag,uint8_t *opretbuf,struct pax_transa
         pax->vout += ((uint32_t)opretbuf[len++] << 8);
         //LogPrintf(" txid v.%d\n",pax->vout);
     }
-    len += iguana_rwnum(rwflag,&opretbuf[len],sizeof(pax->resistanceshis),&pax->resistanceshis);
+    len += iguana_rwnum(rwflag,&opretbuf[len],sizeof(pax->satoshis),&pax->satoshis);
     len += iguana_rwnum(rwflag,&opretbuf[len],sizeof(pax->fiatoshis),&pax->fiatoshis);
     len += iguana_rwnum(rwflag,&opretbuf[len],sizeof(pax->height),&pax->height);
     len += iguana_rwnum(rwflag,&opretbuf[len],sizeof(pax->otherheight),&pax->otherheight);
@@ -784,7 +784,7 @@ int32_t resistance_rwapproval(int32_t rwflag,uint8_t *opretbuf,struct pax_transa
     return(len);
 }
 
-int32_t resistance_issued_opreturn(char *base,uint256 *txids,uint16_t *vouts,int64_t *values,int64_t *srcvalues,int32_t *kmdheights,int32_t *otherheights,int8_t *baseids,uint8_t *rmd160s,uint8_t *opretbuf,int32_t opretlen,int32_t isresistance)
+int32_t resistance_issued_opreturn(char *base,uint256 *txids,uint16_t *vouts,int64_t *values,int64_t *srcvalues,int32_t *resheights,int32_t *otherheights,int8_t *baseids,uint8_t *rmd160s,uint8_t *opretbuf,int32_t opretlen,int32_t isresistance)
 {
     struct pax_transaction p,*pax; int32_t i,n=0,j,len=0,incr,height,otherheight; uint8_t type,rmd160[20]; uint64_t fiatoshis; char symbol[RESISTANCE_ASSETCHAIN_MAXLEN];
     //if ( RESISTANCE_PAX == 0 )
@@ -808,13 +808,13 @@ int32_t resistance_issued_opreturn(char *base,uint256 *txids,uint16_t *vouts,int
             {
                 memset(&p,0,sizeof(p));
                 len += resistance_rwapproval(0,&opretbuf[len],&p);
-                if ( values != 0 && srcvalues != 0 && kmdheights != 0 && otherheights != 0 && baseids != 0 && rmd160s != 0 )
+                if ( values != 0 && srcvalues != 0 && resheights != 0 && otherheights != 0 && baseids != 0 && rmd160s != 0 )
                 {
                     txids[n] = p.txid;
                     vouts[n] = p.vout;
-                    values[n] = (strcmp("RES",base) == 0) ? p.resistanceshis : p.fiatoshis;
-                    srcvalues[n] = (strcmp("RES",base) == 0) ? p.fiatoshis : p.resistanceshis;
-                    kmdheights[n] = p.height;
+                    values[n] = (strcmp("RES",base) == 0) ? p.satoshis : p.fiatoshis;
+                    srcvalues[n] = (strcmp("RES",base) == 0) ? p.fiatoshis : p.satoshis;
+                    resheights[n] = p.height;
                     otherheights[n] = p.otherheight;
                     memcpy(&rmd160s[n * 20],p.rmd160,20);
                     baseids[n] = resistance_baseid(p.source);
@@ -822,7 +822,7 @@ int32_t resistance_issued_opreturn(char *base,uint256 *txids,uint16_t *vouts,int
                     {
                         char coinaddr[64];
                         bitcoin_address(coinaddr,60,&rmd160s[n * 20],20);
-                        LogPrintf(">>>>>>> %s: (%s) fiat %.8f kmdheight.%d other.%d -> %s %.8f\n",type=='A'?"approvedA":"issuedX",baseids[n]>=0?CURRENCIES[baseids[n]]:"???",dstr(p.fiatoshis),kmdheights[n],otherheights[n],coinaddr,dstr(values[n]));
+                        LogPrintf(">>>>>>> %s: (%s) fiat %.8f resheight.%d other.%d -> %s %.8f\n",type=='A'?"approvedA":"issuedX",baseids[n]>=0?CURRENCIES[baseids[n]]:"???",dstr(p.fiatoshis),resheights[n],otherheights[n],coinaddr,dstr(values[n]));
                     }
                 }
             }
@@ -840,9 +840,9 @@ int32_t resistance_issued_opreturn(char *base,uint256 *txids,uint16_t *vouts,int
                 baseids[n] = resistance_baseid(base);
                 if ( (pax= resistance_paxfinds(txids[n],vouts[n])) != 0 )
                 {
-                    values[n] = (strcmp("RES",base) == 0) ? pax->resistanceshis : pax->fiatoshis;
-                    srcvalues[n] = (strcmp("RES",base) == 0) ? pax->fiatoshis : pax->resistanceshis;
-                    kmdheights[n] = pax->height;
+                    values[n] = (strcmp("RES",base) == 0) ? pax->satoshis : pax->fiatoshis;
+                    srcvalues[n] = (strcmp("RES",base) == 0) ? pax->fiatoshis : pax->satoshis;
+                    resheights[n] = pax->height;
                     otherheights[n] = pax->otherheight;
                     memcpy(&rmd160s[n * 20],pax->rmd160,20);
                 }
@@ -873,7 +873,7 @@ struct pax_transaction *resistance_paxmark(int32_t height,uint256 txid,uint16_t 
     {
         pax->marked = mark;
         //if ( height > 214700 || pax->height > 214700 )
-        //    LogPrintf("mark ht.%d %.8f %.8f\n",pax->height,dstr(pax->resistanceshis),dstr(pax->fiatoshis));
+        //    LogPrintf("mark ht.%d %.8f %.8f\n",pax->height,dstr(pax->satoshis),dstr(pax->fiatoshis));
         
     }
     pthread_mutex_unlock(&resistance_mutex);
@@ -890,7 +890,7 @@ void resistance_paxdelete(struct pax_transaction *pax)
 
 const char *resistance_opreturn(int32_t height,uint64_t value,uint8_t *opretbuf,int32_t opretlen,uint256 txid,uint16_t vout,char *source)
 {
-    uint8_t rmd160[20],rmd160s[64*20],addrtype,shortflag,pubkey33[33]; int32_t didstats,i,j,n,kvheight,len,toresistance,kmdheight,otherheights[64],kmdheights[64]; int8_t baseids[64]; char base[4],coinaddr[64],destaddr[64]; uint256 txids[64]; uint16_t vouts[64]; uint64_t convtoshis,seed; int64_t fee,fiatoshis,resistanceshis,checktoshis,values[64],srcvalues[64]; struct pax_transaction *pax,*pax2; struct resistance_state *basesp; double diff;
+    uint8_t rmd160[20],rmd160s[64*20],addrtype,shortflag,pubkey33[33]; int32_t didstats,i,j,n,kvheight,len,toresistance,resheight,otherheights[64],resheights[64]; int8_t baseids[64]; char base[4],coinaddr[64],destaddr[64]; uint256 txids[64]; uint16_t vouts[64]; uint64_t convtoshis,seed; int64_t fee,fiatoshis,satoshis,checktoshis,values[64],srcvalues[64]; struct pax_transaction *pax,*pax2; struct resistance_state *basesp; double diff;
     const char *typestr = "unknown";
     if ( ASSETCHAINS_SYMBOL[0] != 0 && resistance_baseid(ASSETCHAINS_SYMBOL) < 0 && opretbuf[0] != 'K' )
     {
@@ -901,7 +901,7 @@ const char *resistance_opreturn(int32_t height,uint64_t value,uint8_t *opretbuf,
     memset(values,0,sizeof(values));
     memset(srcvalues,0,sizeof(srcvalues));
     memset(rmd160s,0,sizeof(rmd160s));
-    memset(kmdheights,0,sizeof(kmdheights));
+    memset(resheights,0,sizeof(resheights));
     memset(otherheights,0,sizeof(otherheights));
     toresistance = (resistance_is_issuer() == 0);
     if ( opretbuf[0] == 'K' && opretlen != 40 )
@@ -914,31 +914,31 @@ const char *resistance_opreturn(int32_t height,uint64_t value,uint8_t *opretbuf,
     if ( opretbuf[0] == 'D' )
     {
         toresistance = 0;
-        if ( opretlen == 38 ) // any KMD tx
+        if ( opretlen == 38 ) // any RES tx
         {
-            iguana_rwnum(0,&opretbuf[34],sizeof(kmdheight),&kmdheight);
+            iguana_rwnum(0,&opretbuf[34],sizeof(resheight),&resheight);
             memset(base,0,sizeof(base));
             PAX_pubkey(0,&opretbuf[1],&addrtype,rmd160,base,&shortflag,&fiatoshis);
             bitcoin_address(coinaddr,addrtype,rmd160,20);
-            checktoshis = PAX_fiatdest(&seed,toresistance,destaddr,pubkey33,coinaddr,kmdheight,base,fiatoshis);
-            if ( resistance_paxcmp(base,kmdheight,value,checktoshis,kmdheight < 225000 ? seed : 0) != 0 )
+            checktoshis = PAX_fiatdest(&seed,toresistance,destaddr,pubkey33,coinaddr,resheight,base,fiatoshis);
+            if ( resistance_paxcmp(base,resheight,value,checktoshis,resheight < 225000 ? seed : 0) != 0 )
                 checktoshis = PAX_fiatdest(&seed,toresistance,destaddr,pubkey33,coinaddr,height,base,fiatoshis);
             typestr = "deposit";
             if ( 0 && strcmp("NOK",base) == 0 )
             {
-                LogPrintf("[%s] %s paxdeposit height.%d vs kmdheight.%d\n",ASSETCHAINS_SYMBOL,base,height,kmdheight);
-                LogPrintf("(%s) (%s) kmdheight.%d vs height.%d check %.8f vs %.8f toresistance.%d %d seed.%llx\n",ASSETCHAINS_SYMBOL,base,kmdheight,height,dstr(checktoshis),dstr(value),resistance_is_issuer(),strncmp(ASSETCHAINS_SYMBOL,base,strlen(base)) == 0,(long long)seed);
+                LogPrintf("[%s] %s paxdeposit height.%d vs resheight.%d\n",ASSETCHAINS_SYMBOL,base,height,resheight);
+                LogPrintf("(%s) (%s) resheight.%d vs height.%d check %.8f vs %.8f toresistance.%d %d seed.%llx\n",ASSETCHAINS_SYMBOL,base,resheight,height,dstr(checktoshis),dstr(value),resistance_is_issuer(),strncmp(ASSETCHAINS_SYMBOL,base,strlen(base)) == 0,(long long)seed);
                 for (i=0; i<32; i++)
                     LogPrintf("%02x",((uint8_t *)&txid)[i]);
                 LogPrintf(" <- txid.v%u ",vout);
                 for (i=0; i<33; i++)
                     LogPrintf("%02x",pubkey33[i]);
-                LogPrintf(" checkpubkey check %.8f v %.8f dest.(%s) kmdheight.%d height.%d\n",dstr(checktoshis),dstr(value),destaddr,kmdheight,height);
+                LogPrintf(" checkpubkey check %.8f v %.8f dest.(%s) resheight.%d height.%d\n",dstr(checktoshis),dstr(value),destaddr,resheight,height);
             }
-            if ( strcmp(base,ASSETCHAINS_SYMBOL) == 0 && (kmdheight > 195000 || kmdheight <= height) )
+            if ( strcmp(base,ASSETCHAINS_SYMBOL) == 0 && (resheight > 195000 || resheight <= height) )
             {
                 didstats = 0;
-                if ( resistance_paxcmp(base,kmdheight,value,checktoshis,kmdheight < 225000 ? seed : 0) == 0 )
+                if ( resistance_paxcmp(base,resheight,value,checktoshis,resheight < 225000 ? seed : 0) == 0 )
                 {
                     if ( (pax= resistance_paxfind(txid,vout,'D')) == 0 )
                     {
@@ -947,15 +947,15 @@ const char *resistance_opreturn(int32_t height,uint64_t value,uint8_t *opretbuf,
                             basesp->deposited += fiatoshis;
                             didstats = 1;
                             if ( 0 && strcmp(base,ASSETCHAINS_SYMBOL) == 0 )
-                                LogPrintf("########### %p deposited %s += %.8f kmdheight.%d %.8f\n",basesp,base,dstr(fiatoshis),kmdheight,dstr(value));
+                                LogPrintf("########### %p deposited %s += %.8f resheight.%d %.8f\n",basesp,base,dstr(fiatoshis),resheight,dstr(value));
                         } else LogPrintf("cant get stateptr.(%s)\n",base);
-                        resistance_gateway_deposit(coinaddr,value,base,fiatoshis,rmd160,txid,vout,'D',kmdheight,height,(char *)"RES",0);
+                        resistance_gateway_deposit(coinaddr,value,base,fiatoshis,rmd160,txid,vout,'D',resheight,height,(char *)"RES",0);
                     }
                     if ( (pax= resistance_paxfind(txid,vout,'D')) != 0 )
                     {
-                        pax->height = kmdheight;
+                        pax->height = resheight;
                         pax->validated = value;
-                        pax->resistanceshis = value;
+                        pax->satoshis = value;
                         pax->fiatoshis = fiatoshis;
                         if ( didstats == 0 && pax->didstats == 0 )
                         {
@@ -964,7 +964,7 @@ const char *resistance_opreturn(int32_t height,uint64_t value,uint8_t *opretbuf,
                                 basesp->deposited += fiatoshis;
                                 didstats = 1;
                                 if ( 0 && strcmp(base,ASSETCHAINS_SYMBOL) == 0 )
-                                    LogPrintf("########### %p depositedB %s += %.8f/%.8f kmdheight.%d/%d %.8f/%.8f\n",basesp,base,dstr(fiatoshis),dstr(pax->fiatoshis),kmdheight,pax->height,dstr(value),dstr(pax->resistanceshis));
+                                    LogPrintf("########### %p depositedB %s += %.8f/%.8f resheight.%d/%d %.8f/%.8f\n",basesp,base,dstr(fiatoshis),dstr(pax->fiatoshis),resheight,pax->height,dstr(value),dstr(pax->satoshis));
                             }
                         } //
                         if ( didstats != 0 )
@@ -972,7 +972,7 @@ const char *resistance_opreturn(int32_t height,uint64_t value,uint8_t *opretbuf,
                         if ( (pax2= resistance_paxfind(txid,vout,'I')) != 0 )
                         {
                             pax2->fiatoshis = pax->fiatoshis;
-                            pax2->resistanceshis = pax->resistanceshis;
+                            pax2->satoshis = pax->satoshis;
                             pax->marked = pax2->marked = pax->height;
                             pax2->height = pax->height = height;
                             if ( pax2->didstats == 0 )
@@ -982,7 +982,7 @@ const char *resistance_opreturn(int32_t height,uint64_t value,uint8_t *opretbuf,
                                     basesp->issued += pax2->fiatoshis;
                                     pax2->didstats = 1;
                                     if ( 0 && strcmp(base,"USD") == 0 )
-                                        LogPrintf("########### %p issueda %s += %.8f kmdheight.%d %.8f other.%d [%d]\n",basesp,base,dstr(pax2->fiatoshis),pax2->height,dstr(pax2->resistanceshis),pax2->otherheight,height);
+                                        LogPrintf("########### %p issueda %s += %.8f resheight.%d %.8f other.%d [%d]\n",basesp,base,dstr(pax2->fiatoshis),pax2->height,dstr(pax2->satoshis),pax2->otherheight,height);
                                 }
                             }
                         }
@@ -992,10 +992,10 @@ const char *resistance_opreturn(int32_t height,uint64_t value,uint8_t *opretbuf,
                 {
                     if ( (pax= resistance_paxfind(txid,vout,'D')) != 0 )
                         pax->marked = checktoshis;
-                    if ( kmdheight > 238000 && (kmdheight > 214700 || strcmp(base,ASSETCHAINS_SYMBOL) == 0) ) //seed != 0 &&
-                        LogPrintf("pax %s deposit %.8f rejected kmdheight.%d %.8f RES check %.8f seed.%llu\n",base,dstr(fiatoshis),kmdheight,dstr(value),dstr(checktoshis),(long long)seed);
+                    if ( resheight > 238000 && (resheight > 214700 || strcmp(base,ASSETCHAINS_SYMBOL) == 0) ) //seed != 0 &&
+                        LogPrintf("pax %s deposit %.8f rejected resheight.%d %.8f RES check %.8f seed.%llu\n",base,dstr(fiatoshis),resheight,dstr(value),dstr(checktoshis),(long long)seed);
                 }
-            } //else LogPrintf("[%s] %s paxdeposit height.%d vs kmdheight.%d\n",ASSETCHAINS_SYMBOL,base,height,kmdheight);
+            } //else LogPrintf("[%s] %s paxdeposit height.%d vs resheight.%d\n",ASSETCHAINS_SYMBOL,base,height,resheight);
         } //else error("unsupported size.%d for opreturn D\n",opretlen);
     }
     else if ( opretbuf[0] == 'I' )
@@ -1003,7 +1003,7 @@ const char *resistance_opreturn(int32_t height,uint64_t value,uint8_t *opretbuf,
         toresistance = 0;
         if ( strncmp((char *)"RES",(char *)&opretbuf[opretlen-4],3) != 0 && strncmp(ASSETCHAINS_SYMBOL,(char *)&opretbuf[opretlen-4],3) == 0 )
         {
-            if ( (n= resistance_issued_opreturn(base,txids,vouts,values,srcvalues,kmdheights,otherheights,baseids,rmd160s,opretbuf,opretlen,0)) > 0 )
+            if ( (n= resistance_issued_opreturn(base,txids,vouts,values,srcvalues,resheights,otherheights,baseids,rmd160s,opretbuf,opretlen,0)) > 0 )
             {
                 for (i=0; i<n; i++)
                 {
@@ -1021,11 +1021,11 @@ const char *resistance_opreturn(int32_t height,uint64_t value,uint8_t *opretbuf,
                     {
                         pax->type = opretbuf[0];
                         strcpy(pax->source,(char *)&opretbuf[opretlen-4]);
-                        if ( (pax2= resistance_paxfind(txids[i],vouts[i],'D')) != 0 && pax2->fiatoshis != 0 && pax2->resistanceshis != 0 )
+                        if ( (pax2= resistance_paxfind(txids[i],vouts[i],'D')) != 0 && pax2->fiatoshis != 0 && pax2->satoshis != 0 )
                         {
                             // realtime path?
                             pax->fiatoshis = pax2->fiatoshis;
-                            pax->resistanceshis = pax2->resistanceshis;
+                            pax->satoshis = pax2->satoshis;
                             pax->marked = pax2->marked = pax2->height;
                             if ( pax->didstats == 0 )
                             {
@@ -1036,7 +1036,7 @@ const char *resistance_opreturn(int32_t height,uint64_t value,uint8_t *opretbuf,
                                     pax->height = pax2->height;
                                     pax->otherheight = height;
                                     if ( 1 && strcmp(CURRENCIES[baseids[i]],"USD") == 0 )
-                                        LogPrintf("########### %p issuedb %s += %.8f kmdheight.%d %.8f other.%d [%d]\n",basesp,CURRENCIES[baseids[i]],dstr(pax->fiatoshis),pax->height,dstr(pax->resistanceshis),pax->otherheight,height);
+                                        LogPrintf("########### %p issuedb %s += %.8f resheight.%d %.8f other.%d [%d]\n",basesp,CURRENCIES[baseids[i]],dstr(pax->fiatoshis),pax->height,dstr(pax->satoshis),pax->otherheight,height);
                                 }
                             }
                         }
@@ -1059,15 +1059,15 @@ const char *resistance_opreturn(int32_t height,uint64_t value,uint8_t *opretbuf,
             return(typestr);
         }
         toresistance = 1;
-        iguana_rwnum(0,&opretbuf[34],sizeof(kmdheight),&kmdheight);
+        iguana_rwnum(0,&opretbuf[34],sizeof(resheight),&resheight);
         memset(base,0,sizeof(base));
-        PAX_pubkey(0,&opretbuf[1],&addrtype,rmd160,base,&shortflag,&resistanceshis);
+        PAX_pubkey(0,&opretbuf[1],&addrtype,rmd160,base,&shortflag,&satoshis);
         bitcoin_address(coinaddr,addrtype,rmd160,20);
-        checktoshis = PAX_fiatdest(&seed,toresistance,destaddr,pubkey33,coinaddr,kmdheight,base,value);
+        checktoshis = PAX_fiatdest(&seed,toresistance,destaddr,pubkey33,coinaddr,resheight,base,value);
         typestr = "withdraw";
-        //LogPrintf(" [%s] WITHDRAW %s.height.%d vs height.%d check %.8f/%.8f vs %.8f toresistance.%d %d seed.%llx -> (%s) len.%d\n",ASSETCHAINS_SYMBOL,base,kmdheight,height,dstr(checktoshis),dstr(resistanceshis),dstr(value),resistance_is_issuer(),strncmp(ASSETCHAINS_SYMBOL,base,strlen(base)) == 0,(long long)seed,coinaddr,opretlen);
+        //LogPrintf(" [%s] WITHDRAW %s.height.%d vs height.%d check %.8f/%.8f vs %.8f toresistance.%d %d seed.%llx -> (%s) len.%d\n",ASSETCHAINS_SYMBOL,base,resheight,height,dstr(checktoshis),dstr(satoshis),dstr(value),resistance_is_issuer(),strncmp(ASSETCHAINS_SYMBOL,base,strlen(base)) == 0,(long long)seed,coinaddr,opretlen);
         didstats = 0;
-        //if ( resistance_paxcmp(base,kmdheight,resistanceshis,checktoshis,seed) == 0 )
+        //if ( resistance_paxcmp(base,resheight,satoshis,checktoshis,seed) == 0 )
         {
             if ( value != 0 && ((pax= resistance_paxfind(txid,vout,'W')) == 0 || pax->didstats == 0) )
             {
@@ -1079,19 +1079,19 @@ const char *resistance_opreturn(int32_t height,uint64_t value,uint8_t *opretbuf,
                         LogPrintf("########### %p withdrawn %s += %.8f check %.8f\n",basesp,base,dstr(value),dstr(checktoshis));
                 }
                 if ( 0 && strcmp(base,"RUB") == 0 && (pax == 0 || pax->approved == 0) )
-                    LogPrintf("notarize %s %.8f -> %.8f kmd.%d other.%d\n",ASSETCHAINS_SYMBOL,dstr(value),dstr(resistanceshis),kmdheight,height);
+                    LogPrintf("notarize %s %.8f -> %.8f res.%d other.%d\n",ASSETCHAINS_SYMBOL,dstr(value),dstr(satoshis),resheight,height);
             }
-            resistance_gateway_deposit(coinaddr,0,(char *)"RES",value,rmd160,txid,vout,'W',kmdheight,height,source,0);
+            resistance_gateway_deposit(coinaddr,0,(char *)"RES",value,rmd160,txid,vout,'W',resheight,height,source,0);
             if ( (pax= resistance_paxfind(txid,vout,'W')) != 0 )
             {
                 pax->type = opretbuf[0];
                 strcpy(pax->source,base);
                 strcpy(pax->symbol,"RES");
-                pax->height = kmdheight;
+                pax->height = resheight;
                 pax->otherheight = height;
-                pax->resistanceshis = resistanceshis;
+                pax->satoshis = satoshis;
             }
-        } // else LogPrintf("withdraw %s paxcmp ht.%d %d error value %.8f -> %.8f vs %.8f\n",base,kmdheight,height,dstr(value),dstr(resistanceshis),dstr(checktoshis));
+        } // else LogPrintf("withdraw %s paxcmp ht.%d %d error value %.8f -> %.8f vs %.8f\n",base,resheight,height,dstr(value),dstr(satoshis),dstr(checktoshis));
         // need to allocate pax
     }
     else if ( height < 236000 && toresistance != 0 && opretbuf[0] == 'A' && ASSETCHAINS_SYMBOL[0] == 0 )
@@ -1103,13 +1103,13 @@ const char *resistance_opreturn(int32_t height,uint64_t value,uint8_t *opretbuf,
                 LogPrintf("%02x",opretbuf[i]);
             LogPrintf(" opret[%c] else path toresistance.%d ht.%d before %.8f opretlen.%d\n",opretbuf[0],toresistance,height,dstr(resistance_paxtotal()),opretlen);
         }
-        if ( (n= resistance_issued_opreturn(base,txids,vouts,values,srcvalues,kmdheights,otherheights,baseids,rmd160s,opretbuf,opretlen,1)) > 0 )
+        if ( (n= resistance_issued_opreturn(base,txids,vouts,values,srcvalues,resheights,otherheights,baseids,rmd160s,opretbuf,opretlen,1)) > 0 )
         {
             for (i=0; i<n; i++)
             {
                 //for (j=0; j<32; j++)
                 //    LogPrintf("%02x",((uint8_t *)&txids[i])[j]);
-                //LogPrintf(" v%d %.8f %.8f k.%d ht.%d base.%d\n",vouts[i],dstr(values[i]),dstr(srcvalues[i]),kmdheights[i],otherheights[i],baseids[i]);
+                //LogPrintf(" v%d %.8f %.8f k.%d ht.%d base.%d\n",vouts[i],dstr(values[i]),dstr(srcvalues[i]),resheights[i],otherheights[i],baseids[i]);
                 if ( baseids[i] < 0 )
                 {
                     for (i=0; i<opretlen; i++)
@@ -1126,26 +1126,26 @@ const char *resistance_opreturn(int32_t height,uint64_t value,uint8_t *opretbuf,
                 }
                 didstats = 0;
                 seed = 0;
-                checktoshis = resistance_paxprice(&seed,kmdheights[i],CURRENCIES[baseids[i]],(char *)"RES",(uint64_t)values[i]);
-                //LogPrintf("PAX_fiatdest ht.%d price %s %.8f -> RES %.8f vs %.8f\n",kmdheights[i],CURRENCIES[baseids[i]],(double)values[i]/COIN,(double)srcvalues[i]/COIN,(double)checktoshis/COIN);
+                checktoshis = resistance_paxprice(&seed,resheights[i],CURRENCIES[baseids[i]],(char *)"RES",(uint64_t)values[i]);
+                //LogPrintf("PAX_fiatdest ht.%d price %s %.8f -> RES %.8f vs %.8f\n",resheights[i],CURRENCIES[baseids[i]],(double)values[i]/COIN,(double)srcvalues[i]/COIN,(double)checktoshis/COIN);
                 if ( srcvalues[i] == checktoshis )
                 {
                     if ( (pax= resistance_paxfind(txids[i],vouts[i],'A')) == 0 )
                     {
                         bitcoin_address(coinaddr,60,&rmd160s[i*20],20);
-                        resistance_gateway_deposit(coinaddr,srcvalues[i],CURRENCIES[baseids[i]],values[i],&rmd160s[i*20],txids[i],vouts[i],'A',kmdheights[i],otherheights[i],CURRENCIES[baseids[i]],kmdheights[i]);
+                        resistance_gateway_deposit(coinaddr,srcvalues[i],CURRENCIES[baseids[i]],values[i],&rmd160s[i*20],txids[i],vouts[i],'A',resheights[i],otherheights[i],CURRENCIES[baseids[i]],resheights[i]);
                         if ( (pax= resistance_paxfind(txids[i],vouts[i],'A')) == 0 )
                             LogPrintf("unexpected null pax for approve\n");
                         else pax->validated = checktoshis;
                         if ( (pax2= resistance_paxfind(txids[i],vouts[i],'W')) != 0 )
-                            pax2->approved = kmdheights[i];
+                            pax2->approved = resheights[i];
                         resistance_paxmark(height,txids[i],vouts[i],'W',height);
                         //resistance_paxmark(height,txids[i],vouts[i],'A',height);
                         if ( values[i] != 0 && (basesp= resistance_stateptrget(CURRENCIES[baseids[i]])) != 0 )
                         {
                             basesp->approved += values[i];
                             didstats = 1;
-                            //LogPrintf("pax.%p ########### %p approved %s += %.8f -> %.8f/%.8f kht.%d %d\n",pax,basesp,CURRENCIES[baseids[i]],dstr(values[i]),dstr(srcvalues[i]),dstr(checktoshis),kmdheights[i],otherheights[i]);
+                            //LogPrintf("pax.%p ########### %p approved %s += %.8f -> %.8f/%.8f kht.%d %d\n",pax,basesp,CURRENCIES[baseids[i]],dstr(values[i]),dstr(srcvalues[i]),dstr(checktoshis),resheights[i],otherheights[i]);
                         }
                         //LogPrintf(" i.%d (%s) <- %.8f ADDFLAG APPROVED\n",i,coinaddr,dstr(values[i]));
                     }
@@ -1155,18 +1155,18 @@ const char *resistance_opreturn(int32_t height,uint64_t value,uint8_t *opretbuf,
                         {
                             basesp->approved += values[i];
                             didstats = 1;
-                            //LogPrintf("pax.%p ########### %p approved %s += %.8f -> %.8f/%.8f kht.%d %d\n",pax,basesp,CURRENCIES[baseids[i]],dstr(values[i]),dstr(srcvalues[i]),dstr(checktoshis),kmdheights[i],otherheights[i]);
+                            //LogPrintf("pax.%p ########### %p approved %s += %.8f -> %.8f/%.8f kht.%d %d\n",pax,basesp,CURRENCIES[baseids[i]],dstr(values[i]),dstr(srcvalues[i]),dstr(checktoshis),resheights[i],otherheights[i]);
                         }
                     } //else LogPrintf(" i.%d of n.%d pax.%p baseids[] %d\n",i,n,pax,baseids[i]);
                     if ( (pax= resistance_paxfind(txids[i],vouts[i],'A')) != 0 )
                     {
                         pax->type = opretbuf[0];
-                        pax->approved = kmdheights[i];
+                        pax->approved = resheights[i];
                         pax->validated = checktoshis;
                         if ( didstats != 0 )
                             pax->didstats = 1;
                         //if ( strcmp(CURRENCIES[baseids[i]],ASSETCHAINS_SYMBOL) == 0 )
-                        //LogPrintf(" i.%d approved.%d <<<<<<<<<<<<< APPROVED %p\n",i,kmdheights[i],pax);
+                        //LogPrintf(" i.%d approved.%d <<<<<<<<<<<<< APPROVED %p\n",i,resheights[i],pax);
                     }
                 }
             }
@@ -1176,7 +1176,7 @@ const char *resistance_opreturn(int32_t height,uint64_t value,uint8_t *opretbuf,
     else if ( height < 236000 && opretbuf[0] == 'X' && ASSETCHAINS_SYMBOL[0] == 0 )
     {
         toresistance = 1;
-        if ( (n= resistance_issued_opreturn(base,txids,vouts,values,srcvalues,kmdheights,otherheights,baseids,rmd160s,opretbuf,opretlen,1)) > 0 )
+        if ( (n= resistance_issued_opreturn(base,txids,vouts,values,srcvalues,resheights,otherheights,baseids,rmd160s,opretbuf,opretlen,1)) > 0 )
         {
             for (i=0; i<n; i++)
             {
@@ -1198,7 +1198,7 @@ const char *resistance_opreturn(int32_t height,uint64_t value,uint8_t *opretbuf,
                         basesp->redeemed += value;
                         pax->didstats = 1;
                         if ( strcmp(CURRENCIES[baseids[i]],ASSETCHAINS_SYMBOL) == 0 )
-                            LogPrintf("ht.%d %.8f ########### %p redeemed %s += %.8f %.8f kht.%d ht.%d\n",height,dstr(value),basesp,CURRENCIES[baseids[i]],dstr(value),dstr(srcvalues[i]),kmdheights[i],otherheights[i]);
+                            LogPrintf("ht.%d %.8f ########### %p redeemed %s += %.8f %.8f kht.%d ht.%d\n",height,dstr(value),basesp,CURRENCIES[baseids[i]],dstr(value),dstr(srcvalues[i]),resheights[i],otherheights[i]);
                     }
                 }
                 if ( (pax= resistance_paxmark(height,txids[i],vouts[i],'W',height)) != 0 )

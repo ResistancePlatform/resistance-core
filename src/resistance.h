@@ -9,7 +9,7 @@
 #include "resistance_events.h"
 #include "main.h"
 
-void resistance_stateupdate(int32_t height,uint8_t notarypubs[][33],uint8_t numnotaries,uint8_t notaryid,uint256 txhash,uint64_t voutmask,uint8_t numvouts,uint32_t *pvals,uint8_t numpvals,int32_t KMDheight,uint32_t KMDtimestamp,uint64_t opretvalue,uint8_t *opretbuf,uint16_t opretlen,uint16_t vout)//,uint256 MoM,int32_t MoMdepth)
+void resistance_stateupdate(int32_t height,uint8_t notarypubs[][33],uint8_t numnotaries,uint8_t notaryid,uint256 txhash,uint64_t voutmask,uint8_t numvouts,uint32_t *pvals,uint8_t numpvals,int32_t RESheight,uint32_t REStimestamp,uint64_t opretvalue,uint8_t *opretbuf,uint16_t opretlen,uint16_t vout)//,uint256 MoM,int32_t MoMdepth)
 {
     static FILE *fp; static int32_t errs,didinit; static uint256 zero;
     struct resistance_state *sp; char fname[512],symbol[RESISTANCE_ASSETCHAIN_MAXLEN],dest[RESISTANCE_ASSETCHAIN_MAXLEN]; int32_t retval,ht,func; uint8_t num,pubkeys[64][33];
@@ -49,16 +49,16 @@ void resistance_stateupdate(int32_t height,uint8_t notarypubs[][33],uint8_t numn
     if ( fp != 0 ) // write out funcid, height, other fields, call side effect function
     {
         //LogPrintf("fpos.%ld ",ftell(fp));
-        if ( KMDheight != 0 )
+        if ( RESheight != 0 )
         {
-            if ( KMDtimestamp != 0 )
+            if ( REStimestamp != 0 )
             {
                 fputc('T',fp);
                 if ( fwrite(&height,1,sizeof(height),fp) != sizeof(height) )
                     errs++;
-                if ( fwrite(&KMDheight,1,sizeof(KMDheight),fp) != sizeof(KMDheight) )
+                if ( fwrite(&RESheight,1,sizeof(RESheight),fp) != sizeof(RESheight) )
                     errs++;
-                if ( fwrite(&KMDtimestamp,1,sizeof(KMDtimestamp),fp) != sizeof(KMDtimestamp) )
+                if ( fwrite(&REStimestamp,1,sizeof(REStimestamp),fp) != sizeof(REStimestamp) )
                     errs++;
             }
             else
@@ -66,10 +66,10 @@ void resistance_stateupdate(int32_t height,uint8_t notarypubs[][33],uint8_t numn
                 fputc('K',fp);
                 if ( fwrite(&height,1,sizeof(height),fp) != sizeof(height) )
                     errs++;
-                if ( fwrite(&KMDheight,1,sizeof(KMDheight),fp) != sizeof(KMDheight) )
+                if ( fwrite(&RESheight,1,sizeof(RESheight),fp) != sizeof(RESheight) )
                     errs++;
             }
-            resistance_eventadd_kmdheight(sp,symbol,height,KMDheight,KMDtimestamp);
+            resistance_eventadd_resheight(sp,symbol,height,RESheight,REStimestamp);
         }
         else if ( opretbuf != 0 && opretlen > 0 )
         {

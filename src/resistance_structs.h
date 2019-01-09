@@ -49,7 +49,7 @@ struct pax_transaction
 {
     UT_hash_handle hh;
     uint256 txid;
-    uint64_t resistanceshis,fiatoshis,validated;
+    uint64_t satoshis,fiatoshis,validated;
     int32_t marked,height,otherheight,approved,didstats,ready;
     uint16_t vout;
     char symbol[RESISTANCE_ASSETCHAIN_MAXLEN],source[RESISTANCE_ASSETCHAIN_MAXLEN],coinaddr[64]; uint8_t rmd160[20],type,buf[35];

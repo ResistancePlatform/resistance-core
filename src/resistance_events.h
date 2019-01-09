@@ -156,35 +156,35 @@ static void resistance_event_rewind(struct resistance_state *sp,char *symbol,int
     }
 }
 
-static void resistance_setkmdheight(struct resistance_state *sp,int32_t kmdheight,uint32_t timestamp)
+static void resistance_setresheight(struct resistance_state *sp,int32_t resheight,uint32_t timestamp)
 {
     if ( sp != 0 )
     {
-        if ( kmdheight > sp->SAVEDHEIGHT )
+        if ( resheight > sp->SAVEDHEIGHT )
         {
-            sp->SAVEDHEIGHT = kmdheight;
+            sp->SAVEDHEIGHT = resheight;
             sp->SAVEDTIMESTAMP = timestamp;
         }
-        if ( kmdheight > sp->CURRENT_HEIGHT )
-            sp->CURRENT_HEIGHT = kmdheight;
+        if ( resheight > sp->CURRENT_HEIGHT )
+            sp->CURRENT_HEIGHT = resheight;
     }
 }
 
-static void resistance_eventadd_kmdheight(struct resistance_state *sp,char *symbol,int32_t height,int32_t kmdheight,uint32_t timestamp)
+static void resistance_eventadd_resheight(struct resistance_state *sp,char *symbol,int32_t height,int32_t resheight,uint32_t timestamp)
 {
     uint32_t buf[2];
-    if ( kmdheight > 0 )
+    if ( resheight > 0 )
     {
-        buf[0] = (uint32_t)kmdheight;
+        buf[0] = (uint32_t)resheight;
         buf[1] = timestamp;
         resistance_eventadd(sp,height,symbol,RESISTANCE_EVENT_RESHEIGHT,(uint8_t *)buf,sizeof(buf));
         if ( sp != 0 )
-            resistance_setkmdheight(sp,kmdheight,timestamp);
+            resistance_setresheight(sp,resheight,timestamp);
     }
     else
     {
-        //LogPrintf("REWIND kmdheight.%d\n",kmdheight);
-        kmdheight = -kmdheight;
+        //LogPrintf("REWIND resheight.%d\n",resheight);
+        resheight = -resheight;
         resistance_eventadd(sp,height,symbol,RESISTANCE_EVENT_REWIND,(uint8_t *)&height,sizeof(height));
         if ( sp != 0 )
             resistance_event_rewind(sp,symbol,height);

@@ -3839,7 +3839,7 @@ UniValue z_sendmany(const UniValue& params, bool fHelp)
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Minimum number of confirmations cannot be less than 0");
     }
 
-    // Fee in Zatoshis, not currency format)
+    // Fee in Ratoshis, not currency format)
     CAmount nFee        = ASYNC_RPC_OPERATION_DEFAULT_MINERS_FEE;
     CAmount nDefaultFee = nFee;
 
@@ -3966,7 +3966,7 @@ UniValue z_shieldcoinbase(const UniValue& params, bool fHelp)
         throw JSONRPCError(RPC_INVALID_PARAMETER, string("Invalid parameter, unknown address format: ") + destaddress );
     }
 
-    // Convert fee from currency format to zatoshis
+    // Convert fee from currency format to ratoshis
     CAmount nFee = SHIELD_COINBASE_DEFAULT_MINERS_FEE;
     if (params.size() > 2) {
         if (params[2].get_real() == 0.0) {
@@ -4271,7 +4271,7 @@ UniValue z_mergetoaddress(const UniValue& params, bool fHelp)
         }
     }
 
-    // Convert fee from currency format to zatoshis
+    // Convert fee from currency format to ratoshis
     CAmount nFee = SHIELD_COINBASE_DEFAULT_MINERS_FEE;
     if (params.size() > 2) {
         if (params[2].get_real() == 0.0) {

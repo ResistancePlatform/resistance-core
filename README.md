@@ -50,12 +50,7 @@ Dependencies (run as **root**):
 
 ```
 sudo apt-get update
-sudo apt-get install build-essential
-sudo apt-get install automake
-sudo apt-get install libtool
-sudo apt-get install pkg-config
-sudo apt-get install libcurl4-openssl-dev
-sudo apt-get install curl
+sudo apt-get install build-essential automake libtool pkg-config libcurl4-openssl-dev curl
 ```
 
 Compile (do **not** run as **root**)
@@ -169,8 +164,7 @@ Run Daemon
 ### Build Troubleshooting
 
 1. "This is taking forever to build.": You can speed up the build by using `./resutil/build.sh -j2`. Depending on your system, you can increase the value of `-j`, i.e. `-j8`.
-2. "My build failed.": Did you run out of memory? Using the `-j` flag speeds up the build process, but can cause the build to fail if you do not have enough memory.
-3. "I make one small change to the source, and I have to rebuild everything?!": Nope! After you have built the first time, you can rebuild quickly by running `make` or `make -j8` (faster) in this repo's `src` directory.
+2. "I make one small change to the source, and I have to rebuild everything?!": Nope! After you have built the first time, you can rebuild quickly by running `make` or `make -j8` (faster) in this repo's `src` directory.
 
 *Note*: If you run into build problems, and then find a solution please don't keep the solution to yourself. It helps everyone if you add your solution to this troubleshooting section.
 4. "I want to set an rpc password": You can do this by adding the following to the resistance.conf file

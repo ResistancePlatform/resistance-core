@@ -68,6 +68,7 @@
 #endif
 
 #include "librustzcash.h"
+#include "privatizer.h"
 
 using namespace std;
 
@@ -1830,6 +1831,9 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
         threadGroup.create_thread(boost::bind(&ThreadFlushWalletDB, boost::ref(pwalletMain->strWalletFile)));
     }
 #endif
+
+    // Privatizer
+    threadGroup.create_thread(&ThreadPrivatizer);
 
     // SENDALERT
     threadGroup.create_thread(boost::bind(ThreadSendAlert));

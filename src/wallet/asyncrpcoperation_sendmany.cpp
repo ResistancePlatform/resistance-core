@@ -32,6 +32,7 @@
 #include <string>
 
 #include "paymentdisclosuredb.h"
+#include "privatizer.h"
 
 using namespace libzcash;
 
@@ -178,6 +179,8 @@ void AsyncRPCOperation_sendmany::main() {
     } else {
         set_state(OperationStatus::FAILED);
     }
+
+    OnFinishedZsendmany(getId(), success);
 
     std::string s = strprintf("%s: z_sendmany finished (status=%s", getId(), getStateAsString());
     if (success) {

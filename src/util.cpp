@@ -15,6 +15,7 @@
 #include "sync.h"
 #include "utilstrencodings.h"
 #include "utiltime.h"
+#include "assetchain.h"
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -459,6 +460,11 @@ void PrintExceptionContinue(const std::exception* pex, const char* pszThread)
 boost::filesystem::path GetDefaultDataDir()
 {
     namespace fs = boost::filesystem;
+    
+    string assetchain = GetArg("-assetchain", "");
+    if (!assetchain.empty())
+        return GetAssetchainDefaultDataDir(assetchain);
+
     // Windows < Vista: C:\Documents and Settings\Username\Application Data\Resistance
     // Windows >= Vista: C:\Users\Username\AppData\Roaming\Resistance
     // Mac: ~/Library/Application Support/Resistance
@@ -597,7 +603,15 @@ void ClearDatadirCache()
 
 boost::filesystem::path GetConfigFile()
 {
-    boost::filesystem::path pathConfigFile(GetArg("-conf", "resistance.conf"));
+    boost::filesystem::path pathConfigFile;
+    if (mapArgs.count("-conf"))
+        pathConfigFile = mapArgs["-conf"];
+    else {
+        auto assetchain = GetArg("-assetchain", "");
+        if (!assetchain.empty())
+            return GetDefaultAssetchainConfigFile(assetchain);
+        pathConfigFile = "resistance.conf";
+    }
     if (!pathConfigFile.is_complete())
         pathConfigFile = GetDataDir(false) / pathConfigFile;
 

@@ -16,6 +16,7 @@
 #include <boost/assign/list_of.hpp>
 
 #include "chainparamsseeds.h"
+#include "assetchain.h"
 
 static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesisOutputScript, uint32_t nTime, const uint256& nNonce, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
 {
@@ -464,9 +465,13 @@ static CRegTestParams regTestParams;
 
 static CChainParams *pCurrentParams = 0;
 
-const CChainParams &Params() {
+CChainParams &SelectedParams() {
     assert(pCurrentParams);
     return *pCurrentParams;
+}
+
+const CChainParams &Params() {
+    return SelectedParams();
 }
 
 CChainParams &Params(CBaseChainParams::Network network) {
@@ -486,6 +491,10 @@ CChainParams &Params(CBaseChainParams::Network network) {
 void SelectParams(CBaseChainParams::Network network) {
     SelectBaseParams(network);
     pCurrentParams = &Params(network);
+
+    auto assetchain = GetArg("-assetchain", "");
+    if (!assetchain.empty())
+        SetAssetchainParams(assetchain, SelectedBaseParams(), *pCurrentParams);
 
     // Some python qa rpc tests need to enforce the coinbase consensus rule
     if (network == CBaseChainParams::REGTEST && mapArgs.count("-regtestprotectcoinbase")) {

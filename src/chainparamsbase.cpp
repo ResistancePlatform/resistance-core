@@ -65,10 +65,15 @@ static CBaseUnitTestParams unitTestParams;
 
 static CBaseChainParams* pCurrentBaseParams = 0;
 
-const CBaseChainParams& BaseParams()
+CBaseChainParams& SelectedBaseParams()
 {
     assert(pCurrentBaseParams);
     return *pCurrentBaseParams;
+}
+
+const CBaseChainParams& BaseParams()
+{
+    return SelectedBaseParams();
 }
 
 void SelectBaseParams(CBaseChainParams::Network network)

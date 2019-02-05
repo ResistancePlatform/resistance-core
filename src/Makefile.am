@@ -396,6 +396,7 @@ libbitcoin_util_a_SOURCES = \
   utilmoneystr.cpp \
   utilstrencodings.cpp \
   utiltime.cpp \
+  assetchain.cpp \
   $(BITCOIN_CORE_H) \
   $(LIBZCASH_H)
 

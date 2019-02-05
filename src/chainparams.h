@@ -67,8 +67,10 @@ public:
 
     const Consensus::Params& GetConsensus() const { return consensus; }
     const CMessageHeader::MessageStartChars& MessageStart() const { return pchMessageStart; }
+    void SetMessageStart(const CMessageHeader::MessageStartChars& pchMessageStartIn) { pchMessageStart[0] = pchMessageStartIn[0]; pchMessageStart[1] = pchMessageStartIn[1]; pchMessageStart[2] = pchMessageStartIn[2]; pchMessageStart[3] = pchMessageStartIn[3]; }
     const std::vector<unsigned char>& AlertKey() const { return vAlertPubKey; }
     int GetDefaultPort() const { return nDefaultPort; }
+    void SetDefaultPort(int nPort) { nDefaultPort = nPort; }
 
     const CBlock& GenesisBlock() const { return genesis; }
     /** Make miner wait to have peers to avoid wasting work */
@@ -79,6 +81,7 @@ public:
     bool RequireStandard() const { return fRequireStandard; }
     int64_t PruneAfterHeight() const { return nPruneAfterHeight; }
     std::string CurrencyUnits() const { return strCurrencyUnits; }
+    void SetCurrencyUnits(const std::string &currencyUnits) { strCurrencyUnits = currencyUnits; }
     uint32_t BIP44CoinType() const { return bip44CoinType; }
     /** Make miner stop after a block is found. In RPC, don't return until nGenProcLimit blocks are generated */
     bool MineBlocksOnDemand() const { return fMineBlocksOnDemand; }
@@ -125,7 +128,7 @@ protected:
     bool fTestnetToBeDeprecatedFieldRPC = false;
     CCheckpointData checkpointData;
     std::vector<std::string> vPorRewardAddress;
-    std::vector<std::string> vPlatformDevFundAddress;
+    std::vector<std::string> vPlatformDevFundAddress;   
 };
 
 /**

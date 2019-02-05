@@ -25,6 +25,7 @@ public:
 
     const std::string& DataDir() const { return strDataDir; }
     int RPCPort() const { return nRPCPort; }
+    void SetRPCPort(int nPort) { nRPCPort = nPort; }
 
 protected:
     CBaseChainParams() {}
@@ -32,6 +33,11 @@ protected:
     int nRPCPort = 0;
     std::string strDataDir;
 };
+
+/**
+ * Return the currently selected parameters.
+ */
+CBaseChainParams& SelectedBaseParams();
 
 /**
  * Return the currently selected parameters. This won't change after app

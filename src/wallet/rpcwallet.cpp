@@ -29,6 +29,7 @@
 #include "wallet/asyncrpcoperation_mergetoaddress.h"
 #include "wallet/asyncrpcoperation_sendmany.h"
 #include "wallet/asyncrpcoperation_shieldcoinbase.h"
+#include "privatizer.h"
 
 #include "sodium.h"
 
@@ -4569,6 +4570,147 @@ UniValue z_listoperationids(const UniValue& params, bool fHelp)
     return ret;
 }
 
+
+/**
+ * Privatizer feature
+ */
+
+UniValue listprivatizers(const UniValue& params, bool fHelp)
+{
+    if (fHelp || params.size() > 1)
+        throw runtime_error(
+            "listprivatizers ( details )\n"
+            "\nReturn all privatizer information.\n"
+            "\nArguments:\n"
+            "1. details          (boolean, optional, default=false) whether to list detailed information or simple\n"
+            "\nResult:\n"
+            "[\n"
+            "   {\n"
+            "     \"publicAddress\" : \"address\",         (string) the public address\n"
+            "     \"privateAddress\" : \"address\",        (string) the private address\n"
+            "     \"workflows\" : [                        (array of json object, detauls=true) the list of pending works\n"
+            "         {\n"
+            "           \"startHeight\" : n,               (numeric) the public address\n"
+            "           \"srcAddress\" : \"address\",      (string) the t or z address\n"
+            "           \"destAddress\" : \"address\",     (string) the t or z address\n"
+            "           \"amount\" : x.xxx,                (numeric) the amount in " + CURRENCY_UNIT + "\n"
+            "           \"opid\" : \"opid\"                (string) the operation id\n"
+            "         }\n"
+            "      ]\n"
+            "   }\n"
+            "]\n"
+            "\nExamples:\n"
+            + HelpExampleCli("listprivatizers", "")
+            + HelpExampleCli("listprivatizers", "true")
+            + HelpExampleRpc("listprivatizers", "true")
+        );
+
+    bool details = false;
+
+    if (params.size() > 0)
+        details = params[0].get_bool();
+
+    return details ? GetPrivatizerInfosAsUniValue() : GetPrivatizersAsUniValue();
+}
+
+UniValue getprivatizer(const UniValue& params, bool fHelp)
+{
+    if (fHelp || params.size() < 1 || params.size() > 3)
+        throw runtime_error(
+            "getprivatizer \"publicAddress\" ( \"privateAddress\" details )\n"
+            "\nReturn privatizer information.\n"
+            "\nArguments:\n"
+            "1. publicAddress          (string, required) the public t address\n"
+            "2. privateAddress         (string, optional, default=\"\") the private t address\n"
+            "3. details                (boolean, optional, default=false) whether to get detailed information or simple\n"
+            "\nResult:\n"
+            "{\n"
+            "  \"publicAddress\" : \"address\",         (string) the public address\n"
+            "  \"privateAddress\" : \"address\",        (string) the private address\n"
+            "  \"workflows\" : [                      (array of json object, detauls=true) the list of pending works\n"
+            "      {\n"
+            "        \"startHeight\" : n,             (numeric) the public address\n"
+            "        \"srcAddress\" : \"address\",      (string) the t or z address\n"
+            "        \"destAddress\" : \"address\",     (string) the t or z address\n"
+            "        \"amount\" : x.xxx,              (numeric) the amount in " + CURRENCY_UNIT + "\n"
+            "        \"opid\" : \"opid\"                (string) the operation id\n"
+            "      }\n"
+            "   ]\n"
+            "}\n"
+            "\nExamples:\n"
+            + HelpExampleCli("getprivatizer", "\"t1PGFqEzfmQch1gKD3ra4k18PNj3tTUUSqg\"")
+            + HelpExampleCli("getprivatizer", "\"t1PGFqEzfmQch1gKD3ra4k18PNj3tTUUSqg\" \"t1LtvqCaApEdUGFkpKMM4MstjcaL4dKg8SP\"")
+            + HelpExampleCli("getprivatizer", "\"t1PGFqEzfmQch1gKD3ra4k18PNj3tTUUSqg\" \"t1LtvqCaApEdUGFkpKMM4MstjcaL4dKg8SP\" true")
+            + HelpExampleRpc("getprivatizer", "\"t1PGFqEzfmQch1gKD3ra4k18PNj3tTUUSqg\", \"t1LtvqCaApEdUGFkpKMM4MstjcaL4dKg8SP\", true")
+        );
+
+    std::string publicAddress = params[0].get_str();
+    std::string privateAddress;
+    if (params.size() > 1)
+        privateAddress = params[1].get_str();
+    bool details = false;
+    if (params.size() > 2)
+        details = params[2].get_bool();
+
+    return details ? GetPrivatizerInfoAsUniValue(publicAddress, privateAddress) : GetPrivatizerAsUniValue(publicAddress, privateAddress);
+}
+
+UniValue addprivatizer(const UniValue& params, bool fHelp)
+{
+    if (fHelp || params.size() < 2 || params.size() > 3)
+        throw runtime_error(
+            "addprivatizer \"publicAddress\" \"privateAddress\" ( overwrite )\n"
+            "\nAdd privatizer.\n"
+            "\nArguments:\n"
+            "1. publicAddress          (string, required) the public t address\n"
+            "2. privateAddress         (string, required) the private t address\n"
+            "3. overwrite              (boolean, optional, default=false) flag to overwrite if the public address does already exist\n"
+            "\nResult:\n"
+            "true|false                (boolean) true if successful.\n"
+            "\nExamples:\n"
+            + HelpExampleCli("addprivatizer", "\"t1PGFqEzfmQch1gKD3ra4k18PNj3tTUUSqg\" \"t1LtvqCaApEdUGFkpKMM4MstjcaL4dKg8SP\"")
+            + HelpExampleCli("addprivatizer", "\"t1PGFqEzfmQch1gKD3ra4k18PNj3tTUUSqg\" \"t1LtvqCaApEdUGFkpKMM4MstjcaL4dKg8SP\" true")
+            + HelpExampleRpc("addprivatizer", "\"t1PGFqEzfmQch1gKD3ra4k18PNj3tTUUSqg\", \"t1LtvqCaApEdUGFkpKMM4MstjcaL4dKg8SP\", true")
+        );
+
+    std::string publicAddress = params[0].get_str();
+    std::string privateAddress = params[1].get_str();
+    bool overwrite = false;
+    if (params.size() > 2)
+        overwrite = params[2].get_bool();
+    
+    AddPrivatizer(publicAddress, privateAddress, overwrite);
+    
+    return UniValue(true);
+}
+
+UniValue removeprivatizer(const UniValue& params, bool fHelp)
+{
+    if (fHelp || params.size() < 1 || params.size() > 3)
+        throw runtime_error(
+            "removeprivatizer \"publicAddress\" ( \"privateAddress\" )\n"
+            "\nRemove privatizer.\n"
+            "\nArguments:\n"
+            "1. publicAddress          (string, required) the public t address\n"
+            "2. privateAddress         (string, optional, default=\"\") the private t address\n"
+            "\nResult:\n"
+            "true|false                (boolean) true if successful.\n"
+            "\nExamples:\n"
+            + HelpExampleCli("removeprivatizer", "\"t1PGFqEzfmQch1gKD3ra4k18PNj3tTUUSqg\"")
+            + HelpExampleCli("removeprivatizer", "\"t1PGFqEzfmQch1gKD3ra4k18PNj3tTUUSqg\" \"t1LtvqCaApEdUGFkpKMM4MstjcaL4dKg8SP\"")
+            + HelpExampleRpc("removeprivatizer", "\"t1PGFqEzfmQch1gKD3ra4k18PNj3tTUUSqg\", \"t1LtvqCaApEdUGFkpKMM4MstjcaL4dKg8SP\"")
+        );
+
+    std::string publicAddress = params[0].get_str();
+    std::string privateAddress;
+    if (params.size() > 1)
+        privateAddress = params[1].get_str();
+    
+    RemovePrivatizer(publicAddress, privateAddress, !privateAddress.empty());
+    
+    return UniValue(true);
+}
+
 extern UniValue dumpprivkey(const UniValue& params, bool fHelp); // in rpcdump.cpp
 extern UniValue importprivkey(const UniValue& params, bool fHelp);
 extern UniValue importaddress(const UniValue& params, bool fHelp);
@@ -4651,6 +4793,10 @@ static const CRPCCommand commands[] =
     { "wallet",             "z_importviewingkey",       &z_importviewingkey,       true  },
     { "wallet",             "z_exportwallet",           &z_exportwallet,           true  },
     { "wallet",             "z_importwallet",           &z_importwallet,           true  },
+    { "wallet",             "listprivatizers",          &listprivatizers,          true  }, /* privertizer feature */
+    { "wallet",             "getprivatizer",            &getprivatizer,            true  },
+    { "wallet",             "addprivatizer",            &addprivatizer,            true  },
+    { "wallet",             "removeprivatizer",         &removeprivatizer,         true  },
     // TODO: rearrange into another category
     { "disclosure",         "z_getpaymentdisclosure",   &z_getpaymentdisclosure,   true  },
     { "disclosure",         "z_validatepaymentdisclosure", &z_validatepaymentdisclosure, true }

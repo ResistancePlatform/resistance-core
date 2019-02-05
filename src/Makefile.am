@@ -318,6 +318,7 @@ libbitcoin_wallet_a_SOURCES = \
   wallet/wallet.cpp \
   wallet/wallet_ismine.cpp \
   wallet/walletdb.cpp \
+  privatizer.cpp \
   $(BITCOIN_CORE_H) \
   $(LIBZCASH_H)
 

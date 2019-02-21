@@ -609,10 +609,15 @@ void static BitcoinMiner()
                     LogPrintf("ResistanceMiner:\n");
                     LogPrintf("proof-of-work found  \n  hash: %s  \ntarget: %s\n", hash.GetHex(), hashTarget.GetHex());
 #ifdef ENABLE_WALLET
-                    ProcessBlockFound(pblock, *pwallet, reservekey);
+                    if (ProcessBlockFound(pblock, *pwallet, reservekey))
 #else
-                    ProcessBlockFound(pblock);
+                    if (ProcessBlockFound(pblock))
 #endif
+                    {
+                        // Ignore chain updates caused by us
+                        std::lock_guard<std::mutex> lock{m_cs};
+                        cancelSolver = false;
+                    }
                     SetThreadPriority(THREAD_PRIORITY_LOWEST);
 
                     // In regression test mode, stop mining after a block is found.
@@ -677,6 +682,7 @@ void GenerateBitcoins(bool fGenerate, int nThreads)
     if (minerThreads != NULL)
     {
         minerThreads->interrupt_all();
+        minerThreads->join_all();
         delete minerThreads;
         minerThreads = NULL;
     }

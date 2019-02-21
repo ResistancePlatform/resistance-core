@@ -28,6 +28,7 @@
 #include "rpc/server.h"
 #include "rpc/register.h"
 #include "script/standard.h"
+#include "script/sigcache.h"
 #include "scheduler.h"
 #include "txdb.h"
 #include "torcontrol.h"
@@ -471,7 +472,7 @@ std::string HelpMessage(HelpMessageMode mode)
     {
         strUsage += HelpMessageOpt("-limitfreerelay=<n>", strprintf("Continuously rate-limit free transactions to <n>*1000 bytes per minute (default: %u)", 15));
         strUsage += HelpMessageOpt("-relaypriority", strprintf("Require high priority for relaying free or low-fee transactions (default: %u)", 0));
-        strUsage += HelpMessageOpt("-maxsigcachesize=<n>", strprintf("Limit size of signature cache to <n> entries (default: %u)", 50000));
+        strUsage += HelpMessageOpt("-maxsigcachesize=<n>", strprintf("Limit size of signature cache to <n> MiB (default: %u)", DEFAULT_MAX_SIG_CACHE_SIZE));
         strUsage += HelpMessageOpt("-maxtipage=<n>", strprintf("Maximum tip age in seconds to consider node in initial block download (default: %u)", DEFAULT_MAX_TIP_AGE));
     }
     strUsage += HelpMessageOpt("-minrelaytxfee=<amt>", strprintf(_("Fees (in %s/kB) smaller than this are considered zero fee for relaying (default: %s)"),
@@ -842,6 +843,8 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
             return InitError(_("Payment disclosure requires -experimentalfeatures."));
         } else if (mapArgs.count("-zmergetoaddress")) {
             return InitError(_("RPC method z_mergetoaddress requires -experimentalfeatures."));
+        } else if (mapArgs.count("-savesproutr1cs")) {
+            return InitError(_("Saving the Sprout R1CS requires -experimentalfeatures."));
         }
     }
 
@@ -1220,6 +1223,14 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
 
     // Initialize Resistance circuit parameters
     ZC_LoadParams(chainparams);
+
+    if (GetBoolArg("-savesproutr1cs", false)) {
+        boost::filesystem::path r1cs_path = ZC_GetParamsDir() / "r1cs";
+
+        LogPrintf("Saving Sprout R1CS to %s\n", r1cs_path.string());
+
+        presistanceParams->saveR1CS(r1cs_path.string());
+    }
 
     /* Start the RPC server already.  It will be started in "warmup" mode
      * and not really process calls already (but it will signify connections

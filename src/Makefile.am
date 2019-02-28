@@ -343,7 +343,7 @@ crypto_libbitcoin_crypto_a_SOURCES = \
 # common: shared between resistanced and non-server tools
 libbitcoin_common_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
 libbitcoin_common_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-libbitcoin_common_a_CFLAGS = $(libbitcoin_common_a_CXXFLAGS)
+libbitcoin_common_a_CFLAGS = $(AM_CFLAGS) $(PIE_FLAGS) -O2
 libbitcoin_common_a_SOURCES = \
   amount.cpp \
   arith_uint256.cpp \

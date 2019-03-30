@@ -1,5 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin Core developers
+// Copyright (c) 2018-2019 The Resistance developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -3818,6 +3819,26 @@ static bool IsSuperMajority(int minVersion, const CBlockIndex* pstart, unsigned 
 
 bool ProcessNewBlock(CValidationState &state, CNode* pfrom, CBlock* pblock, bool fForceProcessing, CDiskBlockPos *dbp)
 {
+    // Look for this block's header in the index like AcceptBlock() will
+    uint256 hash = pblock->GetHash();
+
+    {
+        LOCK(cs_main);
+
+        BlockMap::iterator miSelf = mapBlockIndex.find(hash);
+        CBlockIndex *pindex = NULL;
+        if (miSelf != mapBlockIndex.end()) {
+            // Block header is already known
+            pindex = miSelf->second;
+            if (!pblock->cache_init && pindex->cache_init) {
+                LOCK(pblock->cache_lock); // Probably unnecessary since no concurrent access to pblock is expected
+                pblock->cache_init = true;
+                pblock->cache_block_hash = pindex->cache_block_hash;
+                pblock->cache_PoW_hash = pindex->cache_PoW_hash;
+            }
+        }
+    }
+
     // Preliminary checks
     auto verifier = libzcash::ProofVerifier::Disabled();
     bool checked = CheckBlock(*pblock, state, verifier);

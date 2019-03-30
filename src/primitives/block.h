@@ -81,6 +81,10 @@ public:
 class CBlockHeader : public CBlockHeaderUncached
 {
 public:
+    mutable CCriticalSection cache_lock;
+    mutable bool cache_init;
+    mutable uint256 cache_block_hash, cache_PoW_hash;
+
     CBlockHeader()
     {
         cache_init = false;
@@ -101,11 +105,6 @@ public:
     }
 
     uint256 GetPoWHash_cached() const;
-
-private:
-    mutable CCriticalSection cache_lock;
-    mutable bool cache_init;
-    mutable uint256 cache_block_hash, cache_PoW_hash;
 };
 
 

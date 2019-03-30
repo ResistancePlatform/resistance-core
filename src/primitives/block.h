@@ -115,13 +115,7 @@ public:
     CBlockHeader GetBlockHeader() const
     {
         CBlockHeader block;
-        block.nVersion       = nVersion;
-        block.hashPrevBlock  = hashPrevBlock;
-        block.hashMerkleRoot = hashMerkleRoot;
-        block.hashFinalSaplingRoot   = hashFinalSaplingRoot;
-        block.nTime          = nTime;
-        block.nBits          = nBits;
-        block.nNonce         = nNonce;
+        block = *(CBlockHeader*)this;
         return block;
     }
 

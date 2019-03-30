@@ -10,6 +10,7 @@
 
 #include "primitives/transaction.h"
 #include "serialize.h"
+#include "sync.h"
 #include "uint256.h"
 
 /** Nodes collect new transactions into a block, hash them into a hash tree,
@@ -19,7 +20,7 @@
  * in the block is a special one that creates a new coin owned by the creator
  * of the block.
  */
-class CBlockHeader
+class CBlockHeaderUncached
 {
 public:
     // header
@@ -33,7 +34,7 @@ public:
     uint32_t nBits;
     uint256 nNonce;
 
-    CBlockHeader()
+    CBlockHeaderUncached()
     {
         SetNull();
     }
@@ -53,7 +54,7 @@ public:
 
     void SetNull()
     {
-        nVersion = CBlockHeader::CURRENT_VERSION;
+        nVersion = CBlockHeaderUncached::CURRENT_VERSION;
         hashPrevBlock.SetNull();
         hashMerkleRoot.SetNull();
         hashFinalSaplingRoot.SetNull();
@@ -74,6 +75,37 @@ public:
 
     uint256 GetHash() const;
     uint256 GetPoWHash() const;
+};
+
+
+class CBlockHeader : public CBlockHeaderUncached
+{
+public:
+    CBlockHeader()
+    {
+        cache_init = false;
+    }
+
+    CBlockHeader(const CBlockHeader& header)
+    {
+        *this = header;
+    }
+
+    CBlockHeader& operator=(const CBlockHeader& header)
+    {
+        *(CBlockHeaderUncached*)this = (CBlockHeaderUncached)header;
+        cache_init = header.cache_init;
+        cache_block_hash = header.cache_block_hash;
+        cache_PoW_hash = header.cache_PoW_hash;
+        return *this;
+    }
+
+    uint256 GetPoWHash_cached() const;
+
+private:
+    mutable CCriticalSection cache_lock;
+    mutable bool cache_init;
+    mutable uint256 cache_block_hash, cache_PoW_hash;
 };
 
 

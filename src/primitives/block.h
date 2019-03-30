@@ -1,20 +1,15 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2013 The Bitcoin Core developers
 // Copyright (c) 2016-2018 The Zcash developers
-// Copyright (c) 2018 The Resistance developers
+// Copyright (c) 2018-2019 The Resistance developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #ifndef BITCOIN_PRIMITIVES_BLOCK_H
 #define BITCOIN_PRIMITIVES_BLOCK_H
 
-#include <stdlib.h> /* for abort() */
-
-#include "yespower/yespower.h"
 #include "primitives/transaction.h"
 #include "serialize.h"
-#include "streams.h"
-#include "version.h"
 #include "uint256.h"
 
 /** Nodes collect new transactions into a block, hash them into a hash tree,
@@ -72,29 +67,13 @@ public:
         return (nBits == 0);
     }
 
-    uint256 GetHash() const;
-
     int64_t GetBlockTime() const
     {
         return (int64_t)nTime;
     }
 
-    uint256 GetPoWHash() const
-    {
-        static const yespower_params_t params = {
-            .version = YESPOWER_1_0,
-            .N = 4096,
-            .r = 32,
-            .pers = NULL,
-            .perslen = 0
-        };
-        uint256 hash;
-        CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
-        ss << *this;
-        if (yespower_tls((const uint8_t *)&ss[0], ss.size(), &params, (yespower_binary_t *)&hash))
-            abort();
-        return hash;
-    }
+    uint256 GetHash() const;
+    uint256 GetPoWHash() const;
 };
 
 

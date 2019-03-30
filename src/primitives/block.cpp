@@ -1,9 +1,16 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin Core developers
+// Copyright (c) 2018-2019 The Resistance developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <stdlib.h> /* for exit() */
+
 #include "primitives/block.h"
+
+#include "yespower/yespower.h"
+#include "streams.h"
+#include "version.h"
 
 #include "hash.h"
 #include "tinyformat.h"
@@ -13,6 +20,25 @@
 uint256 CBlockHeader::GetHash() const
 {
     return SerializeHash(*this);
+}
+
+uint256 CBlockHeader::GetPoWHash() const
+{
+    static const yespower_params_t params = {
+        .version = YESPOWER_1_0,
+        .N = 4096,
+        .r = 32,
+        .pers = NULL,
+        .perslen = 0
+    };
+    uint256 hash;
+    CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
+    ss << *this;
+    if (yespower_tls((const uint8_t *)&ss[0], ss.size(), &params, (yespower_binary_t *)&hash)) {
+        fprintf(stderr, "Error: CBlockHeader: failed to compute PoW hash (out of memory?)\n");
+        exit(1);
+    }
+    return hash;
 }
 
 uint256 CBlock::BuildMerkleTree(bool* fMutated) const

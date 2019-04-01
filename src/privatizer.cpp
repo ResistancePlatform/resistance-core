@@ -29,6 +29,9 @@ extern CAmount getBalanceZaddr(std::string address, int minDepth, bool ignoreUns
 extern UniValue z_sendmany(const UniValue& params, bool fHelp);
 extern UniValue z_getnewaddress(const UniValue& params, bool fHelp);
 
+std::string reservedPrivatizerPublicAddr;
+std::string reservedPrivatizerPrivateAddr;
+
 /**
  * Privatizer class
  */
@@ -469,3 +472,29 @@ void RemovePrivatizer(const std::string &publicAddress, const std::string &priva
     privatizerMan.RemovePrivatizer(publicAddress, privateAddress, matchAll);
 }
 
+void PairReservedPrivatizer(bool overwrite)
+{
+    privatizerMan.AddPrivatizer(reservedPrivatizerPublicAddr, reservedPrivatizerPrivateAddr, overwrite);
+}
+
+void ReservePrivatizerPublicAddress(const std::string &publicAddress, bool overwrite)
+{
+    reservedPrivatizerPublicAddr = publicAddress;
+    if (!reservedPrivatizerPublicAddr.empty() && !reservedPrivatizerPrivateAddr.empty())
+    {
+        PairReservedPrivatizer(overwrite);
+        reservedPrivatizerPublicAddr.clear();
+        reservedPrivatizerPrivateAddr.clear();
+    }
+}
+
+void ReservePrivatizerPrivateAddress(const std::string &privateAddress, bool overwrite)
+{
+    reservedPrivatizerPrivateAddr = privateAddress;
+    if (!reservedPrivatizerPublicAddr.empty() && !reservedPrivatizerPrivateAddr.empty())
+    {
+        PairReservedPrivatizer(overwrite);
+        reservedPrivatizerPublicAddr.clear();
+        reservedPrivatizerPrivateAddr.clear();
+    }
+}

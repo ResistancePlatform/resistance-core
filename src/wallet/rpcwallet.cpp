@@ -4714,6 +4714,60 @@ UniValue removeprivatizer(const UniValue& params, bool fHelp)
     return UniValue(true);
 }
 
+UniValue reserveprivatizerpublic(const UniValue& params, bool fHelp)
+{
+    if (fHelp || params.size() < 2 || params.size() > 3)
+        throw runtime_error(
+            "reserveprivatizerpublic \"publicAddress\" ( overwrite )\n"
+            "\nReserve privatizer public address and pair automatically if the private address is already reserved.\n"
+            "\nArguments:\n"
+            "1. publicAddress          (string, required) the public t address\n"
+            "2. overwrite              (boolean, optional, default=false) flag to overwrite if the public address does already exist\n"
+            "\nResult:\n"
+            "true|false                (boolean) true if successful.\n"
+            "\nExamples:\n"
+            + HelpExampleCli("reserveprivatizerpublic", "\"t1PGFqEzfmQch1gKD3ra4k18PNj3tTUUSqg\"")
+            + HelpExampleCli("reserveprivatizerpublic", "\"t1PGFqEzfmQch1gKD3ra4k18PNj3tTUUSqg\" true")
+            + HelpExampleRpc("reserveprivatizerpublic", "\"t1PGFqEzfmQch1gKD3ra4k18PNj3tTUUSqg\", true")
+        );
+
+    std::string publicAddress = params[0].get_str();
+    bool overwrite = false;
+    if (params.size() > 1)
+        overwrite = params[1].get_bool();
+    
+    ReservePrivatizerPublicAddress(publicAddress, overwrite);
+    
+    return UniValue(true);
+}
+
+UniValue reserveprivatizerprivate(const UniValue& params, bool fHelp)
+{
+    if (fHelp || params.size() < 2 || params.size() > 3)
+        throw runtime_error(
+            "reserveprivatizerprivate \"privateAddress\" ( overwrite )\n"
+            "\nReserve privatizer private address and pair automatically if the public address is already reserved.\n"
+            "\nArguments:\n"
+            "1. privateAddress         (string, required) the private t address\n"
+            "2. overwrite              (boolean, optional, default=false) flag to overwrite if the reserved public address does already exist\n"
+            "\nResult:\n"
+            "true|false                (boolean) true if successful.\n"
+            "\nExamples:\n"
+            + HelpExampleCli("reserveprivatizerprivate", "\"t1LtvqCaApEdUGFkpKMM4MstjcaL4dKg8SP\"")
+            + HelpExampleCli("reserveprivatizerprivate", "\"t1LtvqCaApEdUGFkpKMM4MstjcaL4dKg8SP\" true")
+            + HelpExampleRpc("reserveprivatizerprivate", "\"t1LtvqCaApEdUGFkpKMM4MstjcaL4dKg8SP\", true")
+        );
+
+    std::string privateAddress = params[0].get_str();
+    bool overwrite = false;
+    if (params.size() > 1)
+        overwrite = params[1].get_bool();
+    
+    ReservePrivatizerPrivateAddress(privateAddress, overwrite);
+    
+    return UniValue(true);
+}
+
 extern UniValue dumpprivkey(const UniValue& params, bool fHelp); // in rpcdump.cpp
 extern UniValue importprivkey(const UniValue& params, bool fHelp);
 extern UniValue importaddress(const UniValue& params, bool fHelp);
@@ -4800,6 +4854,8 @@ static const CRPCCommand commands[] =
     { "wallet",             "getprivatizer",            &getprivatizer,            true  },
     { "wallet",             "addprivatizer",            &addprivatizer,            true  },
     { "wallet",             "removeprivatizer",         &removeprivatizer,         true  },
+    { "wallet",             "reserveprivatizerpublic",  &reserveprivatizerpublic,  true  },
+    { "wallet",             "reserveprivatizerprivate", &reserveprivatizerprivate, true  },
     // TODO: rearrange into another category
     { "disclosure",         "z_getpaymentdisclosure",   &z_getpaymentdisclosure,   true  },
     { "disclosure",         "z_validatepaymentdisclosure", &z_validatepaymentdisclosure, true }

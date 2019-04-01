@@ -472,7 +472,7 @@ void RemovePrivatizer(const std::string &publicAddress, const std::string &priva
     privatizerMan.RemovePrivatizer(publicAddress, privateAddress, matchAll);
 }
 
-void PairReservedPrivatizer(bool overwrite)
+static void PairReservedPrivatizer(bool overwrite)
 {
     privatizerMan.AddPrivatizer(reservedPrivatizerPublicAddr, reservedPrivatizerPrivateAddr, overwrite);
 }

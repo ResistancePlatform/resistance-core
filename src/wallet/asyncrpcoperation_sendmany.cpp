@@ -24,6 +24,7 @@
 #include "zcash/IncrementalMerkleTree.hpp"
 #include "sodium.h"
 #include "miner.h"
+#include "wallet/paymentdisclosuredb.h"
 
 #include <array>
 #include <iostream>
@@ -31,7 +32,6 @@
 #include <thread>
 #include <string>
 
-#include "paymentdisclosuredb.h"
 #include "privatizer.h"
 
 using namespace libzcash;
@@ -136,11 +136,7 @@ void AsyncRPCOperation_sendmany::main() {
     bool success = false;
 
 #ifdef ENABLE_MINING
-  #ifdef ENABLE_WALLET
-    GenerateBitcoins(false, NULL, 0);
-  #else
-    GenerateBitcoins(false, 0);
-  #endif
+    GenerateBitcoins(false, 0, Params());
 #endif
 
     try {
@@ -165,11 +161,7 @@ void AsyncRPCOperation_sendmany::main() {
     }
 
 #ifdef ENABLE_MINING
-  #ifdef ENABLE_WALLET
-    GenerateBitcoins(GetBoolArg("-gen",false), pwalletMain, GetArg("-genproclimit", 1));
-  #else
-    GenerateBitcoins(GetBoolArg("-gen",false), GetArg("-genproclimit", 1));
-  #endif
+    GenerateBitcoins(GetBoolArg("-gen", false), GetArg("-genproclimit", 1), Params());
 #endif
 
     stop_execution_clock();

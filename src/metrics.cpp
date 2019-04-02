@@ -217,8 +217,14 @@ int printStats(bool mining)
     auto localsolps = GetLocalSolPS();
 
     if (IsInitialBlockDownload()) {
+        int nheaders;
+        {
+            LOCK(cs_main);
+            nheaders = mapBlockIndex.size();
+        }
+        if (--nheaders < 0) // Convert count to height
+            nheaders = 0;
         int netheight = EstimateNetHeight(height, tipmediantime, Params());
-        int nheaders = mapBlockIndex.size();
         if (netheight < nheaders)
             netheight = nheaders;
         int downloadPercent = height * 100 / netheight;

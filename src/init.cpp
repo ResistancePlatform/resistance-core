@@ -75,7 +75,7 @@ using namespace std;
 
 extern void ThreadSendAlert();
 
-ZCJoinSplit* presistanceParams = NULL;
+ZCJoinSplit* pzcashParams = NULL;
 
 #ifdef ENABLE_WALLET
 CWallet* pwalletMain = NULL;
@@ -273,8 +273,8 @@ void Shutdown()
     delete pwalletMain;
     pwalletMain = NULL;
 #endif
-    delete presistanceParams;
-    presistanceParams = NULL;
+    delete pzcashParams;
+    pzcashParams = NULL;
     globalVerifyHandle.reset();
     ECC_Stop();
     LogPrintf("%s: done\n", __func__);
@@ -713,7 +713,7 @@ static void ZC_LoadParams(
     LogPrintf("Loading verifying key from %s\n", vk_path.string().c_str());
     gettimeofday(&tv_start, 0);
 
-    presistanceParams = ZCJoinSplit::Prepared(vk_path.string(), pk_path.string());
+    pzcashParams = ZCJoinSplit::Prepared(vk_path.string(), pk_path.string());
 
     gettimeofday(&tv_end, 0);
     elapsed = float(tv_end.tv_sec-tv_start.tv_sec) + (tv_end.tv_usec-tv_start.tv_usec)/float(1000000);
@@ -1229,7 +1229,7 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
 
         LogPrintf("Saving Sprout R1CS to %s\n", r1cs_path.string());
 
-        presistanceParams->saveR1CS(r1cs_path.string());
+        pzcashParams->saveR1CS(r1cs_path.string());
     }
 
     /* Start the RPC server already.  It will be started in "warmup" mode

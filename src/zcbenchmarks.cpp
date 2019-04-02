@@ -118,7 +118,7 @@ double benchmark_create_joinsplit()
     struct timeval tv_start;
     timer_start(tv_start);
     JSDescription jsdesc(true,
-                         *presistanceParams,
+                         *pzcashParams,
                          joinSplitPubKey,
                          anchor,
                          {JSInput(), JSInput()},
@@ -128,7 +128,7 @@ double benchmark_create_joinsplit()
     double ret = timer_stop(tv_start);
 
     auto verifier = libzcash::ProofVerifier::Strict();
-    assert(jsdesc.Verify(*presistanceParams, verifier, joinSplitPubKey));
+    assert(jsdesc.Verify(*pzcashParams, verifier, joinSplitPubKey));
     return ret;
 }
 
@@ -159,7 +159,7 @@ double benchmark_verify_joinsplit(const JSDescription &joinsplit)
     timer_start(tv_start);
     uint256 joinSplitPubKey;
     auto verifier = libzcash::ProofVerifier::Strict();
-    joinsplit.Verify(*presistanceParams, verifier, joinSplitPubKey);
+    joinsplit.Verify(*pzcashParams, verifier, joinSplitPubKey);
     return timer_stop(tv_start);
 }
 
@@ -227,7 +227,7 @@ double benchmark_try_decrypt_notes(size_t nAddrs)
     }
 
     auto sk = libzcash::SproutSpendingKey::random();
-    auto tx = GetValidReceive(*presistanceParams, sk, 10, true);
+    auto tx = GetValidReceive(*pzcashParams, sk, 10, true);
 
     struct timeval tv_start;
     timer_start(tv_start);
@@ -247,8 +247,8 @@ double benchmark_increment_note_witnesses(size_t nTxs)
     // First block
     CBlock block1;
     for (int i = 0; i < nTxs; i++) {
-        auto wtx = GetValidReceive(*presistanceParams, sk, 10, true);
-        auto note = GetNote(*presistanceParams, sk, wtx, 0, 1);
+        auto wtx = GetValidReceive(*pzcashParams, sk, 10, true);
+        auto note = GetNote(*pzcashParams, sk, wtx, 0, 1);
         auto nullifier = note.nullifier(sk);
 
         mapSproutNoteData_t noteData;
@@ -270,8 +270,8 @@ double benchmark_increment_note_witnesses(size_t nTxs)
     CBlock block2;
     block2.hashPrevBlock = block1.GetHash();
     {
-        auto wtx = GetValidReceive(*presistanceParams, sk, 10, true);
-        auto note = GetNote(*presistanceParams, sk, wtx, 0, 1);
+        auto wtx = GetValidReceive(*pzcashParams, sk, 10, true);
+        auto note = GetNote(*pzcashParams, sk, wtx, 0, 1);
         auto nullifier = note.nullifier(sk);
 
         mapSproutNoteData_t noteData;

@@ -2685,7 +2685,7 @@ UniValue zc_sample_joinsplit(const UniValue& params, bool fHelp)
     uint256 joinSplitPubKey;
     uint256 anchor = SproutMerkleTree().root();
     JSDescription samplejoinsplit(true,
-                                  *presistanceParams,
+                                  *pzcashParams,
                                   joinSplitPubKey,
                                   anchor,
                                   {JSInput(), JSInput()},
@@ -3033,7 +3033,7 @@ UniValue zc_raw_joinsplit(const UniValue& params, bool fHelp)
     mtx.joinSplitPubKey = joinSplitPubKey;
 
     JSDescription jsdesc(false,
-                         *presistanceParams,
+                         *pzcashParams,
                          joinSplitPubKey,
                          anchor,
                          {vjsin[0], vjsin[1]},
@@ -3043,7 +3043,7 @@ UniValue zc_raw_joinsplit(const UniValue& params, bool fHelp)
 
     {
         auto verifier = libzcash::ProofVerifier::Strict();
-        assert(jsdesc.Verify(*presistanceParams, verifier, joinSplitPubKey));
+        assert(jsdesc.Verify(*pzcashParams, verifier, joinSplitPubKey));
     }
 
     mtx.vjoinsplit.push_back(jsdesc);
@@ -3078,7 +3078,7 @@ UniValue zc_raw_joinsplit(const UniValue& params, bool fHelp)
         ss2 << ((unsigned char) 0x00);
         ss2 << jsdesc.ephemeralKey;
         ss2 << jsdesc.ciphertexts[0];
-        ss2 << jsdesc.h_sig(*presistanceParams, joinSplitPubKey);
+        ss2 << jsdesc.h_sig(*pzcashParams, joinSplitPubKey);
 
         encryptedNote1 = HexStr(ss2.begin(), ss2.end());
     }
@@ -3087,7 +3087,7 @@ UniValue zc_raw_joinsplit(const UniValue& params, bool fHelp)
         ss2 << ((unsigned char) 0x01);
         ss2 << jsdesc.ephemeralKey;
         ss2 << jsdesc.ciphertexts[1];
-        ss2 << jsdesc.h_sig(*presistanceParams, joinSplitPubKey);
+        ss2 << jsdesc.h_sig(*pzcashParams, joinSplitPubKey);
 
         encryptedNote2 = HexStr(ss2.begin(), ss2.end());
     }

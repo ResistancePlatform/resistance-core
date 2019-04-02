@@ -262,7 +262,7 @@ UniValue z_validatepaymentdisclosure(const UniValue& params, bool fHelp)
         try {
             // Decrypt the note to get value and memo field
             JSDescription jsdesc = tx.vjoinsplit[pd.payload.js];
-            uint256 h_sig = jsdesc.h_sig(*presistanceParams, tx.joinSplitPubKey);
+            uint256 h_sig = jsdesc.h_sig(*pzcashParams, tx.joinSplitPubKey);
 
             ZCPaymentDisclosureNoteDecryption decrypter;
 

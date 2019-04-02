@@ -591,7 +591,7 @@ bool AsyncRPCOperation_mergetoaddress::main_impl()
 
             // Decrypt the change note's ciphertext to retrieve some data we need
             ZCNoteDecryption decryptor(changeKey.receiving_key());
-            auto hSig = prevJoinSplit.h_sig(*presistanceParams, tx_.joinSplitPubKey);
+            auto hSig = prevJoinSplit.h_sig(*pzcashParams, tx_.joinSplitPubKey);
             try {
                 SproutNotePlaintext plaintext = SproutNotePlaintext::decrypt(
                     decryptor,
@@ -906,7 +906,7 @@ UniValue AsyncRPCOperation_mergetoaddress::perform_joinsplit(
 
     JSDescription jsdesc = JSDescription::Randomized(
         mtx.fOverwintered && (mtx.nVersion >= SAPLING_TX_VERSION),
-        *presistanceParams,
+        *pzcashParams,
         joinSplitPubKey_,
         anchor,
         inputs,
@@ -919,7 +919,7 @@ UniValue AsyncRPCOperation_mergetoaddress::perform_joinsplit(
         &esk); // parameter expects pointer to esk, so pass in address
     {
         auto verifier = libzcash::ProofVerifier::Strict();
-        if (!(jsdesc.Verify(*presistanceParams, verifier, joinSplitPubKey_))) {
+        if (!(jsdesc.Verify(*pzcashParams, verifier, joinSplitPubKey_))) {
             throw std::runtime_error("error verifying joinsplit");
         }
     }
@@ -958,7 +958,7 @@ UniValue AsyncRPCOperation_mergetoaddress::perform_joinsplit(
         ss2 << ((unsigned char)0x00);
         ss2 << jsdesc.ephemeralKey;
         ss2 << jsdesc.ciphertexts[0];
-        ss2 << jsdesc.h_sig(*presistanceParams, joinSplitPubKey_);
+        ss2 << jsdesc.h_sig(*pzcashParams, joinSplitPubKey_);
 
         encryptedNote1 = HexStr(ss2.begin(), ss2.end());
     }
@@ -967,7 +967,7 @@ UniValue AsyncRPCOperation_mergetoaddress::perform_joinsplit(
         ss2 << ((unsigned char)0x01);
         ss2 << jsdesc.ephemeralKey;
         ss2 << jsdesc.ciphertexts[1];
-        ss2 << jsdesc.h_sig(*presistanceParams, joinSplitPubKey_);
+        ss2 << jsdesc.h_sig(*pzcashParams, joinSplitPubKey_);
 
         encryptedNote2 = HexStr(ss2.begin(), ss2.end());
     }

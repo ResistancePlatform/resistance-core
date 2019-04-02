@@ -30,7 +30,7 @@
 
 CClientUIInterface uiInterface; // Declared but not defined in ui_interface.h
 CWallet* pwalletMain;
-ZCJoinSplit *presistanceParams;
+ZCJoinSplit *pzcashParams;
 
 extern bool fPrintToConsole;
 extern void noui_connect();
@@ -39,7 +39,7 @@ JoinSplitTestingSetup::JoinSplitTestingSetup()
 {
     boost::filesystem::path pk_path = ZC_GetParamsDir() / "sprout-proving.key";
     boost::filesystem::path vk_path = ZC_GetParamsDir() / "sprout-verifying.key";
-    presistanceParams = ZCJoinSplit::Prepared(vk_path.string(), pk_path.string());
+    pzcashParams = ZCJoinSplit::Prepared(vk_path.string(), pk_path.string());
 
     boost::filesystem::path sapling_spend = ZC_GetParamsDir() / "sapling-spend.params";
     boost::filesystem::path sapling_output = ZC_GetParamsDir() / "sapling-output.params";
@@ -67,7 +67,7 @@ JoinSplitTestingSetup::JoinSplitTestingSetup()
 
 JoinSplitTestingSetup::~JoinSplitTestingSetup()
 {
-    delete presistanceParams;
+    delete pzcashParams;
 }
 
 BasicTestingSetup::BasicTestingSetup()

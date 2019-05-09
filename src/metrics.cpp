@@ -222,8 +222,8 @@ int printStats(bool mining)
             LOCK(cs_main);
             nheaders = mapBlockIndex.size();
         }
-        if (--nheaders < 0) // Convert count to height
-            nheaders = 0;
+        if (--nheaders < 1) // Convert count to height
+            nheaders = 1;
         int netheight = EstimateNetHeight(height, tipmediantime, Params());
         if (netheight < nheaders)
             netheight = nheaders;

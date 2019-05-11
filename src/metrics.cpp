@@ -222,11 +222,13 @@ int printStats(bool mining)
             LOCK(cs_main);
             nheaders = mapBlockIndex.size();
         }
-        if (--nheaders < 1) // Convert count to height
-            nheaders = 1;
+        if (--nheaders < 0) // Convert count to height
+            nheaders = 0;
         int netheight = EstimateNetHeight(height, tipmediantime, Params());
         if (netheight < nheaders)
             netheight = nheaders;
+        if (netheight <= 0)
+            netheight = 1;
         int downloadPercent = height * 100 / netheight;
         std::cout << "     " << _("Downloading blocks") << " | " << height << " (" << nheaders << " " << _("headers") << ") / ~" << netheight << " (" << downloadPercent << "%)" << std::endl;
     } else {

@@ -1,0 +1,4 @@
+# These files are stored/generated elsewhere and only
+# copied into this directory for Docker builds
+resistanced
+fetch-params.sh

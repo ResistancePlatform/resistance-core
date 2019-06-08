@@ -22,4 +22,4 @@ COPY entrypoint.sh /usr/local/bin
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 # Sample run command
-# docker run rescore:latest -v ~:/home/resuser -p 18132:18132 -p 18133:18133
+# docker run rescore:latest -v ~/resuser:/home/resuser -p 18132:18132 -p 18133:18133

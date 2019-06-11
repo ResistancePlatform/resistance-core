@@ -2,3 +2,4 @@
 # copied into this directory for Docker builds
 resistanced
 fetch-params.sh
+resistance-cli

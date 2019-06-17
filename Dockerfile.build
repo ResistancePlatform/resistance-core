@@ -6,10 +6,10 @@
 # from a containerized build environment
 #
 # Build the image:
-# docker build . -f ./Dockerfile.build --tag rescorebuilder:latest --tag rescorebuilder:$(git rev-parse --short HEAD)
+# docker build . -f ./Dockerfile.build --tag resistance-core-builder:latest --tag resistance-core-builder:$(git rev-parse --short HEAD)
 #
 # exec into an interactive container:
-# WORKING_DIR=`basename $PWD` && docker run -ti --rm -v "$HOME":"$HOME" -v "$PWD":"/$WORKING_DIR" -v /etc/group:/etc/group:ro -v /etc/passwd:/etc/passwd:ro -w "/$WORKING_DIR" -u $( id -u $USER ):$( id -g $USER ) rescorebuilder:latest /bin/bash
+# WORKING_DIR=`basename $PWD` && docker run -ti --rm -v "$HOME":"$HOME" -v "$PWD":"/$WORKING_DIR" -v /etc/group:/etc/group:ro -v /etc/passwd:/etc/passwd:ro -w "/$WORKING_DIR" -u $( id -u $USER ):$( id -g $USER ) resistance-core-builder:latest /bin/bash
 #
 # then, from the root of the repo:
 # ./resutil/build.sh

@@ -2,5 +2,5 @@
 cp ../resutil/fetch-params.sh .
 cp ../src/resistanced .
 
-# Build and tag the rescore image
-docker build . -f ./Dockerfile --tag rescore:latest --tag rescore:$(git rev-parse --short HEAD)
+# Build and tag the resistance-core image
+docker build . -f ./Dockerfile --tag resistance-core:latest --tag resistance-core:$(git rev-parse --short HEAD)

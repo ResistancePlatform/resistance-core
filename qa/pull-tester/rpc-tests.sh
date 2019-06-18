@@ -31,12 +31,14 @@ testScripts=(
     'wallet_listnotes.py'
     'mergetoaddress_sprout.py'
     'mergetoaddress_sapling.py'
+    'mergetoaddress_mixednotes.py'
     'listtransactions.py'
     'mempool_resurrect_test.py'
     'txn_doublespend.py'
     'txn_doublespend.py --mineblock'
     'getchaintips.py'
     'rawtransactions.py'
+    'getrawtransaction_insight.py'
     'rest.py'
     'mempool_spendcoinbase.py'
     'mempool_reorg.py'
@@ -71,6 +73,8 @@ testScripts=(
     'p2p_node_bloom.py'
     'regtest_signrawtransaction.py'
     'finalsaplingroot.py'
+    'sprout_sapling_migration.py'
+    'turnstile.py'
 );
 testScriptsExt=(
     'getblocktemplate_longpoll.py'

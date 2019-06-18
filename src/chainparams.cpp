@@ -114,6 +114,9 @@ public:
             Consensus::NetworkUpgrade::ALWAYS_ACTIVE;
         consensus.vUpgrades[Consensus::UPGRADE_SAPLING].nProtocolVersion = 170007;
         consensus.vUpgrades[Consensus::UPGRADE_SAPLING].nActivationHeight = 1;
+        consensus.vUpgrades[Consensus::UPGRADE_BLOSSOM].nProtocolVersion = 170009;
+        consensus.vUpgrades[Consensus::UPGRADE_BLOSSOM].nActivationHeight =
+            Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
 
         // The best chain should have at least this much work.
         consensus.nMinimumChainWork = uint256S("0x00");
@@ -246,6 +249,9 @@ public:
             Consensus::NetworkUpgrade::ALWAYS_ACTIVE;
         consensus.vUpgrades[Consensus::UPGRADE_SAPLING].nProtocolVersion = 170007;
         consensus.vUpgrades[Consensus::UPGRADE_SAPLING].nActivationHeight = 1;
+        consensus.vUpgrades[Consensus::UPGRADE_BLOSSOM].nProtocolVersion = 170008;
+        consensus.vUpgrades[Consensus::UPGRADE_BLOSSOM].nActivationHeight =
+            Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
 
         // The best chain should have at least this much work.
         consensus.nMinimumChainWork = uint256S("0x00");
@@ -376,6 +382,9 @@ public:
         consensus.vUpgrades[Consensus::UPGRADE_SAPLING].nProtocolVersion = 170006;
         consensus.vUpgrades[Consensus::UPGRADE_SAPLING].nActivationHeight =
             Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
+        consensus.vUpgrades[Consensus::UPGRADE_BLOSSOM].nProtocolVersion = 170008;
+        consensus.vUpgrades[Consensus::UPGRADE_BLOSSOM].nActivationHeight =
+            Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
 
         // The best chain should have at least this much work.
         consensus.nMinimumChainWork = uint256S("0x00");
@@ -412,8 +421,8 @@ public:
         assert(consensus.hashGenesisBlock == uint256S("0x0906f6e751460def481b8c896b183cce391aad47e35983956dde771fa298edb4"));
         assert(genesis.hashMerkleRoot == uint256S("0x0e2b2dda05830029a825fd2d74f76cf3fed56f820d1792ff189ed92e34b5dc84"));
 
-        vFixedSeeds.clear(); //! Regtest mode doesn't have any fixed seeds.
-        vSeeds.clear();  //! Regtest mode doesn't have any DNS seeds.
+        vFixedSeeds.clear(); //!< Regtest mode doesn't have any fixed seeds.
+        vSeeds.clear();      //!< Regtest mode doesn't have any DNS seeds.
 
         fMiningRequiresPeers = false;
         fDefaultConsistencyChecks = true;
@@ -460,6 +469,10 @@ public:
         assert(idx > Consensus::BASE_SPROUT && idx < Consensus::MAX_NETWORK_UPGRADES);
         consensus.vUpgrades[idx].nActivationHeight = nActivationHeight;
     }
+
+    void SetRegTestZIP209Enabled() {
+        fZIP209Enabled = true;
+    }
 };
 static CRegTestParams regTestParams;
 
@@ -499,6 +512,11 @@ void SelectParams(CBaseChainParams::Network network) {
     // Some python qa rpc tests need to enforce the coinbase consensus rule
     if (network == CBaseChainParams::REGTEST && mapArgs.count("-regtestprotectcoinbase")) {
         regTestParams.SetRegTestCoinbaseMustBeProtected();
+    }
+
+    // When a developer is debugging turnstile violations in regtest mode, enable ZIP209
+    if (network == CBaseChainParams::REGTEST && mapArgs.count("-developersetpoolsizezero")) {
+        regTestParams.SetRegTestZIP209Enabled();
     }
 }
 

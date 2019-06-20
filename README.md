@@ -117,7 +117,7 @@ Run Daemon
 
 ### Windows
 
-**Note**: This must be cross-compiled from a Linux box. In this example, we will use Ubuntu 16.
+**Note**: This must be cross-compiled from a Linux box. In this example, we will use Ubuntu 18.04.2 LTS (Bionic Beaver).
 
 Upgrade your system:
 
@@ -126,14 +126,13 @@ sudo apt-get update
 sudo apt-get upgrade
 ```
 
-Install dependencies and run patch:
+Install dependencies:
 
 ```
-sudo apt-get install build-essential pkg-config libc6-dev m4 g++-multilib autoconf libtool ncurses-dev unzip git python python-zmq zlib1g-dev wget bsdmainutils automake curl libc6-dev
+sudo apt-get install build-essential pkg-config libc6-dev m4 g++-multilib autoconf libtool ncurses-dev unzip git python python-zmq zlib1g-dev wget curl bsdmainutils automake
 sudo apt-get install mingw-w64
 git clone git@github.com:ResistancePlatform/resistance-core.git
 cd resistance-core
-patch -p1 < resutil/win-build.diff
 ```
 
 Then run the following commands (**select the option containing POSIX when prompted**):
@@ -146,7 +145,8 @@ sudo update-alternatives --config x86_64-w64-mingw32-g++
 Build the executable:
 
 ```
-./resutil/build-win.sh
+./resutil/build.sh
+HOST=x86_64-w64-mingw32 ./resutil/build.sh -j$(nproc)
 strip src/resistanced.exe src/resistance-cli.exe src/resistance-tx.exe
 ```
 

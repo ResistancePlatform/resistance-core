@@ -12,6 +12,8 @@
 #include "utilmoneystr.h"
 #include "wallet/wallet.h"
 
+#include <boost/thread.hpp>
+
 using namespace std;
 
 #define PRIVATIZER_MAX_COUNT 10

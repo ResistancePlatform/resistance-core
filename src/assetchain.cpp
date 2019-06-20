@@ -13,6 +13,10 @@
 #include "chainparamsbase.h"
 #include "chainparams.h"
 
+#ifdef WIN32
+#include <shlobj.h>
+#endif
+
 boost::filesystem::path GetAssetchainDefaultDataDir(const std::string &assetchainIn)
 {
     namespace fs = boost::filesystem;

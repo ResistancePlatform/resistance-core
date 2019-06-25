@@ -339,10 +339,10 @@ int printMetrics(size_t cols, bool mining)
                     int height = mapBlockIndex[hash]->nHeight;
                     CAmount subsidy = GetBlockSubsidy(height, consensusParams);
                     CAmount reward = 0;
-                    if ((height > 0) && (height <= consensusParams.GetLastPorRewardBlockHeight())) {
+                    if (height >= consensusParams.nSubsidySlowStartHeight && height <= consensusParams.GetLastPorRewardBlockHeight()) {
                         reward += subsidy*consensusParams.nPorRewardPercentage/100;
                     }
-                    if ((height > 0) && (height <= consensusParams.GetLastPlatformDevFundBlockHeight())) {
+                    if (height >= consensusParams.nSubsidySlowStartHeight && height <= consensusParams.GetLastPlatformDevFundBlockHeight()) {
                         reward += subsidy*consensusParams.nPlatformDevFundPercentage/100;
                     }
                     subsidy -= reward;

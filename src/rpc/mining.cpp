@@ -860,10 +860,10 @@ UniValue getblocksubsidy(const UniValue& params, bool fHelp)
     CAmount nReward = GetBlockSubsidy(nHeight, Params().GetConsensus());
     CAmount nPorReward = 0;
     CAmount nPlatformDevFund = 0;
-    if ((nHeight > 0) && (nHeight <= Params().GetConsensus().GetLastPorRewardBlockHeight())) {
+    if (nHeight >= Params().GetConsensus().nSubsidySlowStartHeight && nHeight <= Params().GetConsensus().GetLastPorRewardBlockHeight()) {
         nPorReward = nReward*Params().GetConsensus().nPorRewardPercentage/100;
     }
-    if ((nHeight > 0) && (nHeight <= Params().GetConsensus().GetLastPlatformDevFundBlockHeight())) {
+    if (nHeight >= Params().GetConsensus().nSubsidySlowStartHeight && nHeight <= Params().GetConsensus().GetLastPlatformDevFundBlockHeight()) {
         nPlatformDevFund = nReward*Params().GetConsensus().nPlatformDevFundPercentage/100;
     }
     nReward -= (nPorReward + nPlatformDevFund);

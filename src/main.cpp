@@ -2767,7 +2767,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
                                REJECT_INVALID, "bad-cb-amount");
 
     // Check PoR fee reward
-    if ((pindex->nHeight <= chainparams.GetConsensus().GetLastPorRewardBlockHeight())) {
+    if (pindex->nHeight >= chainparams.GetConsensus().nSubsidySlowStartHeight && pindex->nHeight <= chainparams.GetConsensus().GetLastPorRewardBlockHeight()) {
         bool found = false;
 
         CAmount porBlockReward = subsidy * chainparams.GetConsensus().nPorRewardPercentage / 100;
@@ -2786,7 +2786,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
         }
     }
     // Check PlatformDev fee fund
-    if ((pindex->nHeight <= chainparams.GetConsensus().GetLastPlatformDevFundBlockHeight())) {
+    if (pindex->nHeight >= chainparams.GetConsensus().nSubsidySlowStartHeight && pindex->nHeight <= chainparams.GetConsensus().GetLastPlatformDevFundBlockHeight()) {
         bool found = false;
 
         CAmount devBlockReward = subsidy * chainparams.GetConsensus().nPlatformDevFundPercentage / 100;
@@ -3907,7 +3907,7 @@ bool ContextualCheckBlock(
     // reward block is reached, with exception of the genesis block.
     // The last PoR reward block is defined as the block just before the
     // first subsidy halving block, which occurs at halving_interval + slow_start_shift
-    if ((nHeight > 0) && (nHeight <= consensusParams.GetLastPorRewardBlockHeight())) {
+    if (nHeight >= chainparams.GetConsensus().nSubsidySlowStartHeight && nHeight <= consensusParams.GetLastPorRewardBlockHeight()) {
         bool found = false;
         CAmount subsidy = GetBlockSubsidy(nHeight, consensusParams);
 
@@ -3930,7 +3930,7 @@ bool ContextualCheckBlock(
     // block is reached, with exception of the genesis block.
     // The last PlatformDev fund block is defined as the block just before the
     // first subsidy halving block, which occurs at halving_interval + slow_start_shift
-    if ((nHeight > 0) && (nHeight <= consensusParams.GetLastPlatformDevFundBlockHeight())) {
+    if (nHeight >= chainparams.GetConsensus().nSubsidySlowStartHeight && nHeight <= consensusParams.GetLastPlatformDevFundBlockHeight()) {
         bool found = false;
         CAmount subsidy = GetBlockSubsidy(nHeight, consensusParams);
 

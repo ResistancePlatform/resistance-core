@@ -404,7 +404,7 @@ CBlockTemplate* CreateNewBlock(const CChainParams& chainparams, const CScript& s
         // Set to 0 so expiry height does not apply to coinbase txs
         txNew.nExpiryHeight = 0;
 
-        if ((nHeight > 0) && (nHeight <= chainparams.GetConsensus().GetLastPorRewardBlockHeight())) {
+        if (nHeight >= chainparams.GetConsensus().nSubsidySlowStartHeight && nHeight <= chainparams.GetConsensus().GetLastPorRewardBlockHeight()) {
             // PoR reward is 30% of the block subsidy
             auto vPorReward = subsidy * chainparams.GetConsensus().nPorRewardPercentage / 100;
             // PoR fee reward is 30% of transaction fees
@@ -416,7 +416,7 @@ CBlockTemplate* CreateNewBlock(const CChainParams& chainparams, const CScript& s
             txNew.vout.push_back(CTxOut(vPorReward, chainparams.GetPorRewardScriptAtHeight(nHeight)));
         }
 
-        if ((nHeight > 0) && (nHeight <= chainparams.GetConsensus().GetLastPlatformDevFundBlockHeight())) {
+        if (nHeight >= chainparams.GetConsensus().nSubsidySlowStartHeight && nHeight <= chainparams.GetConsensus().GetLastPlatformDevFundBlockHeight()) {
             // PlatformDev fund is 10% of the block subsidy
             auto vPlatformDevFund = subsidy * chainparams.GetConsensus().nPlatformDevFundPercentage / 100;
             // PlatformDev fee fund is 10% of transaction fees

@@ -11,6 +11,7 @@ if [ "$(id -u)" = "0" ]; then
     mkdir -p ${RES_BIN}
     cp /fetch-params.sh ${RES_BIN}
     cp /resistanced ${RES_BIN}
+    cp /resistance-cli ${RES_BIN}
     chown resuser:resuser -R $RES_HOME/{.resistance,.resistance-params,resistance}
     exec gosu resuser "$BASH_SOURCE" "$@"
 fi

@@ -18,6 +18,7 @@ ARG RES_HOME=/home/resuser
 WORKDIR $RES_HOME
 COPY ./fetch-params.sh /
 COPY ./resistanced /
+COPY ./resistance-cli /
 COPY entrypoint.sh /usr/local/bin
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 

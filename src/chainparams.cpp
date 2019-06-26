@@ -89,8 +89,10 @@ public:
         consensus.nSubsidySlowStartInterval = 43200;
         consensus.nSubsidyHalvingInterval = 2200000 - 14400;
         consensus.nPorRewardPercentage = 30;
+        consensus.nMasternodeRewardPercentage = 30;
         consensus.nPlatformDevFundPercentage = 10;
         consensus.nPorRewardTxPercentage = 30;
+        consensus.nMasternodeRewardTxPercentage = 30;
         consensus.nPlatformDevFundTxPercentage = 10;
         consensus.nCoinbaseMaturity = 100;
         consensus.nMajorityEnforceBlockUpgrade = 750;
@@ -203,6 +205,9 @@ public:
         // PoR reward script expects a vector of 2-of-3 multisig addresses
         vPorRewardAddress = { "r37omieE18jLRnsBXsgkn8YUUaDeUE8kZPd" };
         assert(vPorRewardAddress.size() <= consensus.GetLastPorRewardBlockHeight());
+        // Masternode reward script expects a vector of 2-of-3 multisig addresses
+        vMasternodeRewardAddress = { "r38Dz85eAYtRoDYXRXBezaCEmyjxn38id7n" };
+        assert(vMasternodeRewardAddress.size() <= consensus.GetLastMasternodeRewardBlockHeight());
         // PlatformDev fund script expects a vector of 2-of-3 multisig addresses
         vPlatformDevFundAddress = { "r36mCPCzNWhcPzVrjxZuNKLeNBiYDPD4Tqi" };
         assert(vPlatformDevFundAddress.size() <= consensus.GetLastPlatformDevFundBlockHeight());
@@ -224,8 +229,10 @@ public:
         consensus.nSubsidySlowStartInterval = 43200;
         consensus.nSubsidyHalvingInterval = 2200000 - 14400;
         consensus.nPorRewardPercentage = 30;
+        consensus.nMasternodeRewardPercentage = 30;
         consensus.nPlatformDevFundPercentage = 10;
         consensus.nPorRewardTxPercentage = 30;
+        consensus.nMasternodeRewardTxPercentage = 30;
         consensus.nPlatformDevFundTxPercentage = 10;
         consensus.nCoinbaseMaturity = 2;
         consensus.nMajorityEnforceBlockUpgrade = 51;
@@ -335,6 +342,9 @@ public:
         // PoR reward script expects a vector of 2-of-3 multisig addresses
         vPorRewardAddress = { "rs8MA1zvQTjx5VHKmoDwqMWNbnG35GvcmEs" };
         assert(vPorRewardAddress.size() <= consensus.GetLastPorRewardBlockHeight());
+        // Masternode reward script expects a vector of 2-of-3 multisig addresses
+        vMasternodeRewardAddress = { "rs7afWjGdWG3RAzWeGVWKwAugFujgHbMDEW" };
+        assert(vMasternodeRewardAddress.size() <= consensus.GetLastMasternodeRewardBlockHeight());
         // PlatformDev fund script expects a vector of 2-of-3 multisig addresses
         vPlatformDevFundAddress = { "rs1ipbEkuysjmybyPAr6z85brggV2sBrdEZ" };
         assert(vPlatformDevFundAddress.size() <= consensus.GetLastPlatformDevFundBlockHeight());
@@ -356,8 +366,10 @@ public:
         consensus.nSubsidySlowStartInterval = 43200;
         consensus.nSubsidyHalvingInterval = 2200000 - 14400;
         consensus.nPorRewardPercentage = 30;
+        consensus.nMasternodeRewardPercentage = 30;
         consensus.nPlatformDevFundPercentage = 10;
         consensus.nPorRewardTxPercentage = 30;
+        consensus.nMasternodeRewardTxPercentage = 30;
         consensus.nPlatformDevFundTxPercentage = 10;
         consensus.nCoinbaseMaturity = 2;
         consensus.nMajorityEnforceBlockUpgrade = 750;
@@ -459,6 +471,9 @@ public:
         // PoR reward script expects a vector of 2-of-3 multisig addresses
         vPorRewardAddress = { "rs8MA1zvQTjx5VHKmoDwqMWNbnG35GvcmEs" };
         assert(vPorRewardAddress.size() <= consensus.GetLastPorRewardBlockHeight());
+        // Masternode reward script expects a vector of 2-of-3 multisig addresses
+        vMasternodeRewardAddress = { "rs7afWjGdWG3RAzWeGVWKwAugFujgHbMDEW" };
+        assert(vMasternodeRewardAddress.size() <= consensus.GetLastMasternodeRewardBlockHeight());
         // PlatformDev fund script expects a vector of 2-of-3 multisig addresses
         vPlatformDevFundAddress = { "rs1ipbEkuysjmybyPAr6z85brggV2sBrdEZ" };
         assert(vPlatformDevFundAddress.size() <= consensus.GetLastPlatformDevFundBlockHeight());
@@ -558,6 +573,35 @@ CScript CChainParams::GetPorRewardScriptAtHeight(int nHeight) const {
 std::string CChainParams::GetPorRewardAddressAtIndex(int i) const {
     assert(i >= 0 && i < vPorRewardAddress.size());
     return vPorRewardAddress[i];
+}
+
+// Block height must be >0 and <=last Masternode reward block height
+// Index variable i ranges from 0 - (vMasternodeRewardAddress.size()-1)
+std::string CChainParams::GetMasternodeRewardAddressAtHeight(int nHeight) const {
+    int maxHeight = consensus.GetLastMasternodeRewardBlockHeight();
+    assert(nHeight > 0 && nHeight <= maxHeight);
+
+    size_t addressChangeInterval = (maxHeight + vMasternodeRewardAddress.size()) / vMasternodeRewardAddress.size();
+    size_t i = nHeight / addressChangeInterval;
+    return vMasternodeRewardAddress[i];
+}
+
+// Block height must be >0 and <=last Masternode reward block height
+// The Masternode reward address is expected to be a multisig (P2SH) address
+CScript CChainParams::GetMasternodeRewardScriptAtHeight(int nHeight) const {
+    assert(nHeight > 0 && nHeight <= consensus.GetLastMasternodeRewardBlockHeight());
+
+    CTxDestination address = DecodeDestination(GetMasternodeRewardAddressAtHeight(nHeight).c_str());
+    assert(IsValidDestination(address));
+    assert(boost::get<CScriptID>(&address) != nullptr);
+    CScriptID scriptID = boost::get<CScriptID>(address); // address is a boost variant
+    CScript script = CScript() << OP_HASH160 << ToByteVector(scriptID) << OP_EQUAL;
+    return script;
+}
+
+std::string CChainParams::GetMasternodeRewardAddressAtIndex(int i) const {
+    assert(i >= 0 && i < vMasternodeRewardAddress.size());
+    return vMasternodeRewardAddress[i];
 }
 
 // Block height must be >0 and <=last PlatformDev fund block height

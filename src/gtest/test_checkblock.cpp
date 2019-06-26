@@ -52,6 +52,9 @@ TEST(CheckBlock, BlockSproutRejectsBadVersion) {
         subsidy*Params().GetConsensus().nPorRewardPercentage/100,
         Params().GetPorRewardScriptAtHeight(1)));
     mtx.vout.push_back(CTxOut(
+        subsidy*Params().GetConsensus().nMasternodeRewardPercentage/100,
+        Params().GetMasternodeRewardScriptAtHeight(1)));
+    mtx.vout.push_back(CTxOut(
         subsidy*Params().GetConsensus().nPlatformDevFundPercentage/100,
         Params().GetPlatformDevFundScriptAtHeight(1)));
     mtx.fOverwintered = false;
@@ -104,6 +107,11 @@ protected:
         mtx.vout.push_back(CTxOut(
                     subsidy*Params().GetConsensus().nPorRewardPercentage/100,
                     Params().GetPorRewardScriptAtHeight(1)));
+
+        // Give it a Masternode Reward vout for height 1.
+        mtx.vout.push_back(CTxOut(
+                    subsidy*Params().GetConsensus().nMasternodeRewardPercentage/100,
+                    Params().GetMasternodeRewardScriptAtHeight(1)));
 
         // Give it a PlatformDev fund vout for height 1.
         mtx.vout.push_back(CTxOut(

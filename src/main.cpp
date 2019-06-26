@@ -2785,6 +2785,25 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
             return state.DoS(100, error("%s: PoR fee reward missing", __func__), REJECT_INVALID, "cb-no-por-fee-reward");
         }
     }
+    // Check Masternode fee reward
+    if (pindex->nHeight >= chainparams.GetConsensus().nSubsidySlowStartHeight && pindex->nHeight <= chainparams.GetConsensus().GetLastMasternodeRewardBlockHeight()) {
+        bool found = false;
+
+        CAmount mnBlockReward = subsidy * chainparams.GetConsensus().nMasternodeRewardPercentage / 100;
+        CAmount mnFeeReward = nFees * chainparams.GetConsensus().nMasternodeRewardTxPercentage / 100;
+
+        BOOST_FOREACH(const CTxOut& output, block.vtx[0].vout) {
+            if (output.scriptPubKey == chainparams.GetMasternodeRewardScriptAtHeight(pindex->nHeight)) {
+                if (output.nValue == (mnBlockReward + mnFeeReward)) {
+                    found = true;
+                    break;
+                }
+            }
+        }
+        if (!found) {
+            return state.DoS(100, error("%s: Masternode fee reward missing", __func__), REJECT_INVALID, "cb-no-mn-fee-reward");
+        }
+    }
     // Check PlatformDev fee fund
     if (pindex->nHeight >= chainparams.GetConsensus().nSubsidySlowStartHeight && pindex->nHeight <= chainparams.GetConsensus().GetLastPlatformDevFundBlockHeight()) {
         bool found = false;
@@ -3922,6 +3941,29 @@ bool ContextualCheckBlock(
 
         if (!found) {
             return state.DoS(100, error("%s: PoR reward missing", __func__), REJECT_INVALID, "cb-no-por-reward");
+        }
+    }
+
+    // Coinbase transaction must include an output sending 30% of
+    // the block reward to a Masternode reward script, until the last Masternode's
+    // reward block is reached, with exception of the genesis block.
+    // The last Masternode reward block is defined as the block just before the
+    // first subsidy halving block, which occurs at halving_interval + slow_start_shift
+    if (nHeight >= chainparams.GetConsensus().nSubsidySlowStartHeight && nHeight <= consensusParams.GetLastMasternodeRewardBlockHeight()) {
+        bool found = false;
+        CAmount subsidy = GetBlockSubsidy(nHeight, consensusParams);
+
+        BOOST_FOREACH(const CTxOut& output, block.vtx[0].vout) {
+            if (output.scriptPubKey == chainparams.GetMasternodeRewardScriptAtHeight(nHeight)) {
+                if (output.nValue >= (subsidy * consensusParams.nMasternodeRewardPercentage / 100)) {
+                    found = true;
+                    break;
+                }
+            }
+        }
+
+        if (!found) {
+            return state.DoS(100, error("%s: Masternode reward missing", __func__), REJECT_INVALID, "cb-no-mn-reward");
         }
     }
 

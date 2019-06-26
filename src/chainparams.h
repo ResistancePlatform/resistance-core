@@ -103,6 +103,10 @@ public:
     std::string GetPorRewardAddressAtHeight(int height) const;
     CScript GetPorRewardScriptAtHeight(int height) const;
     std::string GetPorRewardAddressAtIndex(int i) const;
+    /** Return the Masternode reward address and script for a given block height */
+    std::string GetMasternodeRewardAddressAtHeight(int height) const;
+    CScript GetMasternodeRewardScriptAtHeight(int height) const;
+    std::string GetMasternodeRewardAddressAtIndex(int i) const;
     /** Return the PlatformDev fund address and script for a given block height */
     std::string GetPlatformDevFundAddressAtHeight(int height) const;
     CScript GetPlatformDevFundScriptAtHeight(int height) const;
@@ -134,6 +138,7 @@ protected:
     CCheckpointData checkpointData;
 
     std::vector<std::string> vPorRewardAddress;
+    std::vector<std::string> vMasternodeRewardAddress;
     std::vector<std::string> vPlatformDevFundAddress;   
 
     CAmount nSproutValuePoolCheckpointHeight = 0;

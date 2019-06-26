@@ -859,17 +859,22 @@ UniValue getblocksubsidy(const UniValue& params, bool fHelp)
 
     CAmount nReward = GetBlockSubsidy(nHeight, Params().GetConsensus());
     CAmount nPorReward = 0;
+    CAmount nMasternodeReward = 0;
     CAmount nPlatformDevFund = 0;
     if (nHeight >= Params().GetConsensus().nSubsidySlowStartHeight && nHeight <= Params().GetConsensus().GetLastPorRewardBlockHeight()) {
         nPorReward = nReward*Params().GetConsensus().nPorRewardPercentage/100;
     }
+    if (nHeight >= Params().GetConsensus().nSubsidySlowStartHeight && nHeight <= Params().GetConsensus().GetLastMasternodeRewardBlockHeight()) {
+        nMasternodeReward = nReward*Params().GetConsensus().nMasternodeRewardPercentage/100;
+    }
     if (nHeight >= Params().GetConsensus().nSubsidySlowStartHeight && nHeight <= Params().GetConsensus().GetLastPlatformDevFundBlockHeight()) {
         nPlatformDevFund = nReward*Params().GetConsensus().nPlatformDevFundPercentage/100;
     }
-    nReward -= (nPorReward + nPlatformDevFund);
+    nReward -= (nPorReward + nMasternodeReward + nPlatformDevFund);
     UniValue result(UniValue::VOBJ);
     result.push_back(Pair("miner", ValueFromAmount(nReward)));
     result.push_back(Pair("por", ValueFromAmount(nPorReward)));
+    result.push_back(Pair("mn", ValueFromAmount(nMasternodeReward)));
     result.push_back(Pair("dev", ValueFromAmount(nPlatformDevFund)));
     return result;
 }

@@ -82,6 +82,15 @@ struct Params {
     int nPorRewardTxPercentage;
     int GetLastPorRewardBlockHeight() const { return 0x7fffffff; }
     /**
+     * Masternode reward percentage of block reward
+     */
+    int nMasternodeRewardPercentage;
+    /**
+     * Masternode reward percentage of transaction fees
+     */
+    int nMasternodeRewardTxPercentage;
+    int GetLastMasternodeRewardBlockHeight() const { return 0x7fffffff; }
+    /**
      * PlatformDev fund percentage of block reward
      */
     int nPlatformDevFundPercentage;

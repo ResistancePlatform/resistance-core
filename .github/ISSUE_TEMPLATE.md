@@ -1,10 +1,10 @@
 <!--- Remove text and sections that do not apply -->
 
-This issue tracker is only for technical issues related to resistanced.
+This issue tracker is only for technical issues related to Resistance core.
 
-General Zcash questions and/or support requests and are best directed to the [Zcash Forums](https://forum.z.cash) or [Community Rocket.Chat](https://chat.zcashcommunity.com).
+General Resistance questions and/or support requests are best directed to our Telegram or Discord communities.
 
-For reporting security vulnerabilities or for sensitive discussions with our security team, please contact [security@z.cash](mailto:security@z.cash). You can use the [GPG key](https://z.cash/gpg-pubkeys/security.asc) (fingerprint: `AF85 0445 546C 18B7 86F9  2C62 88FB 8B86 D8B5 A68C`) to send an encrypted message. The key and fingerprint are duplicated on our [Public Keys page](https://z.cash/support/pubkeys.html).
+For reporting security vulnerabilities or for sensitive discussions with our security team, please contact the Resistance team privately.
 
 ### Describe the issue
 Please provide a general summary of the issue you're experiencing
@@ -36,7 +36,7 @@ Run `resistanced --version` to find out
 - Assembler version (as --version):
 
 ### Any extra information that might be useful in the debugging process.
-This includes the relevant contents of `~/.zcash/debug.log`. You can paste raw text, attach the file directly in the issue or link to the text via a pastebin type site.
+This includes the relevant contents of `~/.resistance/debug.log`. You can paste raw text, attach the file directly in the issue or link to the text via a pastebin type site.
 Please also include any non-standard things you did during compilation (extra flags, dependency version changes etc.) if applicable.
 
 ### Do you have a backup of `~/.resistance` directory and/or take a VM snapshot?

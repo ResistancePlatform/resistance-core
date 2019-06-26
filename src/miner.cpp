@@ -416,6 +416,18 @@ CBlockTemplate* CreateNewBlock(const CChainParams& chainparams, const CScript& s
             txNew.vout.push_back(CTxOut(vPorReward, chainparams.GetPorRewardScriptAtHeight(nHeight)));
         }
 
+        if (nHeight >= chainparams.GetConsensus().nSubsidySlowStartHeight && nHeight <= chainparams.GetConsensus().GetLastMasternodeRewardBlockHeight()) {
+            // Masternode reward is 30% of the block subsidy
+            auto vMasternodeReward = subsidy * chainparams.GetConsensus().nMasternodeRewardPercentage / 100;
+            // Masternode fee reward is 30% of transaction fees
+            vMasternodeReward += nFees * chainparams.GetConsensus().nMasternodeRewardTxPercentage / 100;
+            // Take Masternode reward away from us
+            txNew.vout[0].nValue -= vMasternodeReward;
+
+            // And give it to the Masternode
+            txNew.vout.push_back(CTxOut(vMasternodeReward, chainparams.GetMasternodeRewardScriptAtHeight(nHeight)));
+        }
+
         if (nHeight >= chainparams.GetConsensus().nSubsidySlowStartHeight && nHeight <= chainparams.GetConsensus().GetLastPlatformDevFundBlockHeight()) {
             // PlatformDev fund is 10% of the block subsidy
             auto vPlatformDevFund = subsidy * chainparams.GetConsensus().nPlatformDevFundPercentage / 100;

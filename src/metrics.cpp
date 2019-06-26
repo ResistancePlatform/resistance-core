@@ -342,6 +342,9 @@ int printMetrics(size_t cols, bool mining)
                     if (height >= consensusParams.nSubsidySlowStartHeight && height <= consensusParams.GetLastPorRewardBlockHeight()) {
                         reward += subsidy*consensusParams.nPorRewardPercentage/100;
                     }
+                    if (height >= consensusParams.nSubsidySlowStartHeight && height <= consensusParams.GetLastMasternodeRewardBlockHeight()) {
+                        reward += subsidy*consensusParams.nMasternodeRewardPercentage/100;
+                    }
                     if (height >= consensusParams.nSubsidySlowStartHeight && height <= consensusParams.GetLastPlatformDevFundBlockHeight()) {
                         reward += subsidy*consensusParams.nPlatformDevFundPercentage/100;
                     }

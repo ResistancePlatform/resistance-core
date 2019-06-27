@@ -549,7 +549,7 @@ bool SelectParamsFromCommandLine()
 // Block height must be >0 and <=last PoR reward block height
 // Index variable i ranges from 0 - (vPorRewardAddress.size()-1)
 std::string CChainParams::GetPorRewardAddressAtHeight(int nHeight) const {
-    int maxHeight = consensus.GetLastPorRewardBlockHeight();
+    size_t maxHeight = consensus.GetLastPorRewardBlockHeight();
     assert(nHeight > 0 && nHeight <= maxHeight);
 
     size_t addressChangeInterval = (maxHeight + vPorRewardAddress.size()) / vPorRewardAddress.size();
@@ -578,7 +578,7 @@ std::string CChainParams::GetPorRewardAddressAtIndex(int i) const {
 // Block height must be >0 and <=last Masternode reward block height
 // Index variable i ranges from 0 - (vMasternodeRewardAddress.size()-1)
 std::string CChainParams::GetMasternodeRewardAddressAtHeight(int nHeight) const {
-    int maxHeight = consensus.GetLastMasternodeRewardBlockHeight();
+    size_t maxHeight = consensus.GetLastMasternodeRewardBlockHeight();
     assert(nHeight > 0 && nHeight <= maxHeight);
 
     size_t addressChangeInterval = (maxHeight + vMasternodeRewardAddress.size()) / vMasternodeRewardAddress.size();
@@ -607,7 +607,7 @@ std::string CChainParams::GetMasternodeRewardAddressAtIndex(int i) const {
 // Block height must be >0 and <=last PlatformDev fund block height
 // Index variable i ranges from 0 - (vPlatformDevFundAddress.size()-1)
 std::string CChainParams::GetPlatformDevFundAddressAtHeight(int nHeight) const {
-    int maxHeight = consensus.GetLastPlatformDevFundBlockHeight();
+    size_t maxHeight = consensus.GetLastPlatformDevFundBlockHeight();
     assert(nHeight > 0 && nHeight <= maxHeight);
 
     size_t addressChangeInterval = (maxHeight + vPlatformDevFundAddress.size()) / vPlatformDevFundAddress.size();

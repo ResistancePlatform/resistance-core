@@ -3923,9 +3923,7 @@ bool ContextualCheckBlock(
 
     // Coinbase transaction must include an output sending 30% of
     // the block reward to a PoR reward script, until the last PoR's
-    // reward block is reached, with exception of the genesis block.
-    // The last PoR reward block is defined as the block just before the
-    // first subsidy halving block, which occurs at halving_interval + slow_start_shift
+    // reward block is reached.
     if (nHeight >= chainparams.GetConsensus().nSubsidySlowStartHeight && nHeight <= consensusParams.GetLastPorRewardBlockHeight()) {
         bool found = false;
         CAmount subsidy = GetBlockSubsidy(nHeight, consensusParams);
@@ -3946,9 +3944,7 @@ bool ContextualCheckBlock(
 
     // Coinbase transaction must include an output sending 30% of
     // the block reward to a Masternode reward script, until the last Masternode's
-    // reward block is reached, with exception of the genesis block.
-    // The last Masternode reward block is defined as the block just before the
-    // first subsidy halving block, which occurs at halving_interval + slow_start_shift
+    // reward block is reached.
     if (nHeight >= chainparams.GetConsensus().nSubsidySlowStartHeight && nHeight <= consensusParams.GetLastMasternodeRewardBlockHeight()) {
         bool found = false;
         CAmount subsidy = GetBlockSubsidy(nHeight, consensusParams);
@@ -3969,9 +3965,7 @@ bool ContextualCheckBlock(
 
     // Coinbase transaction must include an output sending 10% of
     // the block reward to a PlatformDev fund script, until the last PlatformDevFund
-    // block is reached, with exception of the genesis block.
-    // The last PlatformDev fund block is defined as the block just before the
-    // first subsidy halving block, which occurs at halving_interval + slow_start_shift
+    // block is reached.
     if (nHeight >= chainparams.GetConsensus().nSubsidySlowStartHeight && nHeight <= consensusParams.GetLastPlatformDevFundBlockHeight()) {
         bool found = false;
         CAmount subsidy = GetBlockSubsidy(nHeight, consensusParams);

@@ -83,7 +83,7 @@ public:
     CMainParams() {
         strNetworkID = "main";
         strCurrencyUnits = "RES";
-        bip44CoinType = 133; // As registered in https://github.com/satoshilabs/slips/blob/master/slip-0044.md
+        bip44CoinType = 356; // As registered in https://github.com/satoshilabs/slips/blob/master/slip-0044.md
         consensus.fCoinbaseMustBeProtected = false;
         consensus.nSubsidySlowStartHeight = 201;
         consensus.nSubsidySlowStartInterval = 43200;

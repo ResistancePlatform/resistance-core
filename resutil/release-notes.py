@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import re, os, os.path
 import subprocess
 import argparse
@@ -27,8 +29,9 @@ author_aliases = {
     'Duke Leto': 'Jonathan \"Duke\" Leto',
     'Eirik0': 'Eirik Ogilvie-Wigley',
     'EthanHeilman': 'Ethan Heilman',
+    'MarcoFalke': 'Marco Falke',
     'mdr0id': 'Marshall Gaucher',
-    'paveljanik': 'Pavel Janik',
+    'paveljanik': 'Pavel Janík',
     'Simon': 'Simon Liu',
     'str4d': 'Jack Grigg',
     'zebambam': 'Benjamin Winston'

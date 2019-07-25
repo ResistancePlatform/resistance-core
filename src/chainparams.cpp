@@ -60,7 +60,7 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesi
  */
 static CBlock CreateGenesisBlock(uint32_t nTime, const uint256& nNonce, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
 {
-    const char* pszTimestamp = "Resistance0b9c4eef8b7cc417ee5001e3500984b6fea35683a7cac141a043c42064835d34";
+    const char* pszTimestamp = "NB2HI4B2F4XWE2LUFZWHSL3SGNZWS43UMFXGGMZQGE======";
     const CScript genesisOutputScript = CScript() << ParseHex("04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f") << OP_CHECKSIG;
     return CreateGenesisBlock(pszTimestamp, genesisOutputScript, nTime, nNonce, nBits, nVersion, genesisReward);
 }
@@ -151,13 +151,13 @@ public:
 #else
         genesis = CreateGenesisBlock(
             1542316217,
-            uint256S("0x00000000000000000000000000000000000000000000000000000000000000d8"),
+            uint256S("0x0000000000000000000000000000000000000000000000000000000000002023"),
             0x1f07ffff, 4, 0);
 #endif
-        assert(genesis.GetPoWHash() == uint256S("0x00020fa0f294a669b02a2c8e0853a188a8ec485f4b34e8a259382e404fccc8b8"));
+        assert(genesis.GetPoWHash() == uint256S("0x00038d05df4616685143af2290114ba5b572dbb9e2ec18c99dd8e42baabd0adf"));
         consensus.hashGenesisBlock = genesis.GetHash();
-        assert(consensus.hashGenesisBlock == uint256S("0x165ffbfc581e1ec6a81634d216f9e470ea7636fb74faf68e77706128dcb3446d"));
-        assert(genesis.hashMerkleRoot == uint256S("0x0e2b2dda05830029a825fd2d74f76cf3fed56f820d1792ff189ed92e34b5dc84"));
+        assert(consensus.hashGenesisBlock == uint256S("0xc5672fa2f5feb561a0ef69886231172f54fc9f8cae7928d6cd77042b0399b8b4"));
+        assert(genesis.hashMerkleRoot == uint256S("0x7796cb16e0eda28f0e182764630ba87c88f147e5243178ff7ca68d266a949a9a"));
 
         vFixedSeeds.clear();
         vSeeds.clear();
@@ -288,13 +288,13 @@ public:
 #else
         genesis = CreateGenesisBlock(
             1542317425,
-            uint256S("0x0000000000000000000000000000000000000000000000000000000000000002"),
+            uint256S("0x0000000000000000000000000000000000000000000000000000000000000006"),
             0x2007ffff, 4, 0);
 #endif
-        assert(genesis.GetPoWHash() == uint256S("0x009152604ebf8ea426ce0d06b21fdec8257034611c3c910042dc2290d9ae738f"));
+        assert(genesis.GetPoWHash() == uint256S("0x0108b62d9aeb43fdcbc4910bb2c5ba3ed5ebb80bc3a533a725ada3f6564cd342"));
         consensus.hashGenesisBlock = genesis.GetHash();
-        assert(consensus.hashGenesisBlock == uint256S("0x0648e4a5612457723af11335a441e7c6c83b371597296e37d9a0b3f6133bc53d"));
-        assert(genesis.hashMerkleRoot == uint256S("0x0e2b2dda05830029a825fd2d74f76cf3fed56f820d1792ff189ed92e34b5dc84"));
+        assert(consensus.hashGenesisBlock == uint256S("0x3befe1bc5de0eac8da506294909145688baf3b13aed4cc3dc685ac7a23bd9650"));
+        assert(genesis.hashMerkleRoot == uint256S("0x7796cb16e0eda28f0e182764630ba87c88f147e5243178ff7ca68d266a949a9a"));
 
         vFixedSeeds.clear();
         vSeeds.clear();
@@ -425,13 +425,13 @@ public:
 #else
         genesis = CreateGenesisBlock(
             1542317813,
-            uint256S("0x0000000000000000000000000000000000000000000000000000000000000007"),
+            uint256S("0x000000000000000000000000000000000000000000000000000000000000002c"),
             0x200f0f0f, 4, 0);
 #endif
-        assert(genesis.GetPoWHash() == uint256S("0x0ab828ed717fbb01374736ff7738a40be1989a6ba3b4ab03b8e9a6605ba36b1f"));
+        assert(genesis.GetPoWHash() == uint256S("0x0095e3fbe59a2a612ededd70b1a13edbe39a177f26258a5827a1982eb2d96e60"));
         consensus.hashGenesisBlock = genesis.GetHash();
-        assert(consensus.hashGenesisBlock == uint256S("0x0906f6e751460def481b8c896b183cce391aad47e35983956dde771fa298edb4"));
-        assert(genesis.hashMerkleRoot == uint256S("0x0e2b2dda05830029a825fd2d74f76cf3fed56f820d1792ff189ed92e34b5dc84"));
+        assert(consensus.hashGenesisBlock == uint256S("0x1894e002dce091337415711e153dfdcd7d75d68ffd5491ddff8986758d4ea0e2"));
+        assert(genesis.hashMerkleRoot == uint256S("0x7796cb16e0eda28f0e182764630ba87c88f147e5243178ff7ca68d266a949a9a"));
 
         vFixedSeeds.clear(); //!< Regtest mode doesn't have any fixed seeds.
         vSeeds.clear();      //!< Regtest mode doesn't have any DNS seeds.

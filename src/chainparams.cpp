@@ -239,13 +239,13 @@ public:
         consensus.nMajorityEnforceBlockUpgrade = 51;
         consensus.nMajorityRejectBlockOutdated = 75;
         consensus.nMajorityWindow = 400;
-        consensus.powLimit = uint256S("07ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+        consensus.powLimit = uint256S("0007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.nPowAveragingWindow = 17;
         assert(maxUint/UintToArith256(consensus.powLimit) >= consensus.nPowAveragingWindow);
         consensus.nPowMaxAdjustDown = 32; // 32% adjustment down
         consensus.nPowMaxAdjustUp = 16; // 16% adjustment up
         consensus.nPowTargetSpacing = 60;
-        consensus.nPowAllowMinDifficultyBlocksAfterHeight = 299187;
+        consensus.nPowAllowMinDifficultyBlocksAfterHeight = 0;
         consensus.vUpgrades[Consensus::BASE_SPROUT].nProtocolVersion = 170002;
         consensus.vUpgrades[Consensus::BASE_SPROUT].nActivationHeight =
             Consensus::NetworkUpgrade::ALWAYS_ACTIVE;
@@ -277,9 +277,9 @@ public:
         do {
             nonce = ArithToUint256(UintToArith256(nonce) + 1);
             genesis = CreateGenesisBlock(
-                1542317425,
+                1564162983,
                 nonce,
-                0x2007ffff, 4, 0);
+                0x1f07ffff, 4, 0);
             hash = genesis.GetPoWHash();
         } while (UintToArith256(hash) > UintToArith256(consensus.powLimit));
         printf("nonce = %s\n", nonce.ToString().c_str());
@@ -288,13 +288,13 @@ public:
         printf("genesis.hashMerkleRoot = %s\n", genesis.hashMerkleRoot.ToString().c_str());
 #else
         genesis = CreateGenesisBlock(
-            1542317425,
-            uint256S("0x0000000000000000000000000000000000000000000000000000000000000006"),
-            0x2007ffff, 4, 0);
+            1564162983,
+            uint256S("0x0000000000000000000000000000000000000000000000000000000000008e3e"),
+            0x1f07ffff, 4, 0);
 #endif
-        assert(genesis.GetPoWHash() == uint256S("0x0108b62d9aeb43fdcbc4910bb2c5ba3ed5ebb80bc3a533a725ada3f6564cd342"));
+        assert(genesis.GetPoWHash() == uint256S("0x00040a0846c645729d46934c4307b91ebf0650230571952fc64a46d7fa3143d4"));
         consensus.hashGenesisBlock = genesis.GetHash();
-        assert(consensus.hashGenesisBlock == uint256S("0x3befe1bc5de0eac8da506294909145688baf3b13aed4cc3dc685ac7a23bd9650"));
+        assert(consensus.hashGenesisBlock == uint256S("0x4b9b38252d0121cc14197f2764e85da2b5bd0892dd157f047b624212f97568b8"));
         assert(genesis.hashMerkleRoot == uint256S("0x7796cb16e0eda28f0e182764630ba87c88f147e5243178ff7ca68d266a949a9a"));
 
         vFixedSeeds.clear();

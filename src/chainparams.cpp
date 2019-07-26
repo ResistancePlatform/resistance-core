@@ -204,13 +204,13 @@ public:
         };
 
         // PoR reward script expects a vector of 2-of-3 multisig addresses
-        vPorRewardAddress = { "r37omieE18jLRnsBXsgkn8YUUaDeUE8kZPd" };
+        vPorRewardAddress = { "r3BRC7xQ1JemFuRgCYPhpsQQhUmgbz772Dh" };
         assert(vPorRewardAddress.size() <= consensus.GetLastPorRewardBlockHeight());
         // Masternode reward script expects a vector of 2-of-3 multisig addresses
-        vMasternodeRewardAddress = { "r38Dz85eAYtRoDYXRXBezaCEmyjxn38id7n" };
+        vMasternodeRewardAddress = { "r394kKYEHd67UnsS7v1zuhRLPjANqD5T2G2" };
         assert(vMasternodeRewardAddress.size() <= consensus.GetLastMasternodeRewardBlockHeight());
         // PlatformDev fund script expects a vector of 2-of-3 multisig addresses
-        vPlatformDevFundAddress = { "r36mCPCzNWhcPzVrjxZuNKLeNBiYDPD4Tqi" };
+        vPlatformDevFundAddress = { "r39mwRFQzHz55ZrEL3dGuDVCXHtmCRJ2jzo" };
         assert(vPlatformDevFundAddress.size() <= consensus.GetLastPlatformDevFundBlockHeight());
     }
 };

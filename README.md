@@ -98,7 +98,6 @@ brew install autoconf autogen automake binutils protobuf coreutils wget curl
 Build:
 
 ```
-patch -p1 < resutil/mac-build.diff
 ./resutil/build.sh
 ```
 

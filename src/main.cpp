@@ -1803,9 +1803,9 @@ void CheckForkWarningConditions(const CChainParams& chainParams)
     if (IsInitialBlockDownload(chainParams))
         return;
 
-    // If our best fork is no longer within 288 blocks (+/- 12 hours if no one mines it)
+    // If our best fork is no longer within 720 blocks (+/- 12 hours if no one mines it)
     // of our head, drop it
-    if (pindexBestForkTip && chainActive.Height() - pindexBestForkTip->nHeight >= 288)
+    if (pindexBestForkTip && chainActive.Height() - pindexBestForkTip->nHeight >= 720)
         pindexBestForkTip = NULL;
 
     if (pindexBestForkTip || (pindexBestInvalid && pindexBestInvalid->nChainWork > chainActive.Tip()->nChainWork + (GetBlockProof(*chainActive.Tip()) * 6)))

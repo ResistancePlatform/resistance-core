@@ -203,13 +203,13 @@ public:
                             //   total number of tx / (checkpoint block height / (24 * 60))
         };
 
-        // PoR reward script expects a vector of 2-of-3 multisig addresses
+        // PoR reward script expects a vector of P2SH addresses
         vPorRewardAddress = { "r3BRC7xQ1JemFuRgCYPhpsQQhUmgbz772Dh" };
         assert(vPorRewardAddress.size() <= consensus.GetLastPorRewardBlockHeight());
-        // Masternode reward script expects a vector of 2-of-3 multisig addresses
+        // Masternode reward script expects a vector of P2SH addresses
         vMasternodeRewardAddress = { "r394kKYEHd67UnsS7v1zuhRLPjANqD5T2G2" };
         assert(vMasternodeRewardAddress.size() <= consensus.GetLastMasternodeRewardBlockHeight());
-        // PlatformDev fund script expects a vector of 2-of-3 multisig addresses
+        // PlatformDev fund script expects a vector of P2SH addresses
         vPlatformDevFundAddress = { "r39mwRFQzHz55ZrEL3dGuDVCXHtmCRJ2jzo" };
         assert(vPlatformDevFundAddress.size() <= consensus.GetLastPlatformDevFundBlockHeight());
     }
@@ -340,13 +340,13 @@ public:
                             //   total number of tx / (checkpoint block height / (24 * 60))
         };
 
-        // PoR reward script expects a vector of 2-of-3 multisig addresses
+        // PoR reward script expects a vector of P2SH addresses
         vPorRewardAddress = { "rs8MA1zvQTjx5VHKmoDwqMWNbnG35GvcmEs" };
         assert(vPorRewardAddress.size() <= consensus.GetLastPorRewardBlockHeight());
-        // Masternode reward script expects a vector of 2-of-3 multisig addresses
+        // Masternode reward script expects a vector of P2SH addresses
         vMasternodeRewardAddress = { "rs7afWjGdWG3RAzWeGVWKwAugFujgHbMDEW" };
         assert(vMasternodeRewardAddress.size() <= consensus.GetLastMasternodeRewardBlockHeight());
-        // PlatformDev fund script expects a vector of 2-of-3 multisig addresses
+        // PlatformDev fund script expects a vector of P2SH addresses
         vPlatformDevFundAddress = { "rs1ipbEkuysjmybyPAr6z85brggV2sBrdEZ" };
         assert(vPlatformDevFundAddress.size() <= consensus.GetLastPlatformDevFundBlockHeight());
     }
@@ -469,13 +469,13 @@ public:
         bech32HRPs[SAPLING_INCOMING_VIEWING_KEY] = "zivkregtestsapling";
         bech32HRPs[SAPLING_EXTENDED_SPEND_KEY]   = "secret-extended-key-regtest";
 
-        // PoR reward script expects a vector of 2-of-3 multisig addresses
+        // PoR reward script expects a vector of P2SH addresses
         vPorRewardAddress = { "rs8MA1zvQTjx5VHKmoDwqMWNbnG35GvcmEs" };
         assert(vPorRewardAddress.size() <= consensus.GetLastPorRewardBlockHeight());
-        // Masternode reward script expects a vector of 2-of-3 multisig addresses
+        // Masternode reward script expects a vector of P2SH addresses
         vMasternodeRewardAddress = { "rs7afWjGdWG3RAzWeGVWKwAugFujgHbMDEW" };
         assert(vMasternodeRewardAddress.size() <= consensus.GetLastMasternodeRewardBlockHeight());
-        // PlatformDev fund script expects a vector of 2-of-3 multisig addresses
+        // PlatformDev fund script expects a vector of P2SH addresses
         vPlatformDevFundAddress = { "rs1ipbEkuysjmybyPAr6z85brggV2sBrdEZ" };
         assert(vPlatformDevFundAddress.size() <= consensus.GetLastPlatformDevFundBlockHeight());
     }

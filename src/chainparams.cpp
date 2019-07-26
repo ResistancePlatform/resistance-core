@@ -161,7 +161,8 @@ public:
 
         vFixedSeeds.clear();
         vSeeds.clear();
-        vSeeds.push_back(CDNSSeedData("dnsseed_v2.resistance.io", "dnsseed_v2.resistance.io"));
+        vSeeds.push_back(CDNSSeedData("mainnet.resistance.io", "mainnet.resistance.io"));
+        vSeeds.push_back(CDNSSeedData("mainnet_seed1.resistance.io", "mainnet_seed1.resistance.io"));
 
         // guarantees the first 2 characters, when base58 encoded, are "r1"
         base58Prefixes[PUBKEY_ADDRESS]     = {0x1B,0x97};

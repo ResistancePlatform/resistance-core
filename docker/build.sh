@@ -4,4 +4,4 @@ cp ../src/resistanced .
 cp ../src/resistance-cli .
 
 # Build and tag the resistance-core image
-docker build . -f ./Dockerfile --tag resistance-core:latest --tag resistance-core:$(git rev-parse --short HEAD)
+docker build . -f ./Dockerfile --tag resistanceio/resistance-core:latest --tag resistanceio/resistance-core:$(git rev-parse --short HEAD)

@@ -139,7 +139,7 @@ public:
         do {
             nonce = ArithToUint256(UintToArith256(nonce) + 1);
             genesis = CreateGenesisBlock(
-                1542316217,
+                1564407265,
                 nonce,
                 0x1f07ffff, 4, 0);
             hash = genesis.GetPoWHash();
@@ -150,13 +150,13 @@ public:
         printf("genesis.hashMerkleRoot = %s\n", genesis.hashMerkleRoot.ToString().c_str());
 #else
         genesis = CreateGenesisBlock(
-            1542316217,
-            uint256S("0x0000000000000000000000000000000000000000000000000000000000002023"),
+            1564407265,
+            uint256S("0x0000000000000000000000000000000000000000000000000000000000006332"),
             0x1f07ffff, 4, 0);
 #endif
-        assert(genesis.GetPoWHash() == uint256S("0x00038d05df4616685143af2290114ba5b572dbb9e2ec18c99dd8e42baabd0adf"));
+        assert(genesis.GetPoWHash() == uint256S("0x000242261b14bd5271d49f7549bc258ef4dc01b3b9d559efd641918c2fcbab76"));
         consensus.hashGenesisBlock = genesis.GetHash();
-        assert(consensus.hashGenesisBlock == uint256S("0xc5672fa2f5feb561a0ef69886231172f54fc9f8cae7928d6cd77042b0399b8b4"));
+        assert(consensus.hashGenesisBlock == uint256S("0x328ab5de52cf3b7c1a5dbd02909b7e23a25d1715143c8b41aba903cf2b48754f"));
         assert(genesis.hashMerkleRoot == uint256S("0x7796cb16e0eda28f0e182764630ba87c88f147e5243178ff7ca68d266a949a9a"));
 
         vFixedSeeds.clear();

@@ -78,7 +78,7 @@ index e83c9fc2f..b89eff494 100644
 +
  #endif // BITCOIN_ADDRESSINDEX_H
 diff --git a/src/main.cpp b/src/main.cpp
-index 7482e9d4a..6103b803d 100644
+index 2792d2382..b6d31ca16 100644
 --- a/src/main.cpp
 +++ b/src/main.cpp
 @@ -22,7 +22,6 @@
@@ -162,7 +162,7 @@ index 7482e9d4a..6103b803d 100644
      // Fill in-memory data
      BOOST_FOREACH(const PAIRTYPE(uint256, CBlockIndex*)& item, mapBlockIndex)
 diff --git a/src/main.h b/src/main.h
-index 198318a49..0274b1327 100644
+index b1febb57d..14a287bc6 100644
 --- a/src/main.h
 +++ b/src/main.h
 @@ -24,6 +24,7 @@
@@ -1013,8 +1013,31 @@ index 89cd047f9..80a3c0d06 100644
      /* Not shown in help */
      { "hidden",             "setmocktime",            &setmocktime,            true  },
  };
+diff --git a/src/rpc/rawtransaction.cpp b/src/rpc/rawtransaction.cpp
+index 6764fecff..da8e4aeae 100644
+--- a/src/rpc/rawtransaction.cpp
++++ b/src/rpc/rawtransaction.cpp
+@@ -66,7 +66,9 @@ UniValue TxJoinSplitToJSON(const CTransaction& tx) {
+         UniValue joinsplit(UniValue::VOBJ);
+ 
+         joinsplit.push_back(Pair("vpub_old", ValueFromAmount(jsdescription.vpub_old)));
++        joinsplit.push_back(Pair("vpub_oldZat", jsdescription.vpub_old));
+         joinsplit.push_back(Pair("vpub_new", ValueFromAmount(jsdescription.vpub_new)));
++        joinsplit.push_back(Pair("vpub_newZat", jsdescription.vpub_new));
+ 
+         joinsplit.push_back(Pair("anchor", jsdescription.anchor.GetHex()));
+ 
+@@ -194,7 +196,7 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, UniValue& entry)
+         const CTxOut& txout = tx.vout[i];
+         UniValue out(UniValue::VOBJ);
+         out.push_back(Pair("value", ValueFromAmount(txout.nValue)));
+-        out.push_back(Pair("valueZat", txout.nValue));
++        out.push_back(Pair("valueSat", txout.nValue));
+         out.push_back(Pair("n", (int64_t)i));
+         UniValue o(UniValue::VOBJ);
+         ScriptPubKeyToJSON(txout.scriptPubKey, o, true);
 diff --git a/src/txmempool.cpp b/src/txmempool.cpp
-index 4078e971e..24dea8903 100644
+index ab74f2026..6f2bb5a38 100644
 --- a/src/txmempool.cpp
 +++ b/src/txmempool.cpp
 @@ -121,6 +121,125 @@ bool CTxMemPool::addUnchecked(const uint256& hash, const CTxMemPoolEntry &entry,

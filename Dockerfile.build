@@ -12,6 +12,6 @@
 # WORKING_DIR=`basename $PWD` && docker run -ti --rm -v "$HOME":"$HOME" -v "$PWD":"/$WORKING_DIR" -v /etc/group:/etc/group:ro -v /etc/passwd:/etc/passwd:ro -w "/$WORKING_DIR" -u $( id -u $USER ):$( id -g $USER ) resistance-core-builder:latest /bin/bash
 #
 # then, from the root of the repo:
-# ./resutil/build.sh
+# ./resutil/build.sh --disable-tests
 FROM ubuntu:18.04
 RUN apt-get update && apt-get install build-essential automake libtool pkg-config libcurl4-openssl-dev curl bsdmainutils apt-utils -y

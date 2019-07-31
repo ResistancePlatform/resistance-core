@@ -23,7 +23,22 @@ cd ${RES_BIN}
 # Init resistance.conf if it doesn't exist
 if [[ ! -f ${RES_HOME}/.resistance/resistance.conf ]]; then
     touch ${RES_HOME}/.resistance/resistance.conf
-    echo "testnet=1" >> ${RES_HOME}/.resistance/resistance.conf
+    # Testnet configs
+    # echo "testnet=1" >> ${RES_HOME}/.resistance/resistance.conf
+    # echo "rpcport=18132" >> ${RES_HOME}/.resistance/resistance.conf
+    # echo "port=18133" >> ${RES_HOME}/.resistance/resistance.conf
+
+    # Mainnet configs
+    echo "rpcport=8132" >> ${RES_HOME}/.resistance/resistance.conf
+    echo "port=8133" >> ${RES_HOME}/.resistance/resistance.conf
+
+    # General configs
+    echo "rpcallowip=127.0.0.1" >> ${RES_HOME}/.resistance/resistance.conf
+    echo "rpcworkqueue=512" >> ${RES_HOME}/.resistance/resistance.conf
+    echo "server=1" >> ${RES_HOME}/.resistance/resistance.conf
+    echo "listen=1" >> ${RES_HOME}/.resistance/resistance.conf
+    echo "txindex=1" >> ${RES_HOME}/.resistance/resistance.conf
+    echo "logtimestamps=1" >> ${RES_HOME}/.resistance/resistance.conf
     echo "rpcuser=resnode" >> ${RES_HOME}/.resistance/resistance.conf
     pw=$(head -c 32 /dev/urandom | sha256sum | head -c 64)
     test ${#pw} -eq 64

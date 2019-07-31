@@ -24,14 +24,15 @@ cd ${RES_BIN}
 if [[ ! -f ${RES_HOME}/.resistance/resistance.conf ]]; then
     touch ${RES_HOME}/.resistance/resistance.conf
     # Testnet configs
-    echo "testnet=1" >> ${RES_HOME}/.resistance/resistance.conf
-    echo "rpcport=18132" >> ${RES_HOME}/.resistance/resistance.conf
-    echo "rpcport=18133" >> ${RES_HOME}/.resistance/resistance.conf
+    # echo "testnet=1" >> ${RES_HOME}/.resistance/resistance.conf
+    # echo "rpcport=18132" >> ${RES_HOME}/.resistance/resistance.conf
+    # echo "port=18133" >> ${RES_HOME}/.resistance/resistance.conf
 
     # Mainnet configs
-    # echo "rpcport=8132" >> ${RES_HOME}/.resistance/resistance.conf
-    # echo "rpcport=8133" >> ${RES_HOME}/.resistance/resistance.conf
+    echo "rpcport=8132" >> ${RES_HOME}/.resistance/resistance.conf
+    echo "port=8133" >> ${RES_HOME}/.resistance/resistance.conf
 
+    # General configs
     echo "rpcallowip=127.0.0.1" >> ${RES_HOME}/.resistance/resistance.conf
     echo "rpcworkqueue=512" >> ${RES_HOME}/.resistance/resistance.conf
     echo "server=1" >> ${RES_HOME}/.resistance/resistance.conf

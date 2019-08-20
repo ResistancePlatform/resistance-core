@@ -33,7 +33,10 @@ if [[ ! -f ${RES_HOME}/.resistance/resistance.conf ]]; then
     echo "port=8133" >> ${RES_HOME}/.resistance/resistance.conf
 
     # General configs
-    echo "rpcallowip=127.0.0.1" >> ${RES_HOME}/.resistance/resistance.conf
+    # Note that these port/host rules only make resistance-core visible
+    # to other containers and/or the localhost, not external hosts
+    echo "rpcallowip=0.0.0.0/0" >> ${RES_HOME}/.resistance/resistance.conf
+    echo "rpcbind=0.0.0.0:8132" >> ${RES_HOME}/.resistance/resistance.conf
     echo "rpcworkqueue=512" >> ${RES_HOME}/.resistance/resistance.conf
     echo "server=1" >> ${RES_HOME}/.resistance/resistance.conf
     echo "listen=1" >> ${RES_HOME}/.resistance/resistance.conf

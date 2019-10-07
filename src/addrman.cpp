@@ -61,6 +61,13 @@ double CAddrInfo::GetChance(int64_t nNow) const
     if (nSinceLastTry < 0)
         nSinceLastTry = 0;
 
+    // similar to Bitcoin prior to March 2015
+    fChance *= 36000.0 / (36000.0 + nSinceLastSeen);
+
+    // additional penalty not seen in Bitcoin
+    if (nSinceLastSeen > 864000)
+        fChance *= 0.03;
+
     // deprioritize very recent attempts away
     if (nSinceLastTry < 60 * 10)
         fChance *= 0.01;
@@ -336,7 +343,7 @@ CAddrInfo CAddrMan::Select_(bool newOnly)
 
     // Track number of attempts to find a table entry, before giving up to avoid infinite loop
     const int kMaxRetries = 200000;         // magic number so unit tests can pass
-    const int kRetriesBetweenSleep = 1000;
+    const int kRetriesBetweenSleep = 10000;
     const int kRetrySleepInterval = 100;    // milliseconds
 
     if (newOnly && nNew == 0)

@@ -1,7 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// file COPYING or https://www.opensource.org/licenses/mit-license.php .
 
 #include "wallet/wallet.h"
 
@@ -35,8 +35,6 @@
 
 using namespace std;
 using namespace libzcash;
-
-extern UniValue sendrawtransaction(const UniValue& params, bool fHelp);
 
 /**
  * Settings
@@ -595,7 +593,7 @@ void CWallet::ChainTip(const CBlockIndex *pindex,
 }
 
 void CWallet::RunSaplingMigration(int blockHeight) {
-    if (!NetworkUpgradeActive(blockHeight, Params().GetConsensus(), Consensus::UPGRADE_SAPLING)) {
+    if (!Params().GetConsensus().NetworkUpgradeActive(blockHeight, Consensus::UPGRADE_SAPLING)) {
         return;
     }
     LOCK(cs_wallet);
@@ -625,16 +623,9 @@ void CWallet::RunSaplingMigration(int blockHeight) {
             lastOperation->cancel();
         }
         for (const CTransaction& transaction : pendingSaplingMigrationTxs) {
-            // The following is taken from z_sendmany/z_mergetoaddress
             // Send the transaction
-            // TODO: Use CWallet::CommitTransaction instead of sendrawtransaction
-            auto signedtxn = EncodeHexTx(transaction);
-            UniValue params = UniValue(UniValue::VARR);
-            params.push_back(signedtxn);
-            UniValue sendResultValue = sendrawtransaction(params, false);
-            if (sendResultValue.isNull()) {
-                throw JSONRPCError(RPC_WALLET_ERROR, "sendrawtransaction did not return an error or a txid.");
-            }
+            CWalletTx wtx(this, transaction);
+            CommitTransaction(wtx, boost::none);
         }
         pendingSaplingMigrationTxs.clear();
     }
@@ -1668,6 +1659,13 @@ bool CWallet::UpdatedNoteData(const CWalletTx& wtxIn, CWalletTx& wtx)
  * Add a transaction to the wallet, or update it.
  * pblock is optional, but should be provided if the transaction is known to be in a block.
  * If fUpdate is true, existing transactions will be updated.
+ *
+ * If pblock is null, this transaction has either recently entered the mempool from the
+ * network, is re-entering the mempool after a block was disconnected, or is exiting the
+ * mempool because it conflicts with another transaction. In all these cases, if there is
+ * an existing wallet transaction, the wallet transaction's Merkle branch data is _not_
+ * updated; instead, the transaction being in the mempool or conflicted is determined on
+ * the fly in CMerkleTx::GetDepthInMainChain().
  */
 bool CWallet::AddToWalletIfInvolvingMe(const CTransaction& tx, const CBlock* pblock, bool fUpdate)
 {
@@ -1712,7 +1710,7 @@ bool CWallet::AddToWalletIfInvolvingMe(const CTransaction& tx, const CBlock* pbl
 
 void CWallet::SyncTransaction(const CTransaction& tx, const CBlock* pblock)
 {
-    LOCK2(cs_main, cs_wallet);
+    LOCK(cs_wallet);
     if (!AddToWalletIfInvolvingMe(tx, pblock, true))
         return; // Not one of ours
 
@@ -2526,7 +2524,7 @@ int CWallet::ScanForWalletTransactions(CBlockIndex* pindexStart, bool fUpdate)
             // state on the path to the tip of our chain
             assert(pcoinsTip->GetSproutAnchorAt(pindex->hashSproutAnchor, sproutTree));
             if (pindex->pprev) {
-                if (NetworkUpgradeActive(pindex->pprev->nHeight, Params().GetConsensus(), Consensus::UPGRADE_SAPLING)) {
+                if (Params().GetConsensus().NetworkUpgradeActive(pindex->pprev->nHeight,  Consensus::UPGRADE_SAPLING)) {
                     assert(pcoinsTip->GetSaplingAnchorAt(pindex->pprev->hashFinalSaplingRoot, saplingTree));
                 }
             }
@@ -3303,7 +3301,7 @@ bool CWallet::CreateTransaction(const vector<CRecipient>& vecSend, CWalletTx& wt
         Params().GetConsensus(), nextBlockHeight);
 
     // Activates after Overwinter network upgrade
-    if (NetworkUpgradeActive(nextBlockHeight, Params().GetConsensus(), Consensus::UPGRADE_OVERWINTER)) {
+    if (Params().GetConsensus().NetworkUpgradeActive(nextBlockHeight, Consensus::UPGRADE_OVERWINTER)) {
         if (txNew.nExpiryHeight >= TX_EXPIRY_HEIGHT_THRESHOLD){
             strFailReason = _("nExpiryHeight must be less than TX_EXPIRY_HEIGHT_THRESHOLD.");
             return false;
@@ -3311,7 +3309,7 @@ bool CWallet::CreateTransaction(const vector<CRecipient>& vecSend, CWalletTx& wt
     }
 
     unsigned int max_tx_size = MAX_TX_SIZE_AFTER_SAPLING;
-    if (!NetworkUpgradeActive(nextBlockHeight, Params().GetConsensus(), Consensus::UPGRADE_SAPLING)) {
+    if (!Params().GetConsensus().NetworkUpgradeActive(nextBlockHeight, Consensus::UPGRADE_SAPLING)) {
         max_tx_size = MAX_TX_SIZE_BEFORE_SAPLING;
     }
 
@@ -3503,7 +3501,7 @@ bool CWallet::CreateTransaction(const vector<CRecipient>& vecSend, CWalletTx& wt
                 size_t limit = (size_t)GetArg("-mempooltxinputlimit", 0);
                 {
                     LOCK(cs_main);
-                    if (NetworkUpgradeActive(chainActive.Height() + 1, Params().GetConsensus(), Consensus::UPGRADE_OVERWINTER)) {
+                    if (Params().GetConsensus().NetworkUpgradeActive(chainActive.Height() + 1, Consensus::UPGRADE_OVERWINTER)) {
                         limit = 0;
                     }
                 }
@@ -3602,7 +3600,7 @@ bool CWallet::CreateTransaction(const vector<CRecipient>& vecSend, CWalletTx& wt
 /**
  * Call after CreateTransaction unless you want to abort
  */
-bool CWallet::CommitTransaction(CWalletTx& wtxNew, CReserveKey& reservekey)
+bool CWallet::CommitTransaction(CWalletTx& wtxNew, boost::optional<CReserveKey&> reservekey)
 {
     {
         LOCK2(cs_main, cs_wallet);
@@ -3613,8 +3611,10 @@ bool CWallet::CommitTransaction(CWalletTx& wtxNew, CReserveKey& reservekey)
             // maybe makes sense; please don't do it anywhere else.
             CWalletDB* pwalletdb = fFileBacked ? new CWalletDB(strWalletFile,"r+") : NULL;
 
-            // Take key pair from key pool so it won't be used again
-            reservekey.KeepKey();
+            if (reservekey) {
+                // Take key pair from key pool so it won't be used again
+                reservekey.get().KeepKey();
+            }
 
             // Add tx to wallet, because if it has change it's also ours,
             // otherwise just for transaction history.
@@ -4395,9 +4395,8 @@ CWalletKey::CWalletKey(int64_t nExpires)
     nTimeExpires = nExpires;
 }
 
-int CMerkleTx::SetMerkleBranch(const CBlock& block)
+void CMerkleTx::SetMerkleBranch(const CBlock& block)
 {
-    AssertLockHeld(cs_main);
     CBlock blockTmp;
 
     // Update the tx's hashBlock
@@ -4412,21 +4411,10 @@ int CMerkleTx::SetMerkleBranch(const CBlock& block)
         vMerkleBranch.clear();
         nIndex = -1;
         LogPrintf("ERROR: SetMerkleBranch(): couldn't find tx in block\n");
-        return 0;
     }
 
     // Fill in merkle branch
     vMerkleBranch = block.GetMerkleBranch(nIndex);
-
-    // Is the tx in a block that's in the main chain
-    BlockMap::iterator mi = mapBlockIndex.find(hashBlock);
-    if (mi == mapBlockIndex.end())
-        return 0;
-    const CBlockIndex* pindex = (*mi).second;
-    if (!pindex || !chainActive.Contains(pindex))
-        return 0;
-
-    return chainActive.Height() - pindex->nHeight + 1;
 }
 
 int CMerkleTx::GetDepthInMainChainINTERNAL(const CBlockIndex* &pindexRet) const

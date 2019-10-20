@@ -1,4 +1,4 @@
-# Resistance 2.0.6
+# Resistance 2.0.7-3
 
 ## What is Resistance?
 
@@ -17,13 +17,13 @@ blockchain has reached a significant size.
 See important security warnings on Zcash's
 [Security Information page](https://z.cash/support/security/).
 
-**Resistance is experimental and a work-in-progress.** Use at your own risk.
+**Resistance is experimental and a work in progress.** Use it at your own risk.
 
 ## Deprecation Policy
 
 This release is considered deprecated 16 weeks after the release day. There
 is an automatic deprecation shutdown feature which will halt the node some
-time after this 16 week time period. The automatic feature is based on block
+time after this 16-week period. The automatic feature is based on block
 height.
 
 ## Getting Started

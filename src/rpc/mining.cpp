@@ -631,15 +631,21 @@ UniValue getblocktemplate(const UniValue& params, bool fHelp)
         entry.push_back(Pair("sigops", pblocktemplate->vTxSigOps[index_in_template]));
 
         if (tx.IsCoinBase()) {
-            // Show PoR reward if it is required
-            if (pblock->vtx[0].vout.size() > 1) {
-                // Correct this if GetBlockTemplate changes the order
-                entry.push_back(Pair("porreward", (int64_t)tx.vout[1].nValue));
+            int nout = 0, nHeight = pindexPrev->nHeight + 1;
+            const CChainParams& chainparams = Params();
+            if (pblock->vtx[0].vout.size() > nout)
+                entry.push_back(Pair("powreward", (int64_t)tx.vout[nout++].nValue));
+            if (nHeight >= chainparams.GetConsensus().nSubsidySlowStartHeight && nHeight <= chainparams.GetConsensus().GetLastPorRewardBlockHeight()) {
+                if (pblock->vtx[0].vout.size() > nout)
+                    entry.push_back(Pair("porreward", (int64_t)tx.vout[nout++].nValue));
             }
-            // Show PlatformDev fund if it is required
-            if (pblock->vtx[0].vout.size() > 2) {
-                // Correct this if GetBlockTemplate changes the order
-                entry.push_back(Pair("devfund", (int64_t)tx.vout[2].nValue));
+            if (nHeight >= chainparams.GetConsensus().nSubsidySlowStartHeight && nHeight <= chainparams.GetConsensus().GetLastMasternodeRewardBlockHeight()) {
+                if (pblock->vtx[0].vout.size() > nout)
+                    entry.push_back(Pair("mnreward", (int64_t)tx.vout[nout++].nValue));
+            }
+            if (nHeight >= chainparams.GetConsensus().nSubsidySlowStartHeight && nHeight <= chainparams.GetConsensus().GetLastPlatformDevFundBlockHeight()) {
+                if (pblock->vtx[0].vout.size() > nout)
+                    entry.push_back(Pair("devfund", (int64_t)tx.vout[nout++].nValue));
             }
             entry.push_back(Pair("required", true));
             txCoinbase = entry;
@@ -838,18 +844,19 @@ UniValue getblocksubsidy(const UniValue& params, bool fHelp)
     if (fHelp || params.size() > 1)
         throw runtime_error(
             "getblocksubsidy height\n"
-            "\nReturns block subsidy reward, taking into account the mining slow start, the PoR reward and the PlatformDev fund, of block at index provided.\n"
+            "\nReturns block subsidy reward not including tx fees and split into its sub-components.\n"
             "\nArguments:\n"
             "1. height         (numeric, optional) The block height.  If not provided, defaults to the current height of the chain.\n"
             "\nResult:\n"
             "{\n"
-            "  \"miner\" : x.xxx           (numeric) The mining reward amount in " + CURRENCY_UNIT + ".\n"
-            "  \"por\" : x.xxx             (numeric) The PoR reward amount in " + CURRENCY_UNIT + ".\n"
-            "  \"dev\" : x.xxx             (numeric) The PlatformDev fund amount in " + CURRENCY_UNIT + ".\n"
+            "  \"powreward\" : x.xxx       (numeric) The PoW mining reward amount in " + CURRENCY_UNIT + ".\n"
+            "  \"porreward\" : x.xxx       (numeric) The PoR reward amount in " + CURRENCY_UNIT + ".\n"
+            "  \"mnreward\" : x.xxx        (numeric) The masternode reward amount in " + CURRENCY_UNIT + ".\n"
+            "  \"devfund\" : x.xxx         (numeric) The development fund amount in " + CURRENCY_UNIT + ".\n"
             "}\n"
             "\nExamples:\n"
             + HelpExampleCli("getblocksubsidy", "1000")
-            + HelpExampleRpc("getblockubsidy", "1000")
+            + HelpExampleRpc("getblocksubsidy", "1000")
         );
 
     LOCK(cs_main);
@@ -872,10 +879,10 @@ UniValue getblocksubsidy(const UniValue& params, bool fHelp)
     }
     nReward -= (nPorReward + nMasternodeReward + nPlatformDevFund);
     UniValue result(UniValue::VOBJ);
-    result.push_back(Pair("miner", ValueFromAmount(nReward)));
-    result.push_back(Pair("por", ValueFromAmount(nPorReward)));
-    result.push_back(Pair("mn", ValueFromAmount(nMasternodeReward)));
-    result.push_back(Pair("dev", ValueFromAmount(nPlatformDevFund)));
+    result.push_back(Pair("powreward", ValueFromAmount(nReward)));
+    result.push_back(Pair("porreward", ValueFromAmount(nPorReward)));
+    result.push_back(Pair("mnreward", ValueFromAmount(nMasternodeReward)));
+    result.push_back(Pair("devfund", ValueFromAmount(nPlatformDevFund)));
     return result;
 }
 

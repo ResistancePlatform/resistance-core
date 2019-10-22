@@ -92,9 +92,8 @@ public:
 
     bool operator()(const libzcash::PHGRProof& proof) const
     {
-        // We checkpoint after Sapling activation, so we can skip verification
-        // for all Sprout proofs.
-        return true;
+        // We had Sapling since block 1, so we can disallow Sprout proofs.
+        return false;
     }
 
     bool operator()(const libzcash::GrothProof& proof) const

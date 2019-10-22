@@ -1,6 +1,6 @@
 // Copyright (c) 2018 The Zcash developers
 // Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// file COPYING or https://www.opensource.org/licenses/mit-license.php .
 
 #include "transaction_builder.h"
 
@@ -50,7 +50,6 @@ std::string TransactionBuilderResult::GetError() {
 TransactionBuilder::TransactionBuilder(
     const Consensus::Params& consensusParams,
     int nHeight,
-    int nExpiryDelta,
     CKeyStore* keystore,
     ZCJoinSplit* sproutParams,
     CCoinsViewCache* coinsView,
@@ -62,7 +61,7 @@ TransactionBuilder::TransactionBuilder(
     coinsView(coinsView),
     cs_coinsView(cs_coinsView)
 {
-    mtx = CreateNewContextualCMutableTransaction(consensusParams, nHeight, nExpiryDelta);
+    mtx = CreateNewContextualCMutableTransaction(consensusParams, nHeight);
 }
 
 // This exception is thrown in certain scenarios when building JoinSplits fails.
@@ -75,6 +74,15 @@ struct JSDescException : public std::exception
 private:
     std::string msg;
 };
+
+
+void TransactionBuilder::SetExpiryHeight(uint32_t nExpiryHeight)
+{
+    if (nExpiryHeight < nHeight || nExpiryHeight <= 0 || nExpiryHeight >= TX_EXPIRY_HEIGHT_THRESHOLD) {
+        throw new std::runtime_error("TransactionBuilder::SetExpiryHeight: invalid expiry height");
+    }
+    mtx.nExpiryHeight = nExpiryHeight;
+}
 
 void TransactionBuilder::AddSaplingSpend(
     libzcash::SaplingExpandedSpendingKey expsk,
@@ -687,8 +695,8 @@ void TransactionBuilder::CreateJSDescription(
     uint256 esk; // payment disclosure - secret
 
     // Generate the proof, this can take over a minute.
+    assert(mtx.fOverwintered && (mtx.nVersion >= SAPLING_TX_VERSION));
     JSDescription jsdesc = JSDescription::Randomized(
-            mtx.fOverwintered && (mtx.nVersion >= SAPLING_TX_VERSION),
             *sproutParams,
             mtx.joinSplitPubKey,
             vjsin[0].witness.root(),

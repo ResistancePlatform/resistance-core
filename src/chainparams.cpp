@@ -122,7 +122,8 @@ public:
             Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
 
         // The best chain should have at least this much work.
-        consensus.nMinimumChainWork = uint256S("0x00");
+        // Set this to chainwork as reported by getblockheader RPC for last checkpoint block hash
+        consensus.nMinimumChainWork = uint256S("0x0000000000000000000000000000000000000000000000000000077bf8e2aeba");
 
         /**
          * The message start string should be awesome!
@@ -196,11 +197,17 @@ public:
 
         checkpointData = (CCheckpointData) {
             boost::assign::map_list_of
-            (0, consensus.hashGenesisBlock),
-            genesis.nTime,  // * UNIX timestamp of last checkpoint block
-            0,              // * total number of transactions between genesis and last checkpoint
-                            //   (the tx=... number in the SetBestChain debug.log lines)
-            0               // * estimated number of transactions per day after checkpoint
+            (0, consensus.hashGenesisBlock)
+            (1, uint256S("0x8f51025a4d9b250f8e6768a4d89157eb8ab49ab6385c07870f62e7f8e511553b"))
+            (12, uint256S("0xc6c2ebff9bd402f6f4f09c1b4af1d438a0ec04b8ec867e1742299c0d133ff669"))
+            (124, uint256S("0x04052c4c2ad75c2ce81652389d52235e585f8219a114bad874ce7ef15c6410cd"))
+            (1240, uint256S("0xe406db42615c366c03f99db6d84707dde063f64821b11224f4239d18ca38582d"))
+            (12400, uint256S("0x124558cc13d01ef3d912ff666677a76a8c68e2b07041ad06ba048d03710671da"))
+            (124000, uint256S("0x426869c5dec4d0b177c04acf72374e9af9ad9e5dc731006c5a8a8ad9377e01d6")),
+            1571912113,     // * UNIX timestamp of last checkpoint block
+            257062,         // * total number of transactions between genesis and last checkpoint
+                            //   (the tx=... number in the UpdateTip debug.log lines)
+            2985            // * estimated number of transactions per day after checkpoint
                             //   total number of tx / (checkpoint block height / (24 * 60))
         };
 
@@ -337,7 +344,7 @@ public:
             (0, consensus.hashGenesisBlock),
             genesis.nTime,  // * UNIX timestamp of last checkpoint block
             0,              // * total number of transactions between genesis and last checkpoint
-                            //   (the tx=... number in the SetBestChain debug.log lines)
+                            //   (the tx=... number in the UpdateTip debug.log lines)
             0               // * estimated number of transactions per day after checkpoint
                             //   total number of tx / (checkpoint block height / (24 * 60))
         };
@@ -451,7 +458,7 @@ public:
             (0, consensus.hashGenesisBlock),
             genesis.nTime,  // * UNIX timestamp of last checkpoint block
             0,              // * total number of transactions between genesis and last checkpoint
-                            //   (the tx=... number in the SetBestChain debug.log lines)
+                            //   (the tx=... number in the UpdateTip debug.log lines)
             0               // * estimated number of transactions per day after checkpoint
                             //   total number of tx / (checkpoint block height / (24 * 60))
         };

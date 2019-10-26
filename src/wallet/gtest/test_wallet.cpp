@@ -71,12 +71,24 @@ public:
     }
 };
 
-CWalletTx GetValidSproutReceive(const libzcash::SproutSpendingKey& sk, CAmount value, bool randomInputs, int32_t version = 2) {
-    return GetValidSproutReceive(*params, sk, value, randomInputs, version);
+CWalletTx GetValidSproutReceive(
+    const libzcash::SproutSpendingKey& sk,
+    CAmount value,
+    bool randomInputs,
+    int32_t versionGroupId = SAPLING_VERSION_GROUP_ID,
+    int32_t version = SAPLING_TX_VERSION)
+{
+    return GetValidSproutReceive(*params, sk, value, randomInputs, versionGroupId, version);
 }
 
-CWalletTx GetInvalidCommitmentSproutReceive(const libzcash::SproutSpendingKey& sk, CAmount value, bool randomInputs, int32_t version = 2) {
-    return GetInvalidCommitmentSproutReceive(*params, sk, value, randomInputs, version);
+CWalletTx GetInvalidCommitmentSproutReceive(
+    const libzcash::SproutSpendingKey& sk,
+    CAmount value,
+    bool randomInputs,
+    int32_t versionGroupId = SAPLING_VERSION_GROUP_ID,
+    int32_t version = SAPLING_TX_VERSION)
+{
+    return GetInvalidCommitmentSproutReceive(*params, sk, value, randomInputs, versionGroupId, version);
 }
 
 libzcash::SproutNote GetSproutNote(const libzcash::SproutSpendingKey& sk,
@@ -105,7 +117,7 @@ std::pair<JSOutPoint, SaplingOutPoint> CreateValidBlock(TestWallet& wallet,
                             CBlock& block,
                             SproutMerkleTree& sproutTree,
                             SaplingMerkleTree& saplingTree) {
-    auto wtx = GetValidSproutReceive(sk, 50, true, 4);
+    auto wtx = GetValidSproutReceive(sk, 50, true);
     auto note = GetSproutNote(sk, wtx, 0, 1);
     auto nullifier = note.nullifier(sk);
 
@@ -158,10 +170,11 @@ TEST(WalletTests, SproutNoteDataSerialisation) {
     noteData[jsoutpt] = nd;
 
     CDataStream ss(SER_DISK, CLIENT_VERSION);
-    ss << noteData;
+    auto os = WithVersion(&ss, SAPLING_TX_VERSION | 1 << 31);
+    os << noteData;
 
     mapSproutNoteData_t noteData2;
-    ss >> noteData2;
+    os >> noteData2;
 
     EXPECT_EQ(noteData, noteData2);
     EXPECT_EQ(noteData[jsoutpt].witnesses, noteData2[jsoutpt].witnesses);
@@ -169,7 +182,8 @@ TEST(WalletTests, SproutNoteDataSerialisation) {
 
 
 TEST(WalletTests, FindUnspentSproutNotes) {
-    SelectParams(CBaseChainParams::TESTNET);
+    auto consensusParams = RegtestActivateSapling();
+
     CWallet wallet;
     auto sk = libzcash::SproutSpendingKey::random();
     wallet.AddSproutSpendingKey(sk);
@@ -338,6 +352,9 @@ TEST(WalletTests, FindUnspentSproutNotes) {
     mapBlockIndex.erase(blockHash);
     mapBlockIndex.erase(blockHash2);
     mapBlockIndex.erase(blockHash3);
+
+    // Revert to default
+    RegtestDeactivateSapling();
 }
 
 
@@ -379,7 +396,7 @@ TEST(WalletTests, SetSaplingNoteAddrsInCWalletTx) {
     ASSERT_TRUE(nf);
     uint256 nullifier = nf.get();
 
-    auto builder = TransactionBuilder(consensusParams, 1, expiryDelta);
+    auto builder = TransactionBuilder(consensusParams, 1);
     builder.AddSaplingSpend(expsk, note, anchor, witness);
     builder.AddSaplingOutput(fvk.ovk, pk, 50000, {});
     builder.SetFee(0);
@@ -506,7 +523,7 @@ TEST(WalletTests, FindMySaplingNotes) {
     auto testNote = GetTestSaplingNote(pa, 50000);
 
     // Generate transaction
-    auto builder = TransactionBuilder(consensusParams, 1, expiryDelta);
+    auto builder = TransactionBuilder(consensusParams, 1);
     builder.AddSaplingSpend(expsk, testNote.note, testNote.tree.root(), testNote.tree.witness());
     builder.AddSaplingOutput(fvk.ovk, pa, 25000, {});
     auto tx = builder.Build().GetTxOrThrow();
@@ -638,7 +655,7 @@ TEST(WalletTests, GetConflictedSaplingNotes) {
     auto witness = saplingTree.witness();
 
     // Generate tx to create output note B
-    auto builder = TransactionBuilder(consensusParams, 1, expiryDelta);
+    auto builder = TransactionBuilder(consensusParams, 1);
     builder.AddSaplingSpend(expsk, note, anchor, witness);
     builder.AddSaplingOutput(fvk.ovk, pk, 35000, {});
     auto tx = builder.Build().GetTxOrThrow();
@@ -692,13 +709,13 @@ TEST(WalletTests, GetConflictedSaplingNotes) {
     anchor = saplingTree.root();
 
     // Create transaction to spend note B
-    auto builder2 = TransactionBuilder(consensusParams, 2, expiryDelta);
+    auto builder2 = TransactionBuilder(consensusParams, 2);
     builder2.AddSaplingSpend(expsk, note2, anchor, spend_note_witness);
     builder2.AddSaplingOutput(fvk.ovk, pk, 20000, {});
     auto tx2 = builder2.Build().GetTxOrThrow();
 
     // Create conflicting transaction which also spends note B
-    auto builder3 = TransactionBuilder(consensusParams, 2, expiryDelta);
+    auto builder3 = TransactionBuilder(consensusParams, 2);
     builder3.AddSaplingSpend(expsk, note2, anchor, spend_note_witness);
     builder3.AddSaplingOutput(fvk.ovk, pk, 19999, {});
     auto tx3 = builder3.Build().GetTxOrThrow();
@@ -785,7 +802,7 @@ TEST(WalletTests, SaplingNullifierIsSpent) {
     auto testNote = GetTestSaplingNote(pa, 50000);
 
     // Generate transaction
-    auto builder = TransactionBuilder(consensusParams, 1, expiryDelta);
+    auto builder = TransactionBuilder(consensusParams, 1);
     builder.AddSaplingSpend(expsk,  testNote.note, testNote.tree.root(), testNote.tree.witness());
     builder.AddSaplingOutput(fvk.ovk, pa, 25000, {});
     auto tx = builder.Build().GetTxOrThrow();
@@ -868,7 +885,7 @@ TEST(WalletTests, NavigateFromSaplingNullifierToNote) {
     auto testNote = GetTestSaplingNote(pa, 50000);
 
     // Generate transaction
-    auto builder = TransactionBuilder(consensusParams, 1, expiryDelta);
+    auto builder = TransactionBuilder(consensusParams, 1);
     builder.AddSaplingSpend(expsk, testNote.note, testNote.tree.root(), testNote.tree.witness());
     builder.AddSaplingOutput(fvk.ovk, pa, 25000, {});
     auto tx = builder.Build().GetTxOrThrow();
@@ -996,7 +1013,7 @@ TEST(WalletTests, SpentSaplingNoteIsFromMe) {
     auto witness = saplingTree.witness();
 
     // Generate transaction, which sends funds to note B
-    auto builder = TransactionBuilder(consensusParams, 1, expiryDelta);
+    auto builder = TransactionBuilder(consensusParams, 1);
     builder.AddSaplingSpend(expsk, note, anchor, witness);
     builder.AddSaplingOutput(fvk.ovk, pk, 25000, {});
     auto tx = builder.Build().GetTxOrThrow();
@@ -1066,7 +1083,7 @@ TEST(WalletTests, SpentSaplingNoteIsFromMe) {
     anchor = saplingTree.root();
 
     // Create transaction to spend note B
-    auto builder2 = TransactionBuilder(consensusParams, 2, expiryDelta);
+    auto builder2 = TransactionBuilder(consensusParams, 2);
     builder2.AddSaplingSpend(expsk, note2, anchor, spend_note_witness);
     builder2.AddSaplingOutput(fvk.ovk, pk, 12500, {});
     auto tx2 = builder2.Build().GetTxOrThrow();
@@ -1121,7 +1138,7 @@ TEST(WalletTests, CachedWitnessesEmptyChain) {
     auto sk = libzcash::SproutSpendingKey::random();
     wallet.AddSproutSpendingKey(sk);
 
-    auto wtx = GetValidSproutReceive(sk, 10, true, 4);
+    auto wtx = GetValidSproutReceive(sk, 10, true);
     auto note = GetSproutNote(sk, wtx, 0, 0);
     auto note2 = GetSproutNote(sk, wtx, 0, 1);
     auto nullifier = note.nullifier(sk);
@@ -1202,7 +1219,7 @@ TEST(WalletTests, CachedWitnessesChainTip) {
 
     {
         // Second transaction
-        auto wtx = GetValidSproutReceive(sk, 50, true, 4);
+        auto wtx = GetValidSproutReceive(sk, 50, true);
         auto note = GetSproutNote(sk, wtx, 0, 1);
         auto nullifier = note.nullifier(sk);
 
@@ -1311,7 +1328,7 @@ TEST(WalletTests, CachedWitnessesDecrementFirst) {
 
 {
         // Third transaction - never mined
-        auto wtx = GetValidSproutReceive(sk, 20, true, 4);
+        auto wtx = GetValidSproutReceive(sk, 20, true);
         auto note = GetSproutNote(sk, wtx, 0, 1);
         auto nullifier = note.nullifier(sk);
 
@@ -1449,7 +1466,7 @@ TEST(WalletTests, ClearNoteWitnessCache) {
     auto sk = libzcash::SproutSpendingKey::random();
     wallet.AddSproutSpendingKey(sk);
 
-    auto wtx = GetValidSproutReceive(sk, 10, true, 4);
+    auto wtx = GetValidSproutReceive(sk, 10, true);
     auto hash = wtx.GetHash();
     auto note = GetSproutNote(sk, wtx, 0, 0);
     auto nullifier = note.nullifier(sk);
@@ -1771,7 +1788,7 @@ TEST(WalletTests, UpdatedSaplingNoteData) {
     auto testNote = GetTestSaplingNote(pa, 50000);
 
     // Generate transaction
-    auto builder = TransactionBuilder(consensusParams, 1, expiryDelta);
+    auto builder = TransactionBuilder(consensusParams, 1);
     builder.AddSaplingSpend(expsk, testNote.note, testNote.tree.root(), testNote.tree.witness());
     builder.AddSaplingOutput(fvk.ovk, pa2, 25000, {});
     auto tx = builder.Build().GetTxOrThrow();
@@ -1912,7 +1929,7 @@ TEST(WalletTests, MarkAffectedSaplingTransactionsDirty) {
 
     // Generate shielding tx from transparent to Sapling
     // 0.0005 t-RES in, 0.0004 z-RES out, 0.0001 t-RES fee
-    auto builder = TransactionBuilder(consensusParams, 1, expiryDelta, &keystore);
+    auto builder = TransactionBuilder(consensusParams, 1, &keystore);
     builder.AddTransparentInput(COutPoint(), scriptPubKey, 50000);
     builder.AddSaplingOutput(fvk.ovk, pk, 40000, {});
     auto tx1 = builder.Build().GetTxOrThrow();
@@ -1967,7 +1984,7 @@ TEST(WalletTests, MarkAffectedSaplingTransactionsDirty) {
 
     // Create a Sapling-only transaction
     // 0.0004 z-RES in, 0.00025 z-RES out, 0.0001 t-RES fee, 0.00005 z-RES change
-    auto builder2 = TransactionBuilder(consensusParams, 2, expiryDelta);
+    auto builder2 = TransactionBuilder(consensusParams, 2);
     builder2.AddSaplingSpend(expsk, note, anchor, witness);
     builder2.AddSaplingOutput(fvk.ovk, pk, 25000, {});
     auto tx2 = builder2.Build().GetTxOrThrow();

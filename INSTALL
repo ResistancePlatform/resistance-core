@@ -1,5 +1,8 @@
 Building Resistance
 
-See the Zcash documentation wiki (https://zcash.readthedocs.io/en/latest/rtd_pages/user_guide.html) for instructions on building zcashd,
-the intended-for-services, no-graphical-interface, reference
-implementation of Resistance.
+We maintain quick build instructions in our README.md.
+
+For reference, you might also find Zcash's documentation wiki helpful,
+although their build instructions don't apply to Resistance directly:
+
+https://zcash.readthedocs.io/en/latest/rtd_pages/user_guide.html

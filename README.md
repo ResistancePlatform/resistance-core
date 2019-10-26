@@ -50,7 +50,7 @@ Dependencies (run as **root**):
 
 ```
 sudo apt-get update
-sudo apt-get install build-essential automake libtool pkg-config curl
+sudo apt-get install build-essential automake libtool pkg-config curl wget
 ```
 
 Compile (do **not** run as **root**)
@@ -59,26 +59,26 @@ Compile (do **not** run as **root**)
 ./resutil/build.sh
 ```
 
-You must first create a configuration file. You can create an empty configuration by running:
+Then you need to get the Resistance params using the following script:
+
+```
+./resutil/fetch-params.sh
+```
+
+You must create a configuration file. You can create an empty configuration by running:
 
 ```
 mkdir ~/.resistance
 touch ~/.resistance/resistance.conf
 ```
 
-Then you need to get the Resistance params using the following script (make sure you have `ipfs` and `wget` installed):
-
-```
-./resutil/fetch-params.sh
-```
-
 To start the blockchain daemon run:
 
 ```
-./src/resistanced -daemon
+./src/resistanced
 ```
 
-**Note**: You may need to wait up to 20 seconds for the daemon to start before full the daemon is fully functional.
+**Note**: You may need to wait up to 20 seconds for the daemon to start before it is fully functional.
 
 ### macOS
 
@@ -145,7 +145,7 @@ Build the executable:
 
 ```
 ./resutil/build.sh
-HOST=x86_64-w64-mingw32 ./resutil/build.sh -j$(nproc)
+HOST=x86_64-w64-mingw32 ./resutil/build.sh
 strip src/resistanced.exe src/resistance-cli.exe src/resistance-tx.exe
 ```
 
@@ -162,16 +162,17 @@ Run Daemon
 
 ### Build Troubleshooting
 
-1. "This is taking forever to build.": You can speed up the build by using `./resutil/build.sh -j2`. Depending on your system, you can increase the value of `-j`, i.e. `-j8`.
-2. "I make one small change to the source, and I have to rebuild everything?!": Nope! After you have built the first time, you can rebuild quickly by running `make` or `make -j8` (faster) in this repo's `src` directory.
-
-*Note*: If you run into build problems, and then find a solution please don't keep the solution to yourself. It helps everyone if you add your solution to this troubleshooting section.
-4. "I want to set an rpc password": You can do this by adding the following to the resistance.conf file
+1. "This is taking forever to build.": You can speed up the build by using `./resutil/build.sh -j2`. Depending on your system, you can increase the value of `-j`, i.e. `-j8`. On a fast machine with enough RAM and a fast network (as the build downloads some of its dependencies), build using `-j8` completes in under 10 minutes. Builds without a `-j` option may take 40 minutes or more, but need a lot less RAM.
+2. "I used the `-j` option and my build failed.": This is often caused by running out of RAM. To avoid that, don't set the `-j` value to more than half the number of GB of RAM you have in the system (or VM) - e.g., to use `-j8` safely we recommend having 16 GB RAM or more (in the VM, if applicable).
+3. "I make one small change to the source, and I have to rebuild everything?!": Nope! After you have built the first time, you can rebuild quickly by running `make` or `make -j8` (faster) in this repo's `src` directory.
+4. "I want to set an rpc password": You can do this by adding the following to the resistance.conf file:
 
 ```
 rpcuser=CHANGEME
 rpcpassword=CHANGEME
 ```
+
+*Note*: If you run into build problems, and then find a solution please don't keep the solution to yourself. It helps everyone if you add your solution to this troubleshooting section.
 
 ## CLI Client
 

@@ -75,7 +75,7 @@ Then you need to get the Resistance params using the following script (make sure
 To start the blockchain daemon run:
 
 ```
-./src/resistanced -regtest -daemon
+./src/resistanced -daemon
 ```
 
 **Note**: You may need to wait up to 20 seconds for the daemon to start before full the daemon is fully functional.
@@ -111,7 +111,7 @@ touch ~/Library/Application\ Support/Resistance/resistance.conf
 Run Daemon
 
 ```
-./src/resistanced -regtest
+./src/resistanced
 ```
 
 ### Windows
@@ -156,7 +156,7 @@ TODO
 Run Daemon
 
 ```
-./src/resistanced -regtest
+./src/resistanced
 ```
 
 
@@ -178,26 +178,9 @@ rpcpassword=CHANGEME
 Then you can interact with the daemon locally using the cli tool:
 
 ```
-./src/resistance-cli -regtest getinfo
-./src/resistance-cli -regtest getblockchaininfo
+./src/resistance-cli getinfo
+./src/resistance-cli getblockchaininfo
 ```
-
-You can even mine a block:
-
-```
-./src/resistance-cli -regtest generate 1
-```
-
-Or you can mine 101 blocks at once:
-
-```
-./src/resistance-cli -regtest generate 101
-```
-
-**Note**: 101 Confirmations have to occur before you can spend the reward from the first block. So you have to run the generate command until 100 blocks are there.
-
-More info can be found here: https://bitcoin.org/en/developer-examples#regtest-mode
-
 
 ## Docker
 
@@ -210,7 +193,7 @@ Once you have docker installed and running on your system:
 1. Clone this repo
 2. `cd` into this repo
 3. Run `docker build -t "resistance" .`
-4. Run `docker run -it -p 18432:18432 resistance /home/resistance/src/resistanced -regtest`
+4. Run `docker run -it -p 18432:18432 resistance /home/resistance/src/resistanced`
 5. Now you can communicate with the RPC via:
 
 ```

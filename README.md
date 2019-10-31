@@ -183,24 +183,6 @@ Then you can interact with the daemon locally using the cli tool:
 ./src/resistance-cli getblockchaininfo
 ```
 
-## Docker
-
-**This is for testing only. It uses weak rpc username, password, and ip whitelist**. Those parameters must be changed in the Dockerfile before deploying to anything real.
-
-To make things extremely simple, you can build and run the project using docker.
-
-Once you have docker installed and running on your system:
-
-1. Clone this repo
-2. `cd` into this repo
-3. Run `docker build -t "resistance" .`
-4. Run `docker run -it -p 18432:18432 resistance /home/resistance/src/resistanced`
-5. Now you can communicate with the RPC via:
-
-```
-curl -u test123:test123 --data-binary '{" jsonrpc": "1.0", "id":" curltest", "method": "getblockchaininfo", "params": [] }' -H 'content-type: text/plain;' http://127.0.0.1:18432/
-```
-
 ## License
 
 For license information see the file [COPYING](COPYING).

@@ -30,16 +30,16 @@ stats
 
 fgrep -lriZ --exclude-dir=.git --exclude-dir=contrib --exclude='*release-notes*' --exclude=res-rebrand.sh \
 	--exclude=chainparams.cpp \
-	zcash -- $D | xargs -0 sed -i '
+	zcash -- $D | xargs -r0 sed -i '
 /[Cc]opyright\|https\{0,1\}:\|github\|libzcash\|rustzcash\|zcash\/\|Zcash\.h\|zcashconsensus\|ZcashPoW\|memcpy\|zcashd_screen\|[ *]v[01]\.\| 1\.0\./! {
-s/Zcash/Resistance/g; s/zcash/resistance/g
+s/Zcash/Resistance/g; s/zcash/resistance/g; s/ZCASH/RESISTANCE/g
 }'
 
 fgrep -lrwZ --exclude-dir=.git --exclude-dir=contrib --exclude='*release-notes*' --exclude=res-rebrand.sh \
-	ZEC -- $D | xargs -0 sed -i 's/ZEC/RES/g'
+	ZEC -- $D | xargs -r0 sed -i 's/ZEC/RES/g'
 
 fgrep -lrwZ --exclude-dir=.git --exclude-dir=contrib --exclude='*release-notes*' --exclude=res-rebrand.sh \
-	zcutil -- $D | xargs -0 sed -i 's/zcutil/resutil/g'
+	zcutil -- $D | xargs -r0 sed -i 's/zcutil/resutil/g'
 
 echo "After:"
 stats

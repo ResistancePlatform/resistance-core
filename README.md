@@ -2,15 +2,18 @@
 
 ## What is Resistance?
 
-[Resistance](https://resistance.io/) is fork of Zcash.
+[Resistance](https://resistance.io/) Core is a fork of
+[Zcash](https://github.com/zcash/zcash).
 Based on Bitcoin's code, it intends to offer a far higher standard of privacy
 through a sophisticated zero-knowledge proving scheme that preserves
-confidentiality of transaction metadata.
+confidentiality of transaction metadata. Some of the differences of Resistance
+Core from Zcash are our use of a CPU-optimized Proof-of-Work scheme
+([yespower](https://www.openwall.com/yespower/)), shorter block interval
+(1 minute), and changes for integration with other Resistance components.
 
-This software is the Resistance client. It downloads and stores the entire history
-of Resistance transactions; depending on the speed of your computer and network
-connection, the synchronization process could take a day or more once the
-blockchain has reached a significant size.
+This software is the Resistance client. It downloads and stores the entire
+history of Resistance transactions; depending on the speed of your computer and
+network connection, the synchronization process can take a long while.
 
 ## Security Warnings
 
@@ -26,27 +29,13 @@ is an automatic deprecation shutdown feature which will halt the node some
 time after this 16-week period. The automatic feature is based on block
 height.
 
-## Getting Started
-
-We have a guide for joining the main Resistance network:
-https://github.com/ResistancePlatform/resistance-core/wiki/1.0-User-Guide
-
-### Need Help?
-
-(We'll list our user community resources such as wiki, forum, etc. here.)
-
-Participation in the Resistance project is subject to a
-[Code of Conduct](code_of_conduct.md).
-
 ## Building
-
-Initial development release of the Resistance tools.
 
 Instructions to compile this yourself:
 
 ### Linux
 
-Dependencies (run as **root**):
+Dependencies (example commands are for Debian or Ubuntu, run them as **root**):
 
 ```
 sudo apt-get update
@@ -186,3 +175,8 @@ Then you can interact with the daemon locally using the cli tool:
 ## License
 
 For license information see the file [COPYING](COPYING).
+
+## Code of Conduct
+
+Participation in the Resistance project is subject to a
+[Code of Conduct](code_of_conduct.md).

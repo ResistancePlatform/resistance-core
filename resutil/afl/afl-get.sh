@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Obtains and builds a copy of AFL from source.
-#   ./zcutil/afl/afl-get.sh <directory to build and install AFL in>
+#   ./resutil/afl/afl-get.sh <directory to build and install AFL in>
 
 set -eu -o pipefail
 
@@ -27,7 +27,7 @@ mv afl-*/* .
 # Build AFL
 make
 
-echo "You can now build zcashd with AFL instrumentation as follows:"
-echo "$ make clean # if you've already built zcashd without AFL instrumentation"
-echo "$ ./zcutil/afl/afl-build.sh '$(pwd)' <fuzz case> -j\$(nproc)"
+echo "You can now build resistanced with AFL instrumentation as follows:"
+echo "$ make clean # if you've already built resistanced without AFL instrumentation"
+echo "$ ./resutil/afl/afl-build.sh '$(pwd)' <fuzz case> -j\$(nproc)"
 echo "...where <fuzz case> is the name of a directory in src/fuzzing."

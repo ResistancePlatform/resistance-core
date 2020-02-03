@@ -1,4 +1,4 @@
-# Resistance 2.1.0-1
+# Resistance 2.1.0-2
 
 ## What is Resistance?
 
@@ -24,9 +24,9 @@ See important security warnings on Zcash's
 
 ## Deprecation Policy
 
-This release is considered deprecated 16 weeks after the release day. There
+This release is considered deprecated 52 weeks after the release day. There
 is an automatic deprecation shutdown feature which will halt the node some
-time after this 16-week period. The automatic feature is based on block
+time after this 52-week period. The automatic feature is based on block
 height.
 
 ## Building

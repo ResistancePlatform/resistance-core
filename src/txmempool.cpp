@@ -753,6 +753,7 @@ void CTxMemPool::NotifyRecentlyAdded()
     // wallet transaction's block information.
     for (auto tx : txs) {
         try {
+            LOCK(cs_main);
             SyncWithWallets(tx, NULL);
         } catch (const boost::thread_interrupted&) {
             throw;

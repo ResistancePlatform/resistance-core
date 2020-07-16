@@ -22,13 +22,6 @@ See important security warnings on Zcash's
 
 **Resistance is experimental and a work in progress.** Use it at your own risk.
 
-## Deprecation Policy
-
-This release is considered deprecated 52 weeks after the release day. There
-is an automatic deprecation shutdown feature which will halt the node some
-time after this 52-week period. The automatic feature is based on block
-height.
-
 ## Building
 
 Instructions to compile this yourself:

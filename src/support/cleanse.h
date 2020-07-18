@@ -6,8 +6,18 @@
 #ifndef BITCOIN_SUPPORT_CLEANSE_H
 #define BITCOIN_SUPPORT_CLEANSE_H
 
+#ifdef __GNUC__
+#include <string.h>
+
+static inline void memory_cleanse(void *ptr, size_t len)
+{
+	memset(ptr, 0, len);
+	__asm__ __volatile__("" : : "r"(ptr) : "memory");
+}
+#else
 #include <stdlib.h>
 
 void memory_cleanse(void *ptr, size_t len);
+#endif
 
 #endif // BITCOIN_SUPPORT_CLEANSE_H

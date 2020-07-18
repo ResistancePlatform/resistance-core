@@ -3,6 +3,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or https://www.opensource.org/licenses/mit-license.php .
 
+#ifndef __GNUC__
 #include "cleanse.h"
 
 #include <openssl/crypto.h>
@@ -11,3 +12,4 @@ void memory_cleanse(void *ptr, size_t len)
 {
     OPENSSL_cleanse(ptr, len);
 }
+#endif

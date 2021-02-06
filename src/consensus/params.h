@@ -123,7 +123,7 @@ struct Params {
      * Masternode reward percentage of transaction fees
      */
     int nMasternodeRewardTxPercentage;
-    int GetLastMasternodeRewardBlockHeight() const { return 0x7fffffff; }
+    int GetLastMasternodeRewardBlockHeight() const { return (nCoinbaseMaturity != 2) ? 805000 : 1500; }
     /**
      * PlatformDev fund percentage of block reward
      */

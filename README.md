@@ -144,7 +144,7 @@ Run Daemon
 
 ### Build Troubleshooting
 
-1. "This is taking forever to build.": You can speed up the build by using `./resutil/build.sh --disable-tests -j2`. Depending on your system, you can increase the value of `-j`, i.e. `-j8`. On a fast machine with enough RAM and a fast network (as the build downloads some of its dependencies), build using `-j8` completes in under 10 minutes. Builds without a `-j` option may take 40 minutes or more, but need a lot less RAM.
+1. "This is taking forever to build.": You can speed up building for Linux and maybe for macOS by using `./resutil/build.sh --disable-tests -j2`. Depending on your system, you can increase the value of `-j`, i.e. `-j8`. On a fast machine with enough RAM and a fast network (as the build downloads some of its dependencies), build using `-j8` completes in under 10 minutes. Builds without a `-j` option may take 40 minutes or more, but need a lot less RAM. Unfortunately, the `-j` option is known to cause Windows builds to fail, so you'll have to avoid it with those.
 2. "I used the `-j` option and my build failed.": This is often caused by running out of RAM. To avoid that, don't set the `-j` value to more than half the number of GB of RAM you have in the system (or VM) - e.g., to use `-j8` safely we recommend having 16 GB RAM or more (in the VM, if applicable).
 3. "I make one small change to the source, and I have to rebuild everything?!": Nope! After you have built the first time, you can rebuild quickly by running `make` or `make -j8` (faster) in this repo's `src` directory.
 4. "I want to set an rpc password": You can do this by adding the following to the resistance.conf file:
